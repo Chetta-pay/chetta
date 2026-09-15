@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "tsconfig.json", "tsup.config.ts", "package.json"],
+      "inputs": ["src/**", "tsconfig.json", "tsup.config.ts", "package.json", "index.html", "vite.config.ts", "public/**"],
       "outputs": ["dist/**"]
     },
     "dev": {

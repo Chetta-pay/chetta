@@ -29,7 +29,8 @@
   },
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "web"
   ],
   "engines": {
     "node": ">=20"
