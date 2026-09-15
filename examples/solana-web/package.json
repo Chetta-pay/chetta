@@ -12,11 +12,11 @@
     "@pollar/core": "*",
     "@pollar/react": "*",
     "@pollar/solana-wallet-standard-adapter": "*",
-    "react": "^18.3.1",
+    "react": "^19.3.0",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3",
+    "@types/react": "^19.3",
     "@types/react-dom": "^18.3",
     "@vitejs/plugin-react": "^6.0.3",
     "typescript": "^6.0.3",
