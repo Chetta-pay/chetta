@@ -1,0 +1,12 @@
+{
+  "title": "ChettaPay V0",
+  "description": "",
+  "pages": [
+    "getting-started",
+    "core-concepts",
+    "sdk-reference",
+    "operator-guide",
+    "guides",
+    "smart-wallets"
+  ]
+}

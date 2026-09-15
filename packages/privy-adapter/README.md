@@ -1,16 +1,16 @@
-# @pollar/privy-adapter
+# @chettapay/privy-adapter
 
-Client-side [Privy](https://privy.io) wallet adapter for [`@pollar/core`](../core).
+Client-side [Privy](https://privy.io) wallet adapter for [`@chettapay/core`](../core).
 It drives the **whole** Privy flow itself — email / Google / GitHub login, creating
 the user's **Privy embedded Stellar wallet**, and raw-hash signing — then hands the
-signature to Pollar, which wraps it into a Stellar `DecoratedSignature` and runs the
+signature to ChettaPay, which wraps it into a Stellar `DecoratedSignature` and runs the
 standard SEP-10 login + transaction flow.
 
 You configure it once with a slim, `PrivyClientConfig`-shaped object; you do **not**
 wire up Privy's hooks yourself.
 
 > Server-side signing (through your Privy app secret on your backend) is a
-> different package: [`@pollar/privy-server-adapter`](../privy-server-adapter).
+> different package: [`@chettapay/privy-server-adapter`](../privy-server-adapter).
 
 ## Supported platforms
 
@@ -26,23 +26,23 @@ Your code is the same on both — `createPrivyAdapter` + `PrivyAdapterProvider`.
 
 There is no Privy SDK for Angular or Vue, so the adapter can't run there. If you use
 it in a non-React host it throws a clear `PrivyAdapterUnsupportedError` on first use.
-For those frameworks, sign server-side with `@pollar/privy-server-adapter` instead.
+For those frameworks, sign server-side with `@chettapay/privy-server-adapter` instead.
 
 ## Install (web)
 
 ```bash
-npm i @pollar/privy-adapter @pollar/core @stellar/stellar-sdk @privy-io/react-auth react react-dom
+npm i @chettapay/privy-adapter @chettapay/core @stellar/stellar-sdk @privy-io/react-auth react react-dom
 ```
 
 ## Usage (web)
 
 Create the adapter, wrap your app in `PrivyAdapterProvider`, and register it on the
-`PollarClient`. The provider mounts `@privy-io/react-auth` and bridges its hooks into
+`ChettaPayClient`. The provider mounts `@privy-io/react-auth` and bridges its hooks into
 the adapter for you.
 
 ```tsx
-import { createPrivyAdapter, PrivyAdapterProvider } from '@pollar/privy-adapter';
-import { PollarProvider } from '@pollar/react';
+import { createPrivyAdapter, PrivyAdapterProvider } from '@chettapay/privy-adapter';
+import { ChettaPayProvider } from '@chettapay/react';
 
 const privy = createPrivyAdapter({
   appId: 'your-privy-app-id',
@@ -53,21 +53,21 @@ const privy = createPrivyAdapter({
 export function App() {
   return (
     <PrivyAdapterProvider adapter={privy}>
-      <PollarProvider client={{ apiKey: '…', walletAdapters: [privy] }}>{/* your app */}</PollarProvider>
+      <ChettaPayProvider client={{ apiKey: '…', walletAdapters: [privy] }}>{/* your app */}</ChettaPayProvider>
     </PrivyAdapterProvider>
   );
 }
 ```
 
-In the Pollar login modal this renders a **Privy** button that opens a sub-modal with
+In the ChettaPay login modal this renders a **Privy** button that opens a sub-modal with
 the `loginMethods` you configured (email, Google, GitHub). The adapter runs the Privy
-login, ensures the user has a Stellar embedded wallet, and resolves the address Pollar
+login, ensures the user has a Stellar embedded wallet, and resolves the address ChettaPay
 needs for SEP-10.
 
 ## Install & usage (React Native / Expo)
 
 ```bash
-npm i @pollar/privy-adapter @pollar/core @stellar/stellar-sdk @privy-io/expo react-native-webview
+npm i @chettapay/privy-adapter @chettapay/core @stellar/stellar-sdk @privy-io/expo react-native-webview
 # plus @privy-io/expo's own peer deps (expo-secure-store, expo-web-browser, etc.)
 ```
 
@@ -76,12 +76,12 @@ The code is identical to web — only the import resolves to the Expo build, whi
 `appearance` option is applied on web only; the Expo entry does not forward it:
 
 ```tsx
-import { createPrivyAdapter, PrivyAdapterProvider } from '@pollar/privy-adapter';
+import { createPrivyAdapter, PrivyAdapterProvider } from '@chettapay/privy-adapter';
 
 const privy = createPrivyAdapter({ appId, loginMethods: ['email', 'google'] });
 
 // <PrivyAdapterProvider adapter={privy}>
-//   <PollarProvider client={{ apiKey, walletAdapters: [privy] }}>…</PollarProvider>
+//   <ChettaPayProvider client={{ apiKey, walletAdapters: [privy] }}>…</ChettaPayProvider>
 // </PrivyAdapterProvider>
 ```
 
@@ -102,8 +102,8 @@ OAuth on Expo opens an in-app browser and resolves in-session (no redirect round
 | `cleanupOAuthRedirect?` | `boolean`                             | after a web OAuth redirect, strip `privy_oauth_*` params from the URL via `history.replaceState`; on by default |
 | `meta?`                 | `{ label; iconUrl? }`                 | login button; defaults to `{ label: 'Privy' }`                                                                  |
 
-The returned object is a `@pollar/core` `WalletAdapter` plus interactive-login methods
-(`getAuthOptions`, `sendEmailCode`, `verifyEmailCode`, `loginWithOAuth`) that the Pollar
+The returned object is a `@chettapay/core` `WalletAdapter` plus interactive-login methods
+(`getAuthOptions`, `sendEmailCode`, `verifyEmailCode`, `loginWithOAuth`) that the ChettaPay
 login modal drives. `signTransaction` parses the XDR, signs `tx.hash()` via Privy
 (`chainType: 'stellar'`), and appends the decorated signature. `signAuthEntry` throws —
 Privy external wallets are classic G-addresses, not Soroban smart accounts.
@@ -120,7 +120,7 @@ non-React host fails fast with a clear, actionable error.
 ### Auto-sync (host auto-login)
 
 The adapter emits its provider auth state through `onProviderAuthChange(cb)`, and
-`@pollar/react`'s `PollarProvider` subscribes to it: when Privy reports an authenticated
-session but Pollar has none, it triggers `login({ provider })` on the rising edge. This
+`@chettapay/react`'s `ChettaPayProvider` subscribes to it: when Privy reports an authenticated
+session but ChettaPay has none, it triggers `login({ provider })` on the rising edge. This
 is what recovers a web OAuth redirect (a page reload drops the sub-modal promise) and a
 persisted Privy session on load, without the user clicking the login button again.

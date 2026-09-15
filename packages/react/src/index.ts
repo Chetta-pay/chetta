@@ -1,11 +1,11 @@
-export { PollarProvider, usePollar } from './context';
-export { createPollarAdapterHook } from './usePollarAdapter';
-export type { LoginButtonProps, AuthModalProps, PollarStyles, PollarConfig } from './types';
+export { ChettaPayProvider, useChettaPay } from './context';
+export { createChettaPayAdapterHook } from './useChettaPayAdapter';
+export type { LoginButtonProps, AuthModalProps, ChettaPayStyles, ChettaPayConfig } from './types';
 // Re-export the custom-provider contracts so consumers can author providers
-// (e.g. a Privy login provider) without importing from `@pollar/core` directly.
-export type { PollarAuthProvider, AuthProviderContext } from '@pollar/core';
-// The web WebAuthn implementations `PollarProvider` installs by default. Exported
-// for consumers who build their own `PollarClient` and want the ceremony wired at
+// (e.g. a Privy login provider) without importing from `@chettapay/core` directly.
+export type { ChettaPayAuthProvider, AuthProviderContext } from '@chettapay/core';
+// The web WebAuthn implementations `ChettaPayProvider` installs by default. Exported
+// for consumers who build their own `ChettaPayClient` and want the ceremony wired at
 // construction, and for anyone wrapping it (logging, custom rpId).
 export { browserPasskeyCeremony, browserPasskeySigner } from './lib/passkey-ceremony';
 export { WalletButton } from './components/wallet-button/WalletButton';
@@ -43,7 +43,7 @@ export { DistributionRulesModal } from './components/distribution-rules-modal/Di
 // Exported alongside the templates: a consumer mounting a template itself needs
 // these to reproduce the exact CSS custom properties the built-in modals set,
 // and to forward the app's Branding overrides into them.
-export { buildModalCssVars, modalChrome, readableTextOn } from './components/modal-theme';
+export { buildModalCssVars, modalChrome, readableTextOn, CHETTA } from './components/modal-theme';
 export type { ModalStyleOverrides, ModalVariant, ModalChrome } from './components/modal-theme';
 
 // --- Templates ----------------------------------------------------------------

@@ -1,17 +1,17 @@
 import {
     NetworkState,
-    PollarAdapters,
-    PollarApplicationConfigContent,
-    PollarClient,
-    PollarClientConfig,
-    PollarLoginOptions,
+    ChettaPayAdapters,
+    ChettaPayApplicationConfigContent,
+    ChettaPayClient,
+    ChettaPayClientConfig,
+    ChettaPayLoginOptions,
     StellarNetwork,
     TransactionState,
     TxBuildBody,
     TxHistoryState,
     WalletBalanceState,
     WalletType,
-} from '@pollar/core';
+} from '@chettapay/core';
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { ModalErrorBoundary } from './components/commons';
 import { KycModal } from './components/kyc-modal/KycModal';
@@ -20,7 +20,7 @@ import { RampWidget } from './components/ramp-widget/RampWidget';
 import { TransactionModal } from './components/transaction-modal/TransactionModal';
 import { TxHistoryModal } from './components/tx-history-modal/TxHistoryModal';
 import { WalletBalanceModal } from './components/wallet-balance-modal/WalletBalanceModal';
-import type { PollarConfig, PollarStyles } from './types';
+import type { ChettaPayConfig, ChettaPayStyles } from './types';
 
 const emptyResponse = {
     application: {
@@ -29,21 +29,21 @@ const emptyResponse = {
     styles: {},
 };
 
-async function fetchRemoteConfig(client: PollarClient): Promise<PollarConfig> {
+async function fetchRemoteConfig(client: ChettaPayClient): Promise<ChettaPayConfig> {
     const content = await client.getAppConfig();
-    return (content as PollarConfig | null) ?? emptyResponse;
+    return (content as ChettaPayConfig | null) ?? emptyResponse;
 }
 
-interface PollarContextValue {
+interface ChettaPayContextValue {
     walletAddress: string;
-    getClient: () => PollarClient;
+    getClient: () => ChettaPayClient;
     openLoginModal: () => void;
 
     isAuthenticated: boolean;
-    login: (options: PollarLoginOptions) => void;
+    login: (options: ChettaPayLoginOptions) => void;
     logout: () => void;
-    config: PollarConfig;
-    styles: PollarStyles;
+    config: ChettaPayConfig;
+    styles: ChettaPayStyles;
     // transactions
     openTransactionModal: () => void;
     transaction: TransactionState;
@@ -74,58 +74,58 @@ interface PollarContextValue {
     // wallet balance
     openWalletBalanceModal: () => void;
     // adapters
-    adapters?: PollarAdapters;
+    adapters?: ChettaPayAdapters;
 }
 
-const PollarContext = createContext<PollarContextValue | null>(null);
+const ChettaPayContext = createContext<ChettaPayContextValue | null>(null);
 
-interface PollarProviderProps {
-    config: PollarClientConfig;
-    styles?: PollarStyles;
-    adapters?: PollarAdapters;
+interface ChettaPayProviderProps {
+    config: ChettaPayClientConfig;
+    styles?: ChettaPayStyles;
+    adapters?: ChettaPayAdapters;
     children: ReactNode;
 }
 
-export function PollarProvider({ config, styles: propStyles, adapters, children }: PollarProviderProps) {
-    const [pollarClient] = useState<PollarClient>(() => new PollarClient(config));
-    const [networkState, setNetworkState] = useState<NetworkState>(() => pollarClient.getNetworkState());
-    const [sessionState, setSessionState] = useState<PollarApplicationConfigContent | null>(null);
+export function ChettaPayProvider({ config, styles: propStyles, adapters, children }: ChettaPayProviderProps) {
+    const [chettaPayClient] = useState<ChettaPayClient>(() => new ChettaPayClient(config));
+    const [networkState, setNetworkState] = useState<NetworkState>(() => chettaPayClient.getNetworkState());
+    const [sessionState, setSessionState] = useState<ChettaPayApplicationConfigContent | null>(null);
     const [transaction, setTransaction] = useState<TransactionState>({ step: 'idle' });
     const [txHistory, setTxHistory] = useState<TxHistoryState>({ step: 'idle' });
     const [walletBalance, setWalletBalance] = useState<WalletBalanceState>({ step: 'idle' });
-    const [remoteConfig, setRemoteConfig] = useState<PollarConfig>(emptyResponse);
-    const [styles, setStyles] = useState<PollarStyles>(propStyles ?? {});
+    const [remoteConfig, setRemoteConfig] = useState<ChettaPayConfig>(emptyResponse);
+    const [styles, setStyles] = useState<ChettaPayStyles>(propStyles ?? {});
 
     useEffect(() => {
-        return pollarClient.onTransactionStateChange(setTransaction);
-    }, [pollarClient]);
+        return chettaPayClient.onTransactionStateChange(setTransaction);
+    }, [chettaPayClient]);
 
     useEffect(() => {
-        return pollarClient.onTxHistoryStateChange(setTxHistory);
-    }, [pollarClient]);
+        return chettaPayClient.onTxHistoryStateChange(setTxHistory);
+    }, [chettaPayClient]);
 
     useEffect(() => {
-        return pollarClient.onWalletBalanceStateChange(setWalletBalance);
-    }, [pollarClient]);
+        return chettaPayClient.onWalletBalanceStateChange(setWalletBalance);
+    }, [chettaPayClient]);
 
     useEffect(() => {
-        return pollarClient.onNetworkStateChange((state) => {
+        return chettaPayClient.onNetworkStateChange((state) => {
             setNetworkState(state);
         });
-    }, [pollarClient]);
+    }, [chettaPayClient]);
 
     useEffect(() => {
-        return pollarClient.onAuthStateChange((authState) => {
+        return chettaPayClient.onAuthStateChange((authState) => {
             if (authState.step === 'authenticated') {
                 setSessionState((prev) => (JSON.stringify(prev) !== JSON.stringify(authState.session) ? authState.session : prev));
             } else if (authState.step === 'idle') {
                 setSessionState(null);
             }
         });
-    }, [pollarClient]);
+    }, [chettaPayClient]);
 
     useEffect(() => {
-        fetchRemoteConfig(pollarClient)
+        fetchRemoteConfig(chettaPayClient)
             .then((fetched) => {
                 setRemoteConfig(fetched);
                 setStyles({
@@ -137,7 +137,7 @@ export function PollarProvider({ config, styles: propStyles, adapters, children 
             .catch(() => {
                 setStyles(propStyles ?? {});
             });
-    }, [pollarClient]);
+    }, [chettaPayClient]);
 
     useEffect(() => {
         if (transaction.step !== 'idle') {
@@ -157,18 +157,18 @@ export function PollarProvider({ config, styles: propStyles, adapters, children 
     const [txHistoryModalOpen, setTxHistoryModalOpen] = useState(false);
     const [walletBalanceModalOpen, setWalletBalanceModalOpen] = useState(false);
 
-    const contextValue: PollarContextValue = useMemo(
+    const contextValue: ChettaPayContextValue = useMemo(
         () =>
             ({
                 walletAddress: sessionState?.data?.providers?.wallet?.address || sessionState?.wallet?.publicKey || '',
-                getClient: () => pollarClient,
+                getClient: () => chettaPayClient,
                 transaction,
-                login: (options: PollarLoginOptions) => pollarClient.login(options),
-                logout: () => pollarClient.logout(),
+                login: (options: ChettaPayLoginOptions) => chettaPayClient.login(options),
+                logout: () => chettaPayClient.logout(),
                 isAuthenticated: !!sessionState?.wallet?.publicKey,
-                buildTx: (operation, params, options) => pollarClient.buildTx(operation, params, options),
-                signAndSubmitTx: (unsignedXdr: string) => pollarClient.signAndSubmitTx(unsignedXdr),
-                walletType: pollarClient.getWalletType(),
+                buildTx: (operation, params, options) => chettaPayClient.buildTx(operation, params, options),
+                signAndSubmitTx: (unsignedXdr: string) => chettaPayClient.signAndSubmitTx(unsignedXdr),
+                walletType: chettaPayClient.getWalletType(),
                 openTransactionModal: () => setTransactionModalOpen(true),
                 openLoginModal: () => setLoginModalOpen(true),
                 openKycModal: (options = {}) => {
@@ -180,18 +180,18 @@ export function PollarProvider({ config, styles: propStyles, adapters, children 
                 openTxHistoryModal: () => setTxHistoryModalOpen(true),
                 openWalletBalanceModal: () => setWalletBalanceModalOpen(true),
                 walletBalance,
-                refreshBalance: (publicKey?: string) => pollarClient.refreshBalance(publicKey),
+                refreshBalance: (publicKey?: string) => chettaPayClient.refreshBalance(publicKey),
                 network: networkState.step === 'connected' ? networkState.network : 'testnet',
-                setNetwork: (network: StellarNetwork) => pollarClient.setNetwork(network),
+                setNetwork: (network: StellarNetwork) => chettaPayClient.setNetwork(network),
                 config: remoteConfig,
                 styles,
                 adapters,
-            }) as PollarContextValue,
-        [sessionState, remoteConfig, styles, pollarClient, transaction, txHistory, networkState, walletBalance],
+            }) as ChettaPayContextValue,
+        [sessionState, remoteConfig, styles, chettaPayClient, transaction, txHistory, networkState, walletBalance],
     );
 
     return (
-        <PollarContext.Provider value={contextValue}>
+        <ChettaPayContext.Provider value={contextValue}>
             {children}
             {loginModalOpen && (
                 <ModalErrorBoundary onClose={() => setLoginModalOpen(false)}>
@@ -228,14 +228,14 @@ export function PollarProvider({ config, styles: propStyles, adapters, children 
                     <WalletBalanceModal onClose={() => setWalletBalanceModalOpen(false)} />
                 </ModalErrorBoundary>
             )}
-        </PollarContext.Provider>
+        </ChettaPayContext.Provider>
     );
 }
 
-export function usePollar() {
-    const ctx = useContext(PollarContext);
+export function useChettaPay() {
+    const ctx = useContext(ChettaPayContext);
     if (!ctx) {
-        throw new Error('usePollar must be used inside <PollarProvider>');
+        throw new Error('useChettaPay must be used inside <ChettaPayProvider>');
     }
     return ctx;
 }

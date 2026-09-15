@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import type { RampQuote } from '@pollar/core';
+import type { RampQuote } from '@chettapay/core';
+import { CHETTA } from '../../theme';
 
 interface RouteDisplayProps {
     quote: RampQuote;
@@ -47,13 +48,13 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#e5e7eb',
+        borderColor: CHETTA.bone,
         backgroundColor: '#ffffff',
         marginBottom: 8,
     },
     recommended: {
-        borderColor: '#005DB4',
-        backgroundColor: '#f0f7ff',
+        borderColor: CHETTA.amber,
+        backgroundColor: CHETTA.tint,
     },
     left: {
         flex: 1,
@@ -62,12 +63,12 @@ const styles = StyleSheet.create({
     provider: {
         fontSize: 15,
         fontWeight: '700',
-        color: '#111827',
+        color: CHETTA.ink,
         marginBottom: 2,
     },
     meta: {
         fontSize: 12,
-        color: '#6b7280',
+        color: CHETTA.clay,
     },
     right: {
         alignItems: 'flex-end',
@@ -75,11 +76,11 @@ const styles = StyleSheet.create({
     fee: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#374151',
+        color: CHETTA.ink,
     },
     badgeContainer: {
         marginTop: 4,
-        backgroundColor: '#005DB4',
+        backgroundColor: CHETTA.amber,
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 9999,

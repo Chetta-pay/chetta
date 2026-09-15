@@ -1,10 +1,10 @@
 'use client';
 
-import { LOGO_POLLAR } from '../../constants';
+import { LOGO_CHETTAPAY } from '../../constants';
 import './WalletButton.css';
 
 function ButtonLogo() {
-  return <img src={LOGO_POLLAR} alt="Pollar" width={22} height={22} className="pollar-wallet-btn-logo" />;
+  return <img src={LOGO_CHETTAPAY} alt="ChettaPay" width={22} height={22} className="chettapay-wallet-btn-logo" />;
 }
 
 export interface WalletButtonTemplateProps {
@@ -68,25 +68,25 @@ export function WalletButtonTemplate({
 }: WalletButtonTemplateProps) {
   if (!walletAddress) {
     return (
-      <button type="button" className="pollar-wallet-login-btn" style={{ backgroundColor: accentColor }} onClick={onLogin}>
+      <button type="button" className="chettapay-wallet-login-btn" style={{ backgroundColor: accentColor }} onClick={onLogin}>
         <ButtonLogo />
-        Login with Pollar
+        Login with ChettaPay
       </button>
     );
   }
 
   return (
-    <div className="pollar-wallet-wrapper" ref={wrapperRef}>
+    <div className="chettapay-wallet-wrapper" ref={wrapperRef}>
       <button
-        className="pollar-wallet-btn"
+        className="chettapay-wallet-btn"
         style={{ backgroundColor: accentColor }}
         onClick={isInProgress ? undefined : onToggleOpen}
         disabled={isInProgress}
         aria-busy={isInProgress}
       >
-        <span className="pollar-wallet-btn-label">{cropWallet(walletAddress)}</span>
+        <span className="chettapay-wallet-btn-label">{cropWallet(walletAddress)}</span>
         {isInProgress ? (
-          <svg className="pollar-wallet-btn-spinner" viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden>
+          <svg className="chettapay-wallet-btn-spinner" viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden>
             <circle cx="6" cy="6" r="4.5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" />
             <circle
               cx="6"
@@ -101,7 +101,7 @@ export function WalletButtonTemplate({
           </svg>
         ) : (
           <svg
-            className={`pollar-wallet-chevron${open ? ' pollar-open' : ''}`}
+            className={`chettapay-wallet-chevron${open ? ' chettapay-open' : ''}`}
             viewBox="0 0 12 12"
             fill="none"
             stroke="currentColor"
@@ -115,11 +115,11 @@ export function WalletButtonTemplate({
       </button>
 
       {open && (
-        <div className="pollar-wallet-dropdown" style={{ backgroundColor: dropdownBg, borderColor: dropdownBorder }}>
+        <div className="chettapay-wallet-dropdown" style={{ backgroundColor: dropdownBg, borderColor: dropdownBorder }}>
           {showCreateAccount && (
             <>
               <button
-                className="pollar-wallet-dropdown-item"
+                className="chettapay-wallet-dropdown-item"
                 style={{ color: itemColor }}
                 onClick={onCreateAccount}
                 disabled={creatingAccount}
@@ -141,10 +141,10 @@ export function WalletButtonTemplate({
                 </svg>
                 {creatingAccount ? 'Creating account…' : 'Create account'}
               </button>
-              <div className="pollar-wallet-dropdown-divider" />
+              <div className="chettapay-wallet-dropdown-divider" />
             </>
           )}
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onSend}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onSend}>
             <svg
               width="14"
               height="14"
@@ -160,7 +160,7 @@ export function WalletButtonTemplate({
             </svg>
             Send
           </button>
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onReceive}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onReceive}>
             <svg
               width="14"
               height="14"
@@ -177,8 +177,8 @@ export function WalletButtonTemplate({
             </svg>
             Receive
           </button>
-          <div className="pollar-wallet-dropdown-divider" />
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onCopy}>
+          <div className="chettapay-wallet-dropdown-divider" />
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onCopy}>
             <svg
               width="14"
               height="14"
@@ -194,7 +194,7 @@ export function WalletButtonTemplate({
             </svg>
             {copied ? 'Copied!' : 'Copy address'}
           </button>
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onWalletBalance}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onWalletBalance}>
             <svg
               width="14"
               height="14"
@@ -211,7 +211,7 @@ export function WalletButtonTemplate({
             </svg>
             Wallet balance
           </button>
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onTxHistory}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onTxHistory}>
             <svg
               width="14"
               height="14"
@@ -230,9 +230,9 @@ export function WalletButtonTemplate({
             </svg>
             Transaction history
           </button>
-          <div className="pollar-wallet-dropdown-divider" />
+          <div className="chettapay-wallet-dropdown-divider" />
           {/* Buy / Sell (ramp) */}
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onRamp}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onRamp}>
             <svg
               width="14"
               height="14"
@@ -251,7 +251,7 @@ export function WalletButtonTemplate({
             Buy / Sell
           </button>
           {/* Identity verification */}
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onKyc}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onKyc}>
             <svg
               width="14"
               height="14"
@@ -268,7 +268,7 @@ export function WalletButtonTemplate({
             </svg>
             Identity verification
           </button>
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onDistributionRules}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onDistributionRules}>
             <svg
               width="14"
               height="14"
@@ -287,7 +287,7 @@ export function WalletButtonTemplate({
             </svg>
             Distribution rules
           </button>
-          <button className="pollar-wallet-dropdown-item" style={{ color: itemColor }} onClick={onSessions}>
+          <button className="chettapay-wallet-dropdown-item" style={{ color: itemColor }} onClick={onSessions}>
             <svg
               width="14"
               height="14"
@@ -304,8 +304,8 @@ export function WalletButtonTemplate({
             </svg>
             Active sessions
           </button>
-          <div className="pollar-wallet-dropdown-divider" />
-          <button className="pollar-wallet-dropdown-item pollar-danger" onClick={onLogout}>
+          <div className="chettapay-wallet-dropdown-divider" />
+          <button className="chettapay-wallet-dropdown-item chettapay-danger" onClick={onLogout}>
             <svg
               width="14"
               height="14"

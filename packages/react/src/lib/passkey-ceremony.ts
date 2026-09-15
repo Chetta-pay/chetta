@@ -1,4 +1,4 @@
-import type { PasskeyCeremony, PasskeySigner } from '@pollar/core';
+import type { PasskeyCeremony, PasskeySigner } from '@chettapay/core';
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 
 // hex -> base64url, for passing the raw auth digest as the WebAuthn challenge.

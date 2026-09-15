@@ -11,7 +11,7 @@ import { LobstrModule } from '@creit.tech/stellar-wallets-kit/modules/lobstr';
 import { OneKeyModule } from '@creit.tech/stellar-wallets-kit/modules/onekey';
 import { RabetModule } from '@creit.tech/stellar-wallets-kit/modules/rabet';
 import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
-import { createLogger, type LogLevel, type PollarLogger, type WalletAdapter } from '@pollar/core';
+import { createLogger, type LogLevel, type ChettaPayLogger, type WalletAdapter } from '@chettapay/core';
 import { StellarWalletsKitAdapter } from './StellarWalletsKitAdapter';
 
 /**
@@ -78,15 +78,15 @@ export interface StellarWalletsKitAdapterOptions {
    */
   logLevel?: LogLevel;
   /** Sink for logs. Defaults to the global `console`. */
-  logger?: PollarLogger;
+  logger?: ChettaPayLogger;
 }
 
 let initialised = false;
 let initNetwork: Networks | null = null;
-let _log: PollarLogger = console;
+let _log: ChettaPayLogger = console;
 
 /** The kit's configured logger (set at init). Used by the adapter + picker. */
-export function getKitLogger(): PollarLogger {
+export function getKitLogger(): ChettaPayLogger {
   return _log;
 }
 
@@ -154,16 +154,16 @@ export function getInitNetwork(): Networks {
 
 /**
  * Build the list of {@link WalletAdapter}s backed by Stellar Wallets Kit - one
- * per kit module - to pass to `PollarClientConfig.walletAdapters`. Each adapter
+ * per kit module - to pass to `ChettaPayClientConfig.walletAdapters`. Each adapter
  * carries the module's name/icon as its button `meta`. `picker.wallets` (subset)
  * and `picker.labels` (overrides) are honored if provided.
  *
  * @example
  * ```ts
- * import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+ * import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
  * import { Networks } from '@creit.tech/stellar-wallets-kit';
  *
- * const client = new PollarClient({
+ * const client = new ChettaPayClient({
  *   apiKey: '...',
  *   walletAdapters: stellarWalletsKitAdapters({ network: Networks.PUBLIC }),
  * });
@@ -174,7 +174,7 @@ export function stellarWalletsKitAdapters(options: StellarWalletsKitAdapterOptio
   // extensions and touches `window` both at `StellarWalletsKit.init()` and in its
   // wallet modules' constructors - there are no wallets server-side, so return an
   // empty list instead of crashing during Next.js/Remix SSR. The real adapters
-  // are built when this re-runs on the client (so build your PollarClient and
+  // are built when this re-runs on the client (so build your ChettaPayClient and
   // render the wallet UI on the client, e.g. behind a mounted flag or
   // `dynamic(..., { ssr: false })`).
   if (typeof window === 'undefined') return [];

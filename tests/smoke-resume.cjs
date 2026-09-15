@@ -1,10 +1,10 @@
-// @pollar smoke test — session resume across "page loads" (DPoP key binding).
+// @chettapay smoke test — session resume across "page loads" (DPoP key binding).
 //
 // Run with `node tests/smoke-resume.cjs` after `npm run build`. Regression
 // guards for the 0.11.2 field bug where a session died on the first reload
 // with `SDK_AUTH_DPOP_INVALID reason:"thumbprint-mismatch"`:
 //
-//  1. A fresh PollarClient over the SAME persisted storage + IndexedDB resumes
+//  1. A fresh ChettaPayClient over the SAME persisted storage + IndexedDB resumes
 //     the session — the resume proof's JWK thumbprint equals the `cnf.jkt` the
 //     server bound at login — and concurrent resume triggers (visibility flaps)
 //     coalesce into ONE `/auth/session/resume`.
@@ -262,7 +262,7 @@ function makeVisibility() {
   {
     const apiKey = 'pk_smoke_resume_ok';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
     check('login reaches authenticated + verified', a.getAuthState().verified === true);
@@ -274,7 +274,7 @@ function makeVisibility() {
     resumeHits = 0;
     resumeDelayMs = 50;
     const vis = makeVisibility();
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', visibilityProvider: vis.provider });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', visibilityProvider: vis.provider });
     await b.ready();
     // Flap visibility while the startup resume is in flight — these used to
     // abort + restart it, turning one resume into a burst of three.
@@ -298,11 +298,11 @@ function makeVisibility() {
     console.log('\n── 2. A genuinely revoked session still clears ───────────────');
     b.destroy();
     resumeMode = 'revoked-403';
-    const c = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const c = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await c.ready();
     await waitFor(() => c.getAuthState().step === 'idle');
     check('revoked session converges to idle', c.getAuthState().step === 'idle');
-    check('  session removed from storage', (await storage.get(`pollar:${c.apiKeyHash}:session`)) == null);
+    check('  session removed from storage', (await storage.get(`chettapay:${c.apiKeyHash}:session`)) == null);
     console.log('\n── 5a. Failure-path clear does NOT rotate the keypair ────────');
     check(
       'keypair survives the revoked-session clear',
@@ -333,7 +333,7 @@ function makeVisibility() {
         warn: (...a) => warnings.push(a.join(' ')),
         error: (...a) => warnings.push(a.join(' ')),
       };
-      const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
+      const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
       await a.ready();
       await login(a);
       check('login still works with a non-persistable keypair', a.getAuthState().verified === true);
@@ -346,14 +346,14 @@ function makeVisibility() {
       a.destroy();
       resumeHits = 0;
       const states = [];
-      const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
+      const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
       b.onAuthStateChange((s) => states.push(s.step));
       await b.ready();
       await waitFor(() => b.getAuthState().step === 'idle');
       check('doomed session is cleared locally (idle)', b.getAuthState().step === 'idle');
       check('  no resume round trip was attempted (dpopJkt precheck)', resumeHits === 0, `hits=${resumeHits}`);
       check('  no phantom authenticated state was emitted', !states.includes('authenticated'), `states=${states.join(',')}`);
-      check('  session removed from storage', (await storage.get(`pollar:${b.apiKeyHash}:session`)) == null);
+      check('  session removed from storage', (await storage.get(`chettapay:${b.apiKeyHash}:session`)) == null);
       b.destroy();
     } finally {
       globalThis.indexedDB = savedIdb;
@@ -388,7 +388,7 @@ function makeVisibility() {
   {
     const apiKey = 'pk_smoke_resume_backoff';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
     a.destroy();
@@ -396,7 +396,7 @@ function makeVisibility() {
     resumeMode = 'error-500';
     resumeHits = 0;
     const vis = makeVisibility();
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', visibilityProvider: vis.provider });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', visibilityProvider: vis.provider });
     await b.ready();
     await waitFor(() => resumeHits >= 1);
     await sleep(50); // let the failure register and arm the backoff
@@ -417,12 +417,12 @@ function makeVisibility() {
     // the fresh session arrives, not clear it as a binding mismatch.
     const apiKey = 'pk_smoke_resume_xtab';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
-    const sessionKey = `pollar:${a.apiKeyHash}:session`;
+    const sessionKey = `chettapay:${a.apiKeyHash}:session`;
 
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await b.ready(); // the storage handler registers inside async _initialize
     const bHandler = storageHandlers.at(-1);
     await waitFor(() => b.getAuthState().step === 'authenticated' && b.getAuthState().verified === true);
@@ -452,7 +452,7 @@ function makeVisibility() {
   {
     const apiKey = 'pk_smoke_resume_logoutrace';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     serverBoundJkt = null;
     loginDelayMs = 300; // hold the /auth/login response so logout lands mid-flight
@@ -465,7 +465,7 @@ function makeVisibility() {
     await a.logout(); // user logs out while the login response is still pending
     await sleep(500); // let the held login response land
     loginDelayMs = 0;
-    const sessionKey = `pollar:${a.apiKeyHash}:session`;
+    const sessionKey = `chettapay:${a.apiKeyHash}:session`;
     check('state stays idle after the login response lands', a.getAuthState().step === 'idle', a.getAuthState().step);
     check('  no session row was resurrected in storage', (await storage.get(sessionKey)) == null);
     a.destroy();
@@ -486,10 +486,10 @@ function makeVisibility() {
       getThumbprint: async () => 'STORE-TIME-KEY-NOT-THE-BOUND-ONE',
       sign: (payload) => real.sign(payload),
     };
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', keyManager: lying });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', keyManager: lying });
     await a.ready();
     await login(a);
-    const stored = JSON.parse(await storage.get(`pollar:${a.apiKeyHash}:session`));
+    const stored = JSON.parse(await storage.get(`chettapay:${a.apiKeyHash}:session`));
     check('persisted dpopJkt === server cnf.jkt (bound key wins)', stored.dpopJkt === serverBoundJkt, stored.dpopJkt);
     a.destroy();
   }
@@ -527,13 +527,13 @@ function makeVisibility() {
   console.log('\n── 10. logout() does not destroy a session created during it ──');
   {
     // `logout()` awaits the server call, and consumers routinely do not await it
-    // (@pollar/react fires it from the login modal and the wallet button, then
+    // (@chettapay/react fires it from the login modal and the wallet button, then
     // opens the login UI). A whole new login can land inside that window: the
     // teardown must recognize it and leave it alone, or the user "logs in" and
     // is thrown straight back out with the key that session was bound to gone.
     const apiKey = 'pk_smoke_resume_logout_race';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
 
@@ -547,7 +547,7 @@ function makeVisibility() {
     logoutDelayMs = 0;
 
     check('the session created during the logout survives', a.getAuthState().step === 'authenticated', a.getAuthState().step);
-    const row = await storage.get(`pollar:${a.apiKeyHash}:session`);
+    const row = await storage.get(`chettapay:${a.apiKeyHash}:session`);
     check('  its row is still in storage', row != null);
     check(
       '  the keypair it is bound to was not rotated away',
@@ -564,13 +564,13 @@ function makeVisibility() {
     // key the current row's session is bound to.
     const apiKey = 'pk_smoke_resume_logout_owner';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
     const sharedJkt = await new sdk.WebCryptoKeyManager(apiKey).getThumbprint();
 
     // Another document logs in later and becomes the owner of the shared row.
-    const sessionKey = `pollar:${a.apiKeyHash}:session`;
+    const sessionKey = `chettapay:${a.apiKeyHash}:session`;
     const owned = JSON.parse(await storage.get(sessionKey));
     owned.clientSessionId = 'cs_other_document';
     await storage.set(sessionKey, JSON.stringify(owned));
@@ -596,10 +596,10 @@ function makeVisibility() {
     // keep its session and re-persist the row after the other logged out.
     const apiKey = 'pk_smoke_resume_siblings';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await b.ready();
     await waitFor(() => b.getAuthState().step === 'authenticated');
     check(
@@ -612,7 +612,7 @@ function makeVisibility() {
     check('  the sibling converges to idle', b.getAuthState().step === 'idle', b.getAuthState().step);
     await b.refresh().catch(() => {});
     await sleep(30);
-    check('  and does not re-persist the row', (await storage.get(`pollar:${b.apiKeyHash}:session`)) == null);
+    check('  and does not re-persist the row', (await storage.get(`chettapay:${b.apiKeyHash}:session`)) == null);
     a.destroy();
     b.destroy();
   }
@@ -623,26 +623,26 @@ function makeVisibility() {
     // authenticated request of EVERY page load is a guaranteed 401 challenge.
     const apiKey = 'pk_smoke_resume_nonce';
     const storage = sdk.createMemoryAdapter();
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await a.ready();
     await login(a);
     a.destroy();
     // A login alone never signs a proof (its calls are pre-auth), so the first
     // nonce arrives on the first RELOAD's resume: challenge + retry = 2 hits.
     resumeHits = 0;
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await b.ready();
     await waitFor(() => b.getAuthState().verified === true);
     check('first reload pays the challenge and learns a nonce', resumeHits === 2, `hits=${resumeHits}`);
     check(
       '  the nonce is persisted under the apiKeyHash namespace',
-      (await storage.get(`pollar:${b.apiKeyHash}:dpopNonce`)) === 'N1',
+      (await storage.get(`chettapay:${b.apiKeyHash}:dpopNonce`)) === 'N1',
     );
     b.destroy();
 
     // Every reload after that signs its first proof with the stored nonce.
     resumeHits = 0;
-    const c = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test' });
+    const c = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test' });
     await c.ready();
     await waitFor(() => c.getAuthState().verified === true);
     check('  the NEXT reload resumes in ONE hit (challenge skipped)', resumeHits === 1, `hits=${resumeHits}`);
@@ -678,7 +678,7 @@ function makeVisibility() {
     const kmJkt = await new sdk.WebCryptoKeyManager(apiKey).getThumbprint();
     serverBoundJkt = kmJkt;
     await storage.set(
-      `pollar:${await hashKey(apiKey)}:session`,
+      `chettapay:${await hashKey(apiKey)}:session`,
       JSON.stringify({
         clientSessionId: 'cs_ext',
         userId: 'u1',
@@ -689,9 +689,9 @@ function makeVisibility() {
         wallet: { type: 'external', address: 'GMOCK' },
       }),
     );
-    await storage.set(`pollar:${await hashKey(apiKey)}:walletType`, 'mockwallet');
+    await storage.set(`chettapay:${await hashKey(apiKey)}:walletType`, 'mockwallet');
 
-    const a = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
+    const a = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
     await a.ready();
     await waitFor(() => a.getAuthState().step === 'authenticated' && a.getAuthState().verified === true);
     check('external session restored with the adapter attached', a.getWalletType() === 'mockwallet', a.getWalletType());
@@ -714,12 +714,12 @@ function makeVisibility() {
     check('  (baseline) the un-raced logout ran to completion', a.getAuthState().step === 'idle');
     a.destroy();
 
-    const b = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
+    const b = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
     await b.ready();
     const kmJkt2 = await new sdk.WebCryptoKeyManager(apiKey).getThumbprint();
     serverBoundJkt = kmJkt2;
     await storage.set(
-      `pollar:${b.apiKeyHash}:session`,
+      `chettapay:${b.apiKeyHash}:session`,
       JSON.stringify({
         clientSessionId: 'cs_ext2',
         userId: 'u1',
@@ -730,9 +730,9 @@ function makeVisibility() {
         wallet: { type: 'external', address: 'GMOCK' },
       }),
     );
-    await storage.set(`pollar:${b.apiKeyHash}:walletType`, 'mockwallet');
+    await storage.set(`chettapay:${b.apiKeyHash}:walletType`, 'mockwallet');
     b.destroy();
-    const c = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
+    const c = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', walletAdapters: [adapter] });
     await c.ready();
     await waitFor(() => c.getAuthState().step === 'authenticated' && c.getAuthState().verified === true);
     disconnects = 0;

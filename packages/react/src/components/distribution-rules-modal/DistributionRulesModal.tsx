@@ -1,8 +1,8 @@
 'use client';
 
-import { DistributionRule, DistributionRulesState } from '@pollar/core';
+import { DistributionRule, DistributionRulesState } from '@chettapay/core';
 import { useCallback, useEffect, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import '../shared.css';
 import './DistributionRulesModal.css';
 import { DistributionRulesModalTemplate } from './DistributionRulesModalTemplate';
@@ -13,7 +13,7 @@ interface DistributionRulesModalProps {
 }
 
 export function DistributionRulesModal({ onClose }: DistributionRulesModalProps) {
-  const { getClient, styles } = usePollar();
+  const { getClient, styles } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
 
   const [state, setState] = useState<DistributionRulesState>({ step: 'idle' });
@@ -63,7 +63,7 @@ export function DistributionRulesModal({ onClose }: DistributionRulesModalProps)
   );
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <DistributionRulesModalTemplate
         theme={theme}
         accentColor={accentColor}

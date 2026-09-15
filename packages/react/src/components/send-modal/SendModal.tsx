@@ -1,8 +1,8 @@
 'use client';
 
-import { toBaseUnits, WalletBalanceRecord, WalletChain } from '@pollar/core';
+import { toBaseUnits, WalletBalanceRecord, WalletChain } from '@chettapay/core';
 import { useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
 import { addressForChain, resolveChain } from '../ChainSelect';
 import '../shared.css';
@@ -35,9 +35,9 @@ export function SendModal({ onClose }: SendModalProps) {
     wallets,
     network,
     styles,
-  } = usePollar();
+  } = useChettaPay();
   // External-wallet signing-adapter id (freighter/albedo) drives the wallet logo;
-  // null for embedded/smart, which fall back to the Pollar logo.
+  // null for embedded/smart, which fall back to the ChettaPay logo.
   const walletType = wallet?.custody === 'external' ? wallet.provider : null;
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
 
@@ -236,7 +236,7 @@ export function SendModal({ onClose }: SendModalProps) {
   }
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
       <SendModalTemplate
         theme={theme}
         accentColor={accentColor}

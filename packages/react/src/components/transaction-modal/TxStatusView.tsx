@@ -1,7 +1,7 @@
 'use client';
 
-import { TransactionState, WalletId, WalletType } from '@pollar/core';
-import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_POLLAR } from '../../constants';
+import { TransactionState, WalletId, WalletType } from '@chettapay/core';
+import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_CHETTAPAY } from '../../constants';
 import { ModalStatusBanner } from '../commons';
 
 const STATUS_MESSAGES: Record<TransactionState['step'], string> = {
@@ -75,36 +75,37 @@ export function TxStatusView({
   const showDetails = buildData !== null && SHOW_DETAILS_STEPS.has(transaction.step);
 
   const walletImg =
-    walletType === WalletType.FREIGHTER ? LOGO_FREIGHTER : walletType === WalletType.ALBEDO ? LOGO_ALBEDO : LOGO_POLLAR;
+    walletType === WalletType.FREIGHTER ? LOGO_FREIGHTER : walletType === WalletType.ALBEDO ? LOGO_ALBEDO : LOGO_CHETTAPAY;
 
-  const walletAlt = walletType === WalletType.FREIGHTER ? 'Freighter' : walletType === WalletType.ALBEDO ? 'Albedo' : 'Pollar';
+  const walletAlt =
+    walletType === WalletType.FREIGHTER ? 'Freighter' : walletType === WalletType.ALBEDO ? 'Albedo' : 'ChettaPay';
 
   return (
     <>
       {showDetails && buildData && (
         <>
-          <div className="pollar-tx-summary">
-            <p className="pollar-tx-summary-title">Details</p>
-            <ul className="pollar-tx-summary-lines">
+          <div className="chettapay-tx-summary">
+            <p className="chettapay-tx-summary-title">Details</p>
+            <ul className="chettapay-tx-summary-lines">
               {buildData.summary.lines.map((line, i) => (
-                <li key={i} className="pollar-tx-summary-line">
+                <li key={i} className="chettapay-tx-summary-line">
                   {line}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="pollar-tx-meta">
-            <div className="pollar-tx-meta-item">
-              <span className="pollar-tx-meta-label">Network</span>
-              <span className="pollar-tx-meta-value">{buildData.summary.network}</span>
+          <div className="chettapay-tx-meta">
+            <div className="chettapay-tx-meta-item">
+              <span className="chettapay-tx-meta-label">Network</span>
+              <span className="chettapay-tx-meta-value">{buildData.summary.network}</span>
             </div>
-            <div className="pollar-tx-meta-item">
-              <span className="pollar-tx-meta-label">Fee</span>
-              <span className="pollar-tx-meta-value">{buildData.summary.fee}</span>
+            <div className="chettapay-tx-meta-item">
+              <span className="chettapay-tx-meta-label">Fee</span>
+              <span className="chettapay-tx-meta-value">{buildData.summary.fee}</span>
             </div>
           </div>
-          <div className="pollar-tx-xdr">
-            <button className="pollar-tx-xdr-toggle" onClick={onToggleXdr}>
+          <div className="chettapay-tx-xdr">
+            <button className="chettapay-tx-xdr-toggle" onClick={onToggleXdr}>
               <svg
                 width="12"
                 height="12"
@@ -117,42 +118,46 @@ export function TxStatusView({
               </svg>
               Raw transaction (XDR)
             </button>
-            {showXdr && <pre className="pollar-tx-xdr-content">{buildData.unsignedXdr}</pre>}
+            {showXdr && <pre className="chettapay-tx-xdr-content">{buildData.unsignedXdr}</pre>}
           </div>
         </>
       )}
 
       {isError && errorDetails && (
-        <div className="pollar-tx-error-details">
-          <p className="pollar-tx-error-details-label">Error details</p>
-          <pre className="pollar-tx-error-details-content">{errorDetails}</pre>
+        <div className="chettapay-tx-error-details">
+          <p className="chettapay-tx-error-details-label">Error details</p>
+          <pre className="chettapay-tx-error-details-content">{errorDetails}</pre>
         </div>
       )}
 
       {isBuilt && (
-        <button className="pollar-btn-primary pollar-tx-sign-btn" onClick={onSignAndSend}>
+        <button className="chettapay-btn-primary chettapay-tx-sign-btn" onClick={onSignAndSend}>
           Sign &amp; Send
         </button>
       )}
 
       {(isInFlight || isSuccess || isError) && (
-        <div className="pollar-tx-wallet-spinner">
-          <div className="pollar-tx-spinner-ring">
+        <div className="chettapay-tx-wallet-spinner">
+          <div className="chettapay-tx-spinner-ring">
             <svg
               viewBox="0 0 88 88"
               width="88"
               height="88"
-              className={`pollar-tx-spinner-svg${isInFlight ? ' pollar-tx-spinner-rotating' : ''}`}
+              className={`chettapay-tx-spinner-svg${isInFlight ? ' chettapay-tx-spinner-rotating' : ''}`}
               aria-hidden
             >
-              <circle cx="44" cy="44" r="36" fill="none" stroke="var(--pollar-border)" strokeWidth="3" />
+              <circle cx="44" cy="44" r="36" fill="none" stroke="var(--chettapay-border)" strokeWidth="3" />
               <circle
                 cx="44"
                 cy="44"
                 r="36"
                 fill="none"
                 stroke={
-                  isSuccess ? 'var(--pollar-success-text)' : isError ? 'var(--pollar-error-text)' : 'var(--pollar-accent)'
+                  isSuccess
+                    ? 'var(--chettapay-success-text)'
+                    : isError
+                      ? 'var(--chettapay-error-text)'
+                      : 'var(--chettapay-accent)'
                 }
                 strokeWidth="3"
                 strokeLinecap="round"
@@ -161,13 +166,13 @@ export function TxStatusView({
                 style={{ transition: isInFlight ? 'none' : 'stroke 400ms, stroke-dasharray 400ms' }}
               />
             </svg>
-            <div className="pollar-tx-wallet-icon">
-              <img src={walletImg} alt={walletAlt} className="pollar-tx-wallet-img" />
+            <div className="chettapay-tx-wallet-icon">
+              <img src={walletImg} alt={walletAlt} className="chettapay-tx-wallet-img" />
             </div>
           </div>
 
           {isInFlight && (
-            <p className="pollar-tx-spinner-label">
+            <p className="chettapay-tx-spinner-label">
               {walletType === WalletType.FREIGHTER
                 ? 'Waiting for Freighter…'
                 : walletType === WalletType.ALBEDO
@@ -177,7 +182,7 @@ export function TxStatusView({
           )}
 
           {isError && onRetry && 'buildData' in transaction && transaction.buildData && (
-            <button className="pollar-btn-secondary pollar-tx-retry-btn" onClick={onRetry}>
+            <button className="chettapay-btn-secondary chettapay-tx-retry-btn" onClick={onRetry}>
               Try again
             </button>
           )}
@@ -185,11 +190,11 @@ export function TxStatusView({
       )}
 
       {isSuccess && hash && (
-        <div className="pollar-tx-result">
-          <span className="pollar-tx-result-label">Transaction hash</span>
-          <span className="pollar-tx-result-hash">{hash}</span>
-          <div className="pollar-tx-result-actions">
-            <button className="pollar-tx-result-btn" onClick={onCopyHash}>
+        <div className="chettapay-tx-result">
+          <span className="chettapay-tx-result-label">Transaction hash</span>
+          <span className="chettapay-tx-result-hash">{hash}</span>
+          <div className="chettapay-tx-result-actions">
+            <button className="chettapay-tx-result-btn" onClick={onCopyHash}>
               {copied ? (
                 <>
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -220,7 +225,7 @@ export function TxStatusView({
               )}
             </button>
             {explorerUrl && (
-              <a className="pollar-tx-result-btn" href={explorerUrl} target="_blank" rel="noopener noreferrer">
+              <a className="chettapay-tx-result-btn" href={explorerUrl} target="_blank" rel="noopener noreferrer">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden>
                   <path
                     d="M5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V8"
@@ -244,7 +249,7 @@ export function TxStatusView({
       )}
 
       {isSuccess && (
-        <button className="pollar-btn-primary pollar-tx-sign-btn" onClick={onDone}>
+        <button className="chettapay-btn-primary chettapay-tx-sign-btn" onClick={onDone}>
           Done
         </button>
       )}

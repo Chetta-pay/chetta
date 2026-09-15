@@ -30,7 +30,7 @@ function severOpener(popup: Window | null): void {
  * so popup blockers - which only honor `window.open` inside the original
  * user-gesture tick - don't swallow it, then navigate it to the OAuth URL.
  *
- * React Native consumers replace this via `PollarClientConfig.openAuthUrl`
+ * React Native consumers replace this via `ChettaPayClientConfig.openAuthUrl`
  * (typically wrapping `expo-web-browser`'s `openAuthSessionAsync`).
  */
 export const defaultWebOAuthOpener: AuthUrlOpener = async ({ getUrl }) => {

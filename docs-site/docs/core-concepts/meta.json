@@ -1,0 +1,11 @@
+{
+  "title": "Core Concepts",
+  "description": "Architecture, funding modes, Stellar primitives, security model, and transaction history.",
+  "pages": [
+    "architecture",
+    "funding-modes",
+    "stellar-primitives",
+    "security-model",
+    "transaction-history"
+  ]
+}

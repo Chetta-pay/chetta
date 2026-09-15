@@ -1,8 +1,8 @@
 'use client';
 
-import { WalletChain } from '@pollar/core';
+import { WalletChain } from '@chettapay/core';
 import { useEffect, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
 import { addressForChain } from '../ChainSelect';
 import '../shared.css';
@@ -15,7 +15,7 @@ interface WalletBalanceModalProps {
 }
 
 export function WalletBalanceModal({ onClose }: WalletBalanceModalProps) {
-  const { walletBalance, refreshWalletBalance, wallets, network, styles } = usePollar();
+  const { walletBalance, refreshWalletBalance, wallets, network, styles } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
 
   const { chains } = useChains();
@@ -33,7 +33,7 @@ export function WalletBalanceModal({ onClose }: WalletBalanceModalProps) {
   }, [refreshWalletBalance]);
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <WalletBalanceModalTemplate
         theme={theme}
         accentColor={accentColor}

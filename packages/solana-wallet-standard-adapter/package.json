@@ -1,13 +1,13 @@
 {
-  "name": "@pollar/solana-wallet-standard-adapter",
+  "name": "@chettapay/solana-wallet-standard-adapter",
   "version": "0.11.2",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pollar-xyz/pollar.git",
+    "url": "git+https://github.com/Chetta-pay/chetta.git",
     "directory": "packages/solana-wallet-standard-adapter"
   },
-  "description": "Solana Wallet Standard adapter for @pollar/core - connect user-controlled Solana wallets (Phantom, Solflare, Backpack, ...) via the Wallet Standard (@wallet-standard/* + @solana/wallet-standard-features), with SIWS login, without bundling any wallet SDK into @pollar/core.",
+  "description": "Solana Wallet Standard adapter for @chettapay/core - connect user-controlled Solana wallets (Phantom, Solflare, Backpack, ...) via the Wallet Standard (@wallet-standard/* + @solana/wallet-standard-features), with SIWS login, without bundling any wallet SDK into @chettapay/core.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -38,7 +38,7 @@
     "node": ">=20"
   },
   "peerDependencies": {
-    "@pollar/core": "^0.11.2"
+    "@chettapay/core": "^0.11.2"
   },
   "dependencies": {
     "@solana/wallet-standard-features": "^1.4.0",
@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@pollar/core": "^0.11.2",
+    "@chettapay/core": "^0.11.2",
     "eslint": "^10.5.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",

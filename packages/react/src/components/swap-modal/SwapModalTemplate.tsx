@@ -1,9 +1,9 @@
 'use client';
 
-import { SwapProvider, SwapQuote, SwapQuoteParams, TransactionState, WalletId } from '@pollar/core';
+import { SwapProvider, SwapQuote, SwapQuoteParams, TransactionState, WalletId } from '@chettapay/core';
 import { useState } from 'react';
 import { AssetSelect } from '../AssetSelect';
-import { PollarModalFooter } from '../commons';
+import { ChettaPayModalFooter } from '../commons';
 import { TxStatusView } from '../transaction-modal/TxStatusView';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
@@ -152,28 +152,28 @@ export function SwapModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-send-modal"
+      className="chettapay-modal-card chettapay-send-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pollar-modal-header">
-        <div className="pollar-send-header-left">
+      <div className="chettapay-modal-header">
+        <div className="chettapay-send-header-left">
           {showBack && (
-            <button type="button" className="pollar-modal-close" onClick={onBack} aria-label="Back">
+            <button type="button" className="chettapay-modal-close" onClick={onBack} aria-label="Back">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )}
-          <h2 className="pollar-modal-title">{title}</h2>
+          <h2 className="chettapay-modal-title">{title}</h2>
         </div>
         {!isInProgress && (
-          <div className="pollar-modal-header-actions">
+          <div className="chettapay-modal-header-actions">
             {step === 'form' && (
               <button
                 type="button"
-                className="pollar-modal-close"
+                className="chettapay-modal-close"
                 onClick={onRefresh}
                 disabled={configLoading || isLoadingData}
                 aria-label="Refresh"
@@ -190,7 +190,7 @@ export function SwapModalTemplate({
                 </svg>
               </button>
             )}
-            <button type="button" className="pollar-modal-close" onClick={onClose} aria-label="Close">
+            <button type="button" className="chettapay-modal-close" onClick={onClose} aria-label="Close">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -200,7 +200,7 @@ export function SwapModalTemplate({
       </div>
 
       {step === 'form' && !configLoading && swapUnavailable && (
-        <div className="pollar-modal-error">Swap is not available for this app.</div>
+        <div className="chettapay-modal-error">Swap is not available for this app.</div>
       )}
 
       {/* Keep the form visible while the config loads - disable the inputs rather
@@ -208,7 +208,7 @@ export function SwapModalTemplate({
       {step === 'form' && !swapUnavailable && (
         <>
           {smartUnsupported && (
-            <div className="pollar-modal-error">Swaps are not yet available for smart (passkey) wallets.</div>
+            <div className="chettapay-modal-error">Swaps are not yet available for smart (passkey) wallets.</div>
           )}
 
           {/* Sell asset */}
@@ -231,17 +231,17 @@ export function SwapModalTemplate({
           />
 
           {/* Amount */}
-          <div className="pollar-send-field">
-            <div className="pollar-send-label-row">
-              <label className="pollar-send-label">Amount</label>
+          <div className="chettapay-send-field">
+            <div className="chettapay-send-label-row">
+              <label className="chettapay-send-label">Amount</label>
               {selectedSell?.available !== undefined && (
-                <span className="pollar-send-hint">
+                <span className="chettapay-send-hint">
                   Available: {formatAmount(selectedSell.available)} {selectedSell.code}
                 </span>
               )}
             </div>
             <input
-              className="pollar-input"
+              className="chettapay-input"
               type="text"
               inputMode="decimal"
               placeholder="0.00"
@@ -269,29 +269,29 @@ export function SwapModalTemplate({
             }}
           >
             {customOpen ? (
-              <div className="pollar-swap-custom">
+              <div className="chettapay-swap-custom">
                 <input
-                  className="pollar-input"
+                  className="chettapay-input"
                   type="text"
                   placeholder="Code (e.g. USDC)"
                   value={customCode}
                   onChange={(e) => setCustomCode(e.target.value)}
                 />
                 <input
-                  className="pollar-input"
+                  className="chettapay-input"
                   type="text"
                   placeholder="Issuer (G...)"
                   value={customIssuer}
                   onChange={(e) => setCustomIssuer(e.target.value)}
                 />
-                {customError && <div className="pollar-modal-error">{customError}</div>}
-                <div className="pollar-swap-custom-actions">
-                  <button type="button" className="pollar-btn-primary" onClick={submitCustomToken}>
+                {customError && <div className="chettapay-modal-error">{customError}</div>}
+                <div className="chettapay-swap-custom-actions">
+                  <button type="button" className="chettapay-btn-primary" onClick={submitCustomToken}>
                     Add token
                   </button>
                   <button
                     type="button"
-                    className="pollar-swap-custom-cancel"
+                    className="chettapay-swap-custom-cancel"
                     onClick={() => {
                       setCustomOpen(false);
                       setCustomError('');
@@ -304,7 +304,7 @@ export function SwapModalTemplate({
             ) : (
               <button
                 type="button"
-                className="pollar-swap-custom-toggle"
+                className="chettapay-swap-custom-toggle"
                 disabled={configLoading}
                 onClick={() => setCustomOpen(true)}
               >
@@ -314,16 +314,16 @@ export function SwapModalTemplate({
           </AssetSelect>
 
           {/* Route selector */}
-          <div className="pollar-send-field">
-            <label className="pollar-send-label">Route</label>
+          <div className="chettapay-send-field">
+            <label className="chettapay-send-label">Route</label>
             {configLoading ? (
-              <div className="pollar-input pollar-select-loading">
-                <span className="pollar-spinner pollar-spinner-sm" />
+              <div className="chettapay-input chettapay-select-loading">
+                <span className="chettapay-spinner chettapay-spinner-sm" />
                 <span>Loading routes…</span>
               </div>
             ) : (
               <select
-                className="pollar-input pollar-send-select"
+                className="chettapay-input chettapay-send-select"
                 value={provider}
                 disabled={providers.length === 0}
                 onChange={(e) => onProviderChange(e.target.value as SwapProvider)}
@@ -343,51 +343,51 @@ export function SwapModalTemplate({
 
           {/* Quote panel */}
           {quoteLoading && (
-            <div className="pollar-send-hint pollar-inline-loading">
-              <span className="pollar-spinner pollar-spinner-sm" />
+            <div className="chettapay-send-hint chettapay-inline-loading">
+              <span className="chettapay-spinner chettapay-spinner-sm" />
               Fetching best price…
             </div>
           )}
-          {!quoteLoading && quoteError && <div className="pollar-modal-error">{quoteError}</div>}
+          {!quoteLoading && quoteError && <div className="chettapay-modal-error">{quoteError}</div>}
           {!quoteLoading && !quoteError && quote && selectedBuy && (
-            <div className="pollar-swap-quote">
-              <div className="pollar-swap-quote-row">
-                <span className="pollar-send-hint">You receive</span>
+            <div className="chettapay-swap-quote">
+              <div className="chettapay-swap-quote-row">
+                <span className="chettapay-send-hint">You receive</span>
                 <span>
                   ~ {formatAmount(quote.amountOut)} {selectedBuy.code}
                 </span>
               </div>
-              <div className="pollar-swap-quote-row">
-                <span className="pollar-send-hint">Minimum received</span>
+              <div className="chettapay-swap-quote-row">
+                <span className="chettapay-send-hint">Minimum received</span>
                 <span>
                   {formatAmount(quote.minReceived)} {selectedBuy.code}
                 </span>
               </div>
-              <div className="pollar-swap-quote-row">
-                <span className="pollar-send-hint">Price impact</span>
+              <div className="chettapay-swap-quote-row">
+                <span className="chettapay-send-hint">Price impact</span>
                 <span>{quote.priceImpactPct}%</span>
               </div>
-              <div className="pollar-swap-quote-row">
-                <span className="pollar-send-hint">Route</span>
+              <div className="chettapay-swap-quote-row">
+                <span className="chettapay-send-hint">Route</span>
                 <span>{PROVIDER_LABELS[quote.provider]}</span>
               </div>
             </div>
           )}
           {!quoteLoading && !quoteError && !quote && selectedSell && selectedBuy && !!amount && (
-            <div className="pollar-send-hint">No route found for this pair.</div>
+            <div className="chettapay-send-hint">No route found for this pair.</div>
           )}
 
           {buyNeedsTrustline && selectedBuy && (
-            <div className="pollar-swap-trustline-notice">
+            <div className="chettapay-swap-trustline-notice">
               To receive {selectedBuy.code} your wallet needs a trustline. Swapping will create it first (~0.5 XLM reserve,
               refundable if you later remove it).
             </div>
           )}
 
-          {formError && <div className="pollar-modal-error">{formError}</div>}
+          {formError && <div className="chettapay-modal-error">{formError}</div>}
 
-          <div className="pollar-modal-actions">
-            <button className="pollar-btn-primary" onClick={onSwap} disabled={!canSwap}>
+          <div className="chettapay-modal-actions">
+            <button className="chettapay-btn-primary" onClick={onSwap} disabled={!canSwap}>
               {buyNeedsTrustline ? 'Create trustline & swap' : 'Swap'}
             </button>
           </div>
@@ -409,7 +409,7 @@ export function SwapModalTemplate({
         />
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

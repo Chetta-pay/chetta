@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { TxHistoryModalTemplate } from './TxHistoryModalUI'; // Bypassing cache
+import { defaultAccent } from '../../theme';
 
 export interface TxHistoryModalProps {
     onClose: () => void;
 }
 
 export function TxHistoryModal({ onClose }: TxHistoryModalProps) {
-    const { styles, txHistory, getClient } = usePollar();
-    const { theme = 'light', accentColor = '#005DB4' } = styles;
+    const { styles, txHistory, getClient } = useChettaPay();
+    const { theme = 'light', accentColor = defaultAccent(theme) } = styles;
 
     useEffect(() => {
         getClient().fetchTxHistory();

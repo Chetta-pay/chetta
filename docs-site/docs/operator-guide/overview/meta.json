@@ -1,0 +1,8 @@
+{
+  "title": "Overview",
+  "description": "Your app at a glance and the get-started checklist.",
+  "pages": [
+    "home",
+    "get-started"
+  ]
+}

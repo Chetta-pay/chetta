@@ -1,8 +1,8 @@
 'use client';
 
-import { type KycProvider, type KycStartResponse, type KycStatus as KycStatusValue } from '@pollar/core';
+import { type KycProvider, type KycStartResponse, type KycStatus as KycStatusValue } from '@chettapay/core';
 import { useCallback, useEffect, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import type { KycStep } from './KycModalTemplate';
 import { KycModalTemplate } from './KycModalTemplate';
 import '../shared.css';
@@ -20,7 +20,7 @@ interface KycModalProps {
 }
 
 export function KycModal({ onClose, country = 'MX', level = 'basic', onApproved }: KycModalProps) {
-  const { getClient, styles } = usePollar();
+  const { getClient, styles } = useChettaPay();
 
   const [step, setStep] = useState<KycStep>('select_provider');
   const [providers, setProviders] = useState<KycProvider[]>([]);
@@ -80,7 +80,7 @@ export function KycModal({ onClose, country = 'MX', level = 'basic', onApproved 
   }
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <KycModalTemplate
         theme={theme}
         accentColor={accentColor}

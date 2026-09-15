@@ -29,7 +29,7 @@ import { WalletType } from './types';
  * freighter-api v6 returns `{ ...data, error? }` on every call instead of the
  * bare values / thrown errors of v2. This helper turns that error envelope into
  * a thrown `Error` so the adapter keeps the same throw-on-failure contract the
- * rest of `@pollar/core` expects.
+ * rest of `@chettapay/core` expects.
  */
 function unwrap<T extends { error?: { message: string } }>(result: T, context: string): Omit<T, 'error'> {
   if (result.error) {

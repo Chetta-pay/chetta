@@ -1,11 +1,11 @@
-# Contributing to Pollar
+# Contributing to ChettaPay
 
-Thank you for your interest in contributing to Pollar. This document describes how to participate in the project effectively.
+Thank you for your interest in contributing to ChettaPay. This document describes how to participate in the project effectively.
 
 ## Table of contents
 
 - [Code of conduct](#code-of-conduct)
-- [What is Pollar?](#what-is-pollar)
+- [What is ChettaPay?](#what-is-chettapay)
 - [How to contribute](#how-to-contribute)
 - [Setting up the environment](#setting-up-the-environment)
 - [Development process](#development-process)
@@ -16,20 +16,20 @@ Thank you for your interest in contributing to Pollar. This document describes h
 
 This project is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold it in all your interactions with the project and the community.
 
-## What is Pollar?
+## What is ChettaPay?
 
-Pollar is authentication and transaction infrastructure for Stellar and Solana applications. This monorepo holds the published packages:
+ChettaPay is authentication and transaction infrastructure for Stellar and Solana applications. This monorepo holds the published packages:
 
-- **@pollar/core**: the framework-agnostic client (auth, wallets, transactions, ramps).
-- **@pollar/react**: provider, hooks and prebuilt modals on top of `@pollar/core`.
-- **@pollar/privy-adapter**, **@pollar/privy-server-adapter**: sign through a Privy wallet, client- or server-side.
-- **@pollar/stellar-wallets-kit-adapter**, **@pollar/accesly-adapter**, **@pollar/solana-wallet-standard-adapter**: connect external wallets.
+- **@chettapay/core**: the framework-agnostic client (auth, wallets, transactions, ramps).
+- **@chettapay/react**: provider, hooks and prebuilt modals on top of `@chettapay/core`.
+- **@chettapay/privy-adapter**, **@chettapay/privy-server-adapter**: sign through a Privy wallet, client- or server-side.
+- **@chettapay/stellar-wallets-kit-adapter**, **@chettapay/accesly-adapter**, **@chettapay/solana-wallet-standard-adapter**: connect external wallets.
 
 The project uses **npm workspaces** and **Turborepo** to manage packages.
 
 ## How to contribute
 
-- **Fix bugs**: Check open [issues](https://github.com/pollar-xyz/pollar/issues) or open a new one describing the problem.
+- **Fix bugs**: Check open [issues](https://github.com/Chetta-pay/chetta/issues) or open a new one describing the problem.
 - **Propose improvements**: Open an issue to discuss the idea before implementing large changes.
 - **Submit code**: Follow the [Pull requests](#pull-requests) flow below.
 
@@ -46,8 +46,8 @@ Steps:
 
 ```bash
 # Clone the repository
-git clone https://github.com/pollar-xyz/pollar.git
-cd pollar
+git clone https://github.com/Chetta-pay/chetta.git
+cd chettapay
 
 # Install dependencies (from the monorepo root)
 npm install
@@ -101,10 +101,10 @@ By submitting a pull request you agree that your contribution is licensed under 
 When opening an issue:
 
 - Use a descriptive title.
-- Include Node version, npm version, and the affected package version (`@pollar/core` or `@pollar/react`).
+- Include Node version, npm version, and the affected package version (`@chettapay/core` or `@chettapay/react`).
 - For bugs, include steps to reproduce.
 - For proposals, describe the use case and desired solution.
 
 ---
 
-Thank you for contributing to Pollar.
+Thank you for contributing to ChettaPay.

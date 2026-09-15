@@ -12,11 +12,11 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     treeshake: true,
-    external: ['react', 'react-native', '@pollar/core'],
+    external: ['react', 'react-native', '@chettapay/core'],
     esbuildOptions(options) {
         options.jsx = 'automatic';
     },
     define: {
-        __POLLAR_VERSION__: JSON.stringify(pkg.version),
+        __CHETTAPAY_VERSION__: JSON.stringify(pkg.version),
     }
 });

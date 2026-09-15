@@ -8,7 +8,7 @@
 // filtered by whatever is picked here.
 // -----------------------------------------------------------------------------
 
-import type { WalletChain, WalletInfo } from '@pollar/core';
+import type { WalletChain, WalletInfo } from '@chettapay/core';
 import './send-modal/SendModal.css';
 import './shared.css';
 
@@ -79,10 +79,10 @@ export function ChainSelect({ label = 'Network', value, options, onChange, disab
   if (options.length < 2) return null;
 
   return (
-    <div className="pollar-send-field pollar-chain-field">
-      <label className="pollar-send-label">{label}</label>
+    <div className="chettapay-send-field chettapay-chain-field">
+      <label className="chettapay-send-label">{label}</label>
       <select
-        className="pollar-input pollar-send-select"
+        className="chettapay-input chettapay-send-select"
         value={value ?? ''}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as WalletChain)}

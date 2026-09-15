@@ -9,9 +9,9 @@ export type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'debug';
 /**
  * Sink the SDK writes logs to. The global `console` already satisfies this
  * shape, so it's the default. Inject your own (pino, Sentry breadcrumbs, a test
- * spy...) via `PollarClientConfig.logger` to route SDK logs wherever you want.
+ * spy...) via `ChettaPayClientConfig.logger` to route SDK logs wherever you want.
  */
-export interface PollarLogger {
+export interface ChettaPayLogger {
   error(...args: unknown[]): void;
   warn(...args: unknown[]): void;
   info(...args: unknown[]): void;
@@ -22,13 +22,13 @@ const RANK: Record<LogLevel, number> = { silent: 0, error: 1, warn: 2, info: 3, 
 
 /**
  * Build a level-gated logger over a sink. The returned object has the same
- * method surface as {@link PollarLogger}; each call is silently dropped when its
+ * method surface as {@link ChettaPayLogger}; each call is silently dropped when its
  * level is more verbose than the configured `level`. Messages keep their own
- * `[PollarClient...]` prefixes, so this only adds filtering + sink routing.
+ * `[ChettaPayClient...]` prefixes, so this only adds filtering + sink routing.
  *
  * Defaults: `level = 'info'`, `sink = console`.
  */
-export function createLogger(level: LogLevel = 'info', sink: PollarLogger = console): PollarLogger {
+export function createLogger(level: LogLevel = 'info', sink: ChettaPayLogger = console): ChettaPayLogger {
   const threshold = RANK[level];
   const gate =
     (lvl: Exclude<LogLevel, 'silent'>) =>

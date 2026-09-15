@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
-import { ModalStatusBanner, PollarModalFooter } from '../commons';
+import { ModalStatusBanner, ChettaPayModalFooter } from '../commons';
+import { CHETTA, defaultAccent } from '../../theme';
 
 export type KycStep = 'idle' | 'in-progress' | 'approved';
 
@@ -15,7 +16,7 @@ export interface KycModalTemplateProps {
 
 export function KycModalTemplate({
     theme = 'light',
-    accentColor = '#005DB4',
+    accentColor = defaultAccent(theme),
     country,
     level = 'basic',
     onClose,
@@ -25,11 +26,11 @@ export function KycModalTemplate({
     const [step, setStep] = useState<KycStep>('idle');
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        itemBg: isDark ? '#262626' : '#f9fafb',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        itemBg: isDark ? CHETTA.soot : CHETTA.sand,
         successText: isDark ? '#4ade80' : '#16a34a',
     };
 
@@ -85,7 +86,7 @@ export function KycModalTemplate({
                 status={step === 'in-progress' ? 'LOADING' : step === 'approved' ? 'SUCCESS' : 'NONE'}
             />
 
-            <PollarModalFooter />
+            <ChettaPayModalFooter />
         </View>
     );
 }

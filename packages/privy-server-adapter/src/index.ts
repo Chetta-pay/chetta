@@ -1,8 +1,8 @@
 /**
- * @pollar/privy-server-adapter - SERVER-SIDE ONLY.
+ * @chettapay/privy-server-adapter - SERVER-SIDE ONLY.
  *
  * This package binds an HTTP listener via `@hono/node-server` and consumes
- * `PRIVY_APP_SECRET` + `POLLAR_API_SECRET` from the host environment. Do not
+ * `PRIVY_APP_SECRET` + `CHETTAPAY_API_SECRET` from the host environment. Do not
  * import it in a browser bundle, a React Native app, or any other client-side
  * runtime - credentials would leak and `node:*` imports would fail to bundle.
  */
@@ -10,7 +10,13 @@ import { serve } from '@hono/node-server';
 import { LRUCache } from 'lru-cache';
 import { createApp } from './server';
 import { createPrivyClientFactory } from './privy';
-import type { AdapterDeps, PollarPrivyAdapter, PollarPrivyAdapterConfig, ResolvedAdapterConfig, WalletCache } from './types';
+import type {
+  AdapterDeps,
+  ChettaPayPrivyAdapter,
+  ChettaPayPrivyAdapterConfig,
+  ResolvedAdapterConfig,
+  WalletCache,
+} from './types';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -19,7 +25,7 @@ const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
 const WALLET_CACHE_TTL_MS = 10 * 60 * 1000;
 const WALLET_CACHE_MAX = 1000;
 
-export const createPollarPrivyAdapter = (config: PollarPrivyAdapterConfig): PollarPrivyAdapter => {
+export const createChettaPayPrivyAdapter = (config: ChettaPayPrivyAdapterConfig): ChettaPayPrivyAdapter => {
   const resolvedConfig: ResolvedAdapterConfig = {
     ...config,
     port: config.port ?? DEFAULT_PORT,
@@ -74,5 +80,5 @@ export const createPollarPrivyAdapter = (config: PollarPrivyAdapterConfig): Poll
   };
 };
 
-export type { PollarPrivyAdapter, PollarPrivyAdapterConfig, StellarNetwork } from './types';
+export type { ChettaPayPrivyAdapter, ChettaPayPrivyAdapterConfig, StellarNetwork } from './types';
 export { SuccessCode, ErrorCode } from './types';

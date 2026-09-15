@@ -1,8 +1,8 @@
 'use client';
 
-import { SwapProvider, SwapQuote, SwapQuoteParams, SwapToken, SwapVenue } from '@pollar/core';
+import { SwapProvider, SwapQuote, SwapQuoteParams, SwapToken, SwapVenue } from '@chettapay/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import '../shared.css';
 import '../transaction-modal/TransactionModal.css';
 import '../send-modal/SendModal.css';
@@ -44,7 +44,7 @@ export function SwapModal({ onClose }: SwapModalProps) {
     wallet,
     network,
     styles,
-  } = usePollar();
+  } = useChettaPay();
 
   const walletType = wallet?.custody === 'external' ? wallet.provider : null;
   const smartUnsupported = wallet?.custody === 'smart';
@@ -347,7 +347,7 @@ export function SwapModal({ onClose }: SwapModalProps) {
   }
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
       <SwapModalTemplate
         theme={theme}
         accentColor={accentColor}

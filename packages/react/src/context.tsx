@@ -1,17 +1,17 @@
 'use client';
 
 import {
-  isPollarClient,
+  isChettaPayClient,
   BuildOutcome,
   EnabledAssetsState,
   isInteractiveAuthAdapter,
   NetworkState,
   OnStorageDegrade,
-  PollarAdapters,
-  PollarClient,
-  PollarClientConfig,
-  PollarLoginOptions,
-  PollarPersistedSession,
+  ChettaPayAdapters,
+  ChettaPayClient,
+  ChettaPayClientConfig,
+  ChettaPayLoginOptions,
+  ChettaPayPersistedSession,
   SendPaymentParams,
   SessionsState,
   SignOutcome,
@@ -32,7 +32,7 @@ import {
   TxHistoryState,
   WalletBalanceState,
   WalletInfo,
-} from '@pollar/core';
+} from '@chettapay/core';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ModalErrorBoundary, setModalErrorLogger } from './components/commons';
 import { DistributionRulesModal } from './components/distribution-rules-modal/DistributionRulesModal';
@@ -49,9 +49,9 @@ import { TransactionModal } from './components/transaction-modal/TransactionModa
 import { TxHistoryModal } from './components/tx-history-modal/TxHistoryModal';
 import { WalletBalanceModal } from './components/wallet-balance-modal/WalletBalanceModal';
 import { browserPasskeyCeremony, browserPasskeySigner } from './lib/passkey-ceremony';
-import type { PollarConfig, PollarStyles } from './types';
+import type { ChettaPayConfig, ChettaPayStyles } from './types';
 
-const DEFAULT_APP_CONFIG: PollarConfig = {
+const DEFAULT_APP_CONFIG: ChettaPayConfig = {
   application: { name: '', network: 'testnet', chains: [] },
   styles: {},
 };
@@ -61,10 +61,10 @@ const DEFAULT_APP_CONFIG: PollarConfig = {
  * Replaces a per-listener `JSON.stringify(...) !== JSON.stringify(...)` call -
  * cheaper, allocation-free, and explicit about what counts as "changed".
  *
- * If a field is added to `PollarPersistedSession` that consumers read through
+ * If a field is added to `ChettaPayPersistedSession` that consumers read through
  * context, list it here too.
  */
-function sessionsEqual(a: PollarPersistedSession | null, b: PollarPersistedSession | null): boolean {
+function sessionsEqual(a: ChettaPayPersistedSession | null, b: ChettaPayPersistedSession | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   return (
@@ -78,7 +78,7 @@ function sessionsEqual(a: PollarPersistedSession | null, b: PollarPersistedSessi
   );
 }
 
-interface PollarContextValue {
+interface ChettaPayContextValue {
   /**
    * The authenticated user's wallet as a discriminated union over `custody`
    * (`internal` | `smart` | `external`), or `null` when unauthenticated. Every
@@ -94,7 +94,7 @@ interface PollarContextValue {
    * network the user can switch to, and the first one is the default.
    */
   wallets: WalletInfo[];
-  getClient: () => PollarClient;
+  getClient: () => ChettaPayClient;
   openLoginModal: () => void;
 
   isAuthenticated: boolean;
@@ -104,14 +104,14 @@ interface PollarContextValue {
    * optimistic - gate sensitive actions (e.g. signing) on this.
    */
   verified: boolean;
-  login: (options: PollarLoginOptions) => void;
+  login: (options: ChettaPayLoginOptions) => void;
   logout: () => void;
   // sessions
   sessions: SessionsState;
   /** Open the active-sessions modal. */
   openSessionsModal: () => void;
-  appConfig: PollarConfig;
-  styles: PollarStyles;
+  appConfig: ChettaPayConfig;
+  styles: ChettaPayStyles;
   /** Remote app-config load state. 'loading' while the initial fetch is in
    *  flight, 'error' if it failed (styles fall back to empty defaults), 'ready'
    *  once resolved - or immediately 'ready' when `appConfig` is passed as a prop.
@@ -169,7 +169,7 @@ interface PollarContextValue {
    * Establishes (omit `limit`) or removes (`limit: '0'`) a trustline for an
    * asset. Sponsorship is derived automatically from the app's dashboard config
    * (the app covers the reserve + fee when eligible); pass `skipSponsorship` to
-   * force the user's own wallet to pay. Mirrors {@link PollarClient.setTrustline}.
+   * force the user's own wallet to pay. Mirrors {@link ChettaPayClient.setTrustline}.
    */
   setTrustline: (
     asset: { code: string; issuer: string },
@@ -200,22 +200,22 @@ interface PollarContextValue {
   // swap (DEX/AMM)
   /**
    * The swap venues this app exposes to end-users (empty = swap disabled, hide
-   * swap UI). Mirrors {@link PollarClient.getSwapConfig}.
+   * swap UI). Mirrors {@link ChettaPayClient.getSwapConfig}.
    */
   getSwapConfig: () => Promise<SwapVenue[]>;
   /**
    * The curated "buy" tokens this app opted into (admin catalog). Mirrors
-   * {@link PollarClient.getSwapTokens}.
+   * {@link ChettaPayClient.getSwapTokens}.
    */
   getSwapTokens: () => Promise<SwapToken[]>;
   /**
    * Quote an asset-to-asset swap across the requested venue(s). Read-only;
-   * returns quotes ranked best-first. Mirrors {@link PollarClient.getSwapQuote}.
+   * returns quotes ranked best-first. Mirrors {@link ChettaPayClient.getSwapQuote}.
    */
   getSwapQuote: (params: SwapQuoteParams) => Promise<SwapQuote[]>;
   /**
    * Execute a swap from a quote (establishes the buy-asset trustline first when
-   * needed). Drives the transaction state machine. Mirrors {@link PollarClient.swap}.
+   * needed). Drives the transaction state machine. Mirrors {@link ChettaPayClient.swap}.
    */
   swap: (quote: SwapQuote, opts?: { autoTrustline?: boolean }) => Promise<SubmitOutcome>;
   /** Open the swap modal. */
@@ -223,27 +223,27 @@ interface PollarContextValue {
   // earn (yield vaults / lending)
   /**
    * The yield providers this app exposes to end-users (empty = Earn disabled,
-   * hide Earn UI). Mirrors {@link PollarClient.getEarnProviders}.
+   * hide Earn UI). Mirrors {@link ChettaPayClient.getEarnProviders}.
    */
   getEarnProviders: () => Promise<EarnProviderId[]>;
   /**
    * The vaults (DeFindex) or pools (Blend) a provider exposes, with live APY.
-   * Mirrors {@link PollarClient.getEarnOpportunities}.
+   * Mirrors {@link ChettaPayClient.getEarnOpportunities}.
    */
   getEarnOpportunities: (provider: EarnProviderId) => Promise<EarnOpportunity[]>;
   /**
    * The connected wallet's position (balance + APY) in a vault/pool. Read-only.
-   * Mirrors {@link PollarClient.getEarnPosition}.
+   * Mirrors {@link ChettaPayClient.getEarnPosition}.
    */
   getEarnPosition: (params: EarnPositionParams) => Promise<EarnPosition>;
   /**
    * Deposit into a vault/pool (asset amount). Drives the transaction state
-   * machine. Mirrors {@link PollarClient.earnDeposit}.
+   * machine. Mirrors {@link ChettaPayClient.earnDeposit}.
    */
   earnDeposit: (params: EarnTxParams) => Promise<SubmitOutcome>;
   /**
    * Withdraw from a vault/pool (amount in the position `withdrawUnit`). Mirrors
-   * {@link PollarClient.earnWithdraw}.
+   * {@link ChettaPayClient.earnWithdraw}.
    */
   earnWithdraw: (params: EarnTxParams) => Promise<SubmitOutcome>;
   /** Open the Earn modal. */
@@ -251,15 +251,15 @@ interface PollarContextValue {
   // distribution
   openDistributionRulesModal: () => void;
   // adapters
-  adapters?: PollarAdapters;
+  adapters?: ChettaPayAdapters;
 }
 
-const PollarContext = createContext<PollarContextValue | null>(null);
+const ChettaPayContext = createContext<ChettaPayContextValue | null>(null);
 
-interface PollarProviderProps {
+interface ChettaPayProviderProps {
   /**
-   * Either a pre-built `PollarClient` instance (useful for testing or for
-   * reusing the same client outside React) or a `PollarClientConfig` that the
+   * Either a pre-built `ChettaPayClient` instance (useful for testing or for
+   * reusing the same client outside React) or a `ChettaPayClientConfig` that the
    * provider will use to construct one on mount.
    *
    * The client is locked at first render: changing this prop afterwards is
@@ -270,7 +270,7 @@ interface PollarProviderProps {
    * without the consumer wiring WebAuthn. A ceremony you configured yourself is
    * always kept.
    */
-  client: PollarClient | PollarClientConfig;
+  client: ChettaPayClient | ChettaPayClientConfig;
   /**
    * Local REPLACEMENT for the `/applications/config` response, not a patch over
    * it. Passing anything at all skips the remote fetch entirely; what you pass
@@ -284,9 +284,9 @@ interface PollarProviderProps {
    *
    *   chains       absent -> the chain order/filter falls back to the order the
    *                         session listed the user's wallets in (see useChains)
-   *   name         absent -> 'Pollar'
+   *   name         absent -> 'ChettaPay'
    *   theme        absent -> 'light'
-   *   accentColor  absent -> '#005DB4'
+   *   accentColor  absent -> Chetta amber (sable theme: gold)
    *   emailEnabled, providers, embeddedWallets, smartWallet
    *                absent -> false. NOTE: that means EVERY login method is off
    *                         and the login modal renders with no way in.
@@ -296,8 +296,8 @@ interface PollarProviderProps {
    * that fetch re-runs on every mount, so dashboard changes land on the next
    * page load. Supplying this prop opts out of that too.
    */
-  appConfig?: PollarConfig;
-  adapters?: PollarAdapters;
+  appConfig?: ChettaPayConfig;
+  adapters?: ChettaPayAdapters;
   /**
    * Notified when persistent storage silently degrades to in-memory mode
    * (Safari private browsing quota errors, sandboxed iframes, etc.). Use this
@@ -312,7 +312,7 @@ interface PollarProviderProps {
 }
 
 /**
- * Clients built from a `PollarClientConfig`, keyed by that exact config object.
+ * Clients built from a `ChettaPayClientConfig`, keyed by that exact config object.
  *
  * React StrictMode double-invokes the `useState` initializer below on mount and
  * discards the FIRST pass's hook state entirely - the value the component keeps
@@ -322,7 +322,7 @@ interface PollarProviderProps {
  * orphan outlived the provider, holding a cross-tab `storage` listener, a
  * refresh loop and a live-client registry entry for the life of the page - and
  * two live clients on one API key share a session row and a DPoP keypair, which
- * is exactly the configuration `@pollar/core`'s session teardown has to defend
+ * is exactly the configuration `@chettapay/core`'s session teardown has to defend
  * against. (See `tests/smoke-react.cjs`, which renders through jsdom because
  * `react-test-renderer` does not reproduce the double render at all.)
  *
@@ -339,23 +339,23 @@ interface PollarProviderProps {
  * fighting over the same session row - and it matches what the SDK already
  * warns about for multiple clients on one API key.
  */
-const clientByConfig = new WeakMap<PollarClientConfig, PollarClient>();
+const clientByConfig = new WeakMap<ChettaPayClientConfig, ChettaPayClient>();
 
-export function PollarProvider({
+export function ChettaPayProvider({
   client,
   appConfig: appConfigProp,
   adapters,
   onStorageDegrade,
   children,
-}: PollarProviderProps) {
+}: ChettaPayProviderProps) {
   // Inject the browser passkey ceremony so `loginSmartWallet()` /
   // `createSmartWallet()` work out of the box on web, whichever way the client
   // arrives: built here from a config, or handed over ready-made (a consumer
   // singleton shared with non-React code). The consumer can override it (e.g. a
   // React Native native provider) via `client.passkey`; `??` keeps an explicit
   // ceremony winning while an absent/undefined one still gets the default.
-  const [pollarClient] = useState<PollarClient>(() => {
-    if (isPollarClient(client)) {
+  const [chettaPayClient] = useState<ChettaPayClient>(() => {
+    if (isChettaPayClient(client)) {
       client.setPasskeyDefaults({ passkey: browserPasskeyCeremony, passkeySign: browserPasskeySigner });
       return client;
     }
@@ -364,7 +364,7 @@ export function PollarProvider({
     // would ever tear down.
     const alreadyBuilt = clientByConfig.get(client);
     if (alreadyBuilt) return alreadyBuilt;
-    const built = new PollarClient({
+    const built = new ChettaPayClient({
       ...client,
       passkey: client.passkey ?? browserPasskeyCeremony,
       passkeySign: client.passkeySign ?? browserPasskeySigner,
@@ -375,10 +375,10 @@ export function PollarProvider({
   // Only a client WE constructed is ours to tear down on unmount; a client the
   // consumer passed in is theirs to manage. Captured once (the useState
   // initializer above made the same decision).
-  const ownsClientRef = useRef(!isPollarClient(client));
+  const ownsClientRef = useRef(!isChettaPayClient(client));
   const destroyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The config this provider built from, until the mount effect claims it. */
-  const builtFromConfigRef = useRef<PollarClientConfig | null>(isPollarClient(client) ? null : client);
+  const builtFromConfigRef = useRef<ChettaPayClientConfig | null>(isChettaPayClient(client) ? null : client);
 
   // Tear down the client on a real unmount so its cross-tab storage listener,
   // refresh timer, and live-client registry entry don't leak - matters when the
@@ -402,11 +402,11 @@ export function PollarProvider({
       // Defer to a macrotask: React StrictMode unmounts then synchronously
       // remounts in dev, and the remount's effect (above) cancels this before it
       // runs. On a real unmount nothing re-mounts to cancel it, so it fires.
-      destroyTimerRef.current = setTimeout(() => pollarClient.destroy(), 0);
+      destroyTimerRef.current = setTimeout(() => chettaPayClient.destroy(), 0);
     };
-  }, [pollarClient]);
-  const [networkState, setNetworkState] = useState<NetworkState>(() => pollarClient.getNetworkState());
-  const [sessionState, setSessionState] = useState<PollarPersistedSession | null>(null);
+  }, [chettaPayClient]);
+  const [networkState, setNetworkState] = useState<NetworkState>(() => chettaPayClient.getNetworkState());
+  const [sessionState, setSessionState] = useState<ChettaPayPersistedSession | null>(null);
   // `true` once the server has confirmed the restored session (via login,
   // refresh, or `/auth/session/resume`). Use it to gate sensitive actions
   // while a cold-start session is still optimistic.
@@ -416,7 +416,7 @@ export function PollarProvider({
   const [sessions, setSessions] = useState<SessionsState>({ step: 'idle' });
   const [walletBalance, setWalletBalance] = useState<WalletBalanceState>({ step: 'idle' });
   const [enabledAssets, setEnabledAssets] = useState<EnabledAssetsState>({ step: 'idle' });
-  const [resolvedConfig, setResolvedConfig] = useState<PollarConfig>(() => appConfigProp ?? DEFAULT_APP_CONFIG);
+  const [resolvedConfig, setResolvedConfig] = useState<ChettaPayConfig>(() => appConfigProp ?? DEFAULT_APP_CONFIG);
   const [configStatus, setConfigStatus] = useState<'loading' | 'ready' | 'error'>(
     appConfigProp !== undefined ? 'ready' : 'loading',
   );
@@ -428,45 +428,45 @@ export function PollarProvider({
   // render, so keying the config effect on the object itself would re-run it,
   // set state with a fresh reference, re-render, and never settle. The
   // serialized form only changes when the config really changes, and
-  // `PollarConfig` is a plain JSON response shape, so it serializes losslessly.
+  // `ChettaPayConfig` is a plain JSON response shape, so it serializes losslessly.
   const appConfigKey = appConfigProp === undefined ? '' : JSON.stringify(appConfigProp);
   // The effect reads the prop through this ref so it does not have to key on it.
   const appConfigPropRef = useRef(appConfigProp);
   appConfigPropRef.current = appConfigProp;
 
   useEffect(() => {
-    return pollarClient.onTransactionStateChange(setTransaction);
-  }, [pollarClient]);
+    return chettaPayClient.onTransactionStateChange(setTransaction);
+  }, [chettaPayClient]);
 
   useEffect(() => {
-    return pollarClient.onTxHistoryStateChange(setTxHistory);
-  }, [pollarClient]);
+    return chettaPayClient.onTxHistoryStateChange(setTxHistory);
+  }, [chettaPayClient]);
 
   useEffect(() => {
-    return pollarClient.onSessionsStateChange(setSessions);
-  }, [pollarClient]);
+    return chettaPayClient.onSessionsStateChange(setSessions);
+  }, [chettaPayClient]);
 
   useEffect(() => {
-    return pollarClient.onWalletBalanceStateChange(setWalletBalance);
-  }, [pollarClient]);
+    return chettaPayClient.onWalletBalanceStateChange(setWalletBalance);
+  }, [chettaPayClient]);
 
   useEffect(() => {
-    return pollarClient.onEnabledAssetsStateChange(setEnabledAssets);
-  }, [pollarClient]);
+    return chettaPayClient.onEnabledAssetsStateChange(setEnabledAssets);
+  }, [chettaPayClient]);
 
   useEffect(() => {
-    return pollarClient.onNetworkStateChange((state) => {
+    return chettaPayClient.onNetworkStateChange((state) => {
       setNetworkState(state);
     });
-  }, [pollarClient]);
+  }, [chettaPayClient]);
 
   useEffect(() => {
     if (!onStorageDegrade) return;
-    return pollarClient.onStorageDegrade(onStorageDegrade);
-  }, [pollarClient, onStorageDegrade]);
+    return chettaPayClient.onStorageDegrade(onStorageDegrade);
+  }, [chettaPayClient, onStorageDegrade]);
 
   useEffect(() => {
-    return pollarClient.onAuthStateChange((authState) => {
+    return chettaPayClient.onAuthStateChange((authState) => {
       if (authState.step === 'authenticated') {
         setSessionState((prev) => (sessionsEqual(prev, authState.session) ? prev : authState.session));
         // The session object is identical between the optimistic restore and
@@ -478,20 +478,20 @@ export function PollarProvider({
         setVerified(false);
       }
     });
-  }, [pollarClient]);
+  }, [chettaPayClient]);
 
   // Auto-login for interactive adapters (e.g. Privy). When the adapter's
   // provider authenticates *outside* the sub-modal flow - after an OAuth redirect
   // (the page reloaded, so the sub-modal promise is gone) or a persisted provider
-  // session on load - and Pollar has no session yet, trigger `login({ provider })`
+  // session on load - and ChettaPay has no session yet, trigger `login({ provider })`
   // so `connect()` + SEP-10 run. Read the session through a ref so the
   // subscription is set up once and never re-subscribes on session changes.
   const sessionRef = useRef(sessionState);
   sessionRef.current = sessionState;
   useEffect(() => {
     const unsubscribes: Array<() => void> = [];
-    for (const { id } of pollarClient.listWalletAdapters()) {
-      const adapter = pollarClient.getWalletAdapter(id);
+    for (const { id } of chettaPayClient.listWalletAdapters()) {
+      const adapter = chettaPayClient.getWalletAdapter(id);
       if (!isInteractiveAuthAdapter(adapter) || !adapter.onProviderAuthChange) continue;
       let triggered = false;
       unsubscribes.push(
@@ -503,20 +503,20 @@ export function PollarProvider({
           }
           if (triggered || sessionRef.current?.wallet?.address) return;
           triggered = true;
-          pollarClient.login({ provider: id } as PollarLoginOptions);
+          chettaPayClient.login({ provider: id } as ChettaPayLoginOptions);
         }),
       );
     }
     return () => {
       for (const unsubscribe of unsubscribes) unsubscribe();
     };
-  }, [pollarClient]);
+  }, [chettaPayClient]);
 
   // Route the modal error boundary's logs through the client's level-gated
   // logger (it's a class component that can't read context directly).
   useEffect(() => {
-    setModalErrorLogger(pollarClient.getLogger());
-  }, [pollarClient]);
+    setModalErrorLogger(chettaPayClient.getLogger());
+  }, [chettaPayClient]);
 
   useEffect(() => {
     // PRESENCE of `appConfig` is the opt-out, not its contents: any value at all
@@ -539,7 +539,7 @@ export function PollarProvider({
     }
     let cancelled = false;
     setConfigStatus('loading');
-    pollarClient
+    chettaPayClient
       .getAppConfig()
       .then((fetched) => {
         if (cancelled) return;
@@ -547,18 +547,18 @@ export function PollarProvider({
           setConfigStatus('error');
           return;
         }
-        setResolvedConfig(fetched as PollarConfig);
+        setResolvedConfig(fetched as ChettaPayConfig);
         setConfigStatus('ready');
       })
       .catch((err) => {
         if (cancelled) return;
-        pollarClient.getLogger().error('[PollarProvider] getAppConfig failed', err);
+        chettaPayClient.getLogger().error('[ChettaPayProvider] getAppConfig failed', err);
         setConfigStatus('error');
       });
     return () => {
       cancelled = true;
     };
-  }, [pollarClient, appConfigKey, configRetry]);
+  }, [chettaPayClient, appConfigKey, configRetry]);
 
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
@@ -589,39 +589,40 @@ export function PollarProvider({
   // persisted session. For every wallet type, `wallet.address` holds the on-chain
   // address we care about.
   const walletAddress = sessionState?.wallet?.address || '';
-  const getClient = useCallback(() => pollarClient, [pollarClient]);
+  const getClient = useCallback(() => chettaPayClient, [chettaPayClient]);
   // refreshBalance resolves the own wallet server-side from the session;
   // walletAddress stays in deps so the callback re-binds when the wallet changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- walletAddress is an intentional re-bind trigger, not read in the body
-  const refreshWalletBalance = useCallback(() => pollarClient.refreshBalance(), [pollarClient, walletAddress]);
+  const refreshWalletBalance = useCallback(() => chettaPayClient.refreshBalance(), [chettaPayClient, walletAddress]);
   // refreshAssets resolves the own wallet server-side from the session;
   // walletAddress stays in deps so the callback re-binds when the wallet changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- walletAddress is an intentional re-bind trigger, not read in the body
-  const refreshAssets = useCallback(() => pollarClient.refreshAssets(), [pollarClient, walletAddress]);
+  const refreshAssets = useCallback(() => chettaPayClient.refreshAssets(), [chettaPayClient, walletAddress]);
 
-  const contextValue: PollarContextValue = useMemo(() => {
-    const styles: PollarStyles = resolvedConfig.styles ?? {};
+  const contextValue: ChettaPayContextValue = useMemo(() => {
+    const styles: ChettaPayStyles = resolvedConfig.styles ?? {};
     return {
       // session
-      wallet: pollarClient.getWallet(),
-      wallets: pollarClient.getWallets(),
+      wallet: chettaPayClient.getWallet(),
+      wallets: chettaPayClient.getWallets(),
       isAuthenticated: !!walletAddress,
       verified,
       // client
       getClient,
       // auth
-      login: (options: PollarLoginOptions) => pollarClient.login(options),
-      logout: () => pollarClient.logout(),
+      login: (options: ChettaPayLoginOptions) => chettaPayClient.login(options),
+      logout: () => chettaPayClient.logout(),
       openLoginModal: () => setLoginModalOpen(true),
       // transactions
       tx: transaction,
-      buildTx: (operation, params, options) => pollarClient.buildTx(operation, params, options),
-      signAndSubmitTx: (unsignedXdr?: string) => pollarClient.signAndSubmitTx(unsignedXdr),
-      signTx: (unsignedXdr: string) => pollarClient.signTx(unsignedXdr),
-      submitTx: (signedXdr: string) => pollarClient.submitTx(signedXdr),
-      buildAndSignAndSubmitTx: (operation, params, options) => pollarClient.buildAndSignAndSubmitTx(operation, params, options),
-      runTx: (operation, params, options) => pollarClient.runTx(operation, params, options),
-      sendPayment: (params) => pollarClient.sendPayment(params),
+      buildTx: (operation, params, options) => chettaPayClient.buildTx(operation, params, options),
+      signAndSubmitTx: (unsignedXdr?: string) => chettaPayClient.signAndSubmitTx(unsignedXdr),
+      signTx: (unsignedXdr: string) => chettaPayClient.signTx(unsignedXdr),
+      submitTx: (signedXdr: string) => chettaPayClient.submitTx(signedXdr),
+      buildAndSignAndSubmitTx: (operation, params, options) =>
+        chettaPayClient.buildAndSignAndSubmitTx(operation, params, options),
+      runTx: (operation, params, options) => chettaPayClient.runTx(operation, params, options),
+      sendPayment: (params) => chettaPayClient.sendPayment(params),
       openTxModal: () => setTransactionModalOpen(true),
       // tx history
       txHistory,
@@ -633,33 +634,33 @@ export function PollarProvider({
       // enabled assets
       enabledAssets,
       refreshAssets,
-      setTrustline: (asset, opts) => pollarClient.setTrustline(asset, opts),
+      setTrustline: (asset, opts) => chettaPayClient.setTrustline(asset, opts),
       openEnabledAssetsModal: () => setEnabledAssetsModalOpen(true),
       // send / receive
       openSendModal: () => {
-        pollarClient.resetTransactionState();
+        chettaPayClient.resetTransactionState();
         setSendModalKey((k) => k + 1);
         setSendModalOpen(true);
       },
       openReceiveModal: () => setReceiveModalOpen(true),
       // swap
-      getSwapConfig: () => pollarClient.getSwapConfig(),
-      getSwapTokens: () => pollarClient.getSwapTokens(),
-      getSwapQuote: (params) => pollarClient.getSwapQuote(params),
-      swap: (quote, opts) => pollarClient.swap(quote, opts),
+      getSwapConfig: () => chettaPayClient.getSwapConfig(),
+      getSwapTokens: () => chettaPayClient.getSwapTokens(),
+      getSwapQuote: (params) => chettaPayClient.getSwapQuote(params),
+      swap: (quote, opts) => chettaPayClient.swap(quote, opts),
       openSwapModal: () => {
-        pollarClient.resetTransactionState();
+        chettaPayClient.resetTransactionState();
         setSwapModalKey((k) => k + 1);
         setSwapModalOpen(true);
       },
       // earn
-      getEarnProviders: () => pollarClient.getEarnProviders(),
-      getEarnOpportunities: (provider) => pollarClient.getEarnOpportunities(provider),
-      getEarnPosition: (params) => pollarClient.getEarnPosition(params),
-      earnDeposit: (params) => pollarClient.earnDeposit(params),
-      earnWithdraw: (params) => pollarClient.earnWithdraw(params),
+      getEarnProviders: () => chettaPayClient.getEarnProviders(),
+      getEarnOpportunities: (provider) => chettaPayClient.getEarnOpportunities(provider),
+      getEarnPosition: (params) => chettaPayClient.getEarnPosition(params),
+      earnDeposit: (params) => chettaPayClient.earnDeposit(params),
+      earnWithdraw: (params) => chettaPayClient.earnWithdraw(params),
       openEarnModal: () => {
-        pollarClient.resetTransactionState();
+        chettaPayClient.resetTransactionState();
         setEarnModalKey((k) => k + 1);
         setEarnModalOpen(true);
       },
@@ -670,7 +671,7 @@ export function PollarProvider({
       openDistributionRulesModal: () => setDistributionRulesModalOpen(true),
       // network
       network: networkState.step === 'connected' ? networkState.network : 'testnet',
-      setNetwork: (network: StellarNetwork) => pollarClient.setNetwork(network),
+      setNetwork: (network: StellarNetwork) => chettaPayClient.setNetwork(network),
       // kyc
       openKycModal: (options = {}) => {
         setKycModalOptions(options);
@@ -684,11 +685,11 @@ export function PollarProvider({
       configStatus,
       retryConfig,
       adapters,
-    } as PollarContextValue;
+    } as ChettaPayContextValue;
   }, [
     walletAddress,
     verified,
-    pollarClient,
+    chettaPayClient,
     getClient,
     transaction,
     txHistory,
@@ -705,7 +706,7 @@ export function PollarProvider({
   ]);
 
   return (
-    <PollarContext.Provider value={contextValue}>
+    <ChettaPayContext.Provider value={contextValue}>
       {children}
       {loginModalOpen && (
         <ModalErrorBoundary onClose={() => setLoginModalOpen(false)}>
@@ -777,14 +778,14 @@ export function PollarProvider({
           <DistributionRulesModal onClose={() => setDistributionRulesModalOpen(false)} />
         </ModalErrorBoundary>
       )}
-    </PollarContext.Provider>
+    </ChettaPayContext.Provider>
   );
 }
 
-export function usePollar() {
-  const ctx = useContext(PollarContext);
+export function useChettaPay() {
+  const ctx = useContext(ChettaPayContext);
   if (!ctx) {
-    throw new Error('usePollar must be used inside <PollarProvider>');
+    throw new Error('useChettaPay must be used inside <ChettaPayProvider>');
   }
   return ctx;
 }

@@ -1,40 +1,40 @@
-# @pollar/react-native
+# @chettapay/react-native
 
-React Native bindings for [Pollar](https://pollar.xyz) — drop-in authentication UI and hooks for Stellar-based mobile applications.
+React Native bindings for [ChettaPay](https://chettapay.vercel.app) — drop-in authentication UI and hooks for Stellar-based mobile applications.
 
 ## Installation
 
 ```bash
-npm install @pollar/react-native @pollar/core
+npm install @chettapay/react-native @chettapay/core
 # or
-pnpm add @pollar/react-native @pollar/core
+pnpm add @chettapay/react-native @chettapay/core
 # or
-yarn add @pollar/react-native @pollar/core
+yarn add @chettapay/react-native @chettapay/core
 ```
 
 **Peer dependencies:** `react >= 18`, `react-native >= 0.72`
 
 ## Quick Start
 
-Wrap your application with `PollarProvider` and use the `usePollar` hook anywhere in the tree.
+Wrap your application with `ChettaPayProvider` and use the `useChettaPay` hook anywhere in the tree.
 
 ```tsx
-import { PollarProvider } from '@pollar/react-native';
+import { ChettaPayProvider } from '@chettapay/react-native';
 
 export default function App() {
   return (
-    <PollarProvider config={{ apiKey: 'your-api-key' }}>
+    <ChettaPayProvider config={{ apiKey: 'your-api-key' }}>
       <MyApp />
-    </PollarProvider>
+    </ChettaPayProvider>
   );
 }
 ```
 
 ```tsx
-import { usePollar } from '@pollar/react-native';
+import { useChettaPay } from '@chettapay/react-native';
 
 export function Profile() {
-  const { isAuthenticated, walletAddress, login, logout } = usePollar();
+  const { isAuthenticated, walletAddress, login, logout } = useChettaPay();
 
   if (!isAuthenticated) {
     return (
@@ -55,30 +55,30 @@ export function Profile() {
 
 ## API Reference
 
-### `<PollarProvider>`
+### `<ChettaPayProvider>`
 
-Context provider that initialises the Pollar client and makes it available to child components.
+Context provider that initialises the ChettaPay client and makes it available to child components.
 
 ```tsx
-<PollarProvider
+<ChettaPayProvider
   config={{
     apiKey: 'your-api-key',
-    baseUrl: 'https://sdk.api.pollar.xyz', // optional
+    baseUrl: 'https://chettapay-api.vercel.app', // optional
     stellarNetwork: 'testnet',             // optional, default: 'testnet'
   }}
 >
   {children}
-</PollarProvider>
+</ChettaPayProvider>
 ```
 
 | Prop     | Type                | Required | Description                              |
 | -------- | ------------------- | -------- | ---------------------------------------- |
-| `config` | `PollarClientConfig`| Yes      | Configuration passed to `PollarClient`   |
-| `styles` | `PollarStyles`      | No       | Style overrides (theme, accent, providers) |
+| `config` | `ChettaPayClientConfig`| Yes      | Configuration passed to `ChettaPayClient`   |
+| `styles` | `ChettaPayStyles`      | No       | Style overrides (theme, accent, providers) |
 
 ---
 
-### `usePollar()`
+### `useChettaPay()`
 
 Returns the authentication and SDK context.
 
@@ -86,7 +86,7 @@ Returns the authentication and SDK context.
 const {
   isAuthenticated,  // boolean — true when a valid session exists
   walletAddress,    // string — public key of the authenticated wallet
-  login,            // (options: PollarLoginOptions) => void
+  login,            // (options: ChettaPayLoginOptions) => void
   logout,           // () => void
   buildTx,          // (operation, params, options?) => Promise<void>
   signAndSubmitTx,  // (unsignedXdr: string) => Promise<void>
@@ -94,16 +94,16 @@ const {
   txHistory,        // TxHistoryState — transaction history
   network,          // StellarNetwork — current network
   setNetwork,       // (network: StellarNetwork) => void
-  getClient,        // () => PollarClient
-  config,           // PollarConfig — remote app configuration
-  styles,           // PollarStyles — resolved styles
+  getClient,        // () => ChettaPayClient
+  config,           // ChettaPayConfig — remote app configuration
+  styles,           // ChettaPayStyles — resolved styles
   openLoginModal,
   openTransactionModal,
   openKycModal,
   openRampWidget,
   openTxHistoryModal,
   openWalletBalanceModal,
-} = usePollar();
+} = useChettaPay();
 ```
 
 #### Login options
@@ -117,7 +117,7 @@ login({ provider: 'github' });
 login({ provider: 'email', email: 'user@example.com' });
 
 // Stellar wallet
-import { WalletType } from '@pollar/core';
+import { WalletType } from '@chettapay/core';
 login({ provider: 'wallet', type: WalletType.FREIGHTER });
 login({ provider: 'wallet', type: WalletType.ALBEDO });
 ```
@@ -126,10 +126,10 @@ login({ provider: 'wallet', type: WalletType.ALBEDO });
 
 ### `<WalletButton>`
 
-Pre-built button component that opens the Pollar authentication modal.
+Pre-built button component that opens the ChettaPay authentication modal.
 
 ```tsx
-import { WalletButton } from '@pollar/react-native';
+import { WalletButton } from '@chettapay/react-native';
 
 export function Header() {
   return <WalletButton />;
@@ -142,13 +142,13 @@ The modal handles all login providers, loading states, and error feedback out of
 
 ## Styles
 
-No CSS import is needed. All components use React Native `StyleSheet` and are styled natively. Appearance is controlled via the `styles` prop on `<PollarProvider>`.
+No CSS import is needed. All components use React Native `StyleSheet` and are styled natively. Appearance is controlled via the `styles` prop on `<ChettaPayProvider>`.
 
 ---
 
 ## TypeScript
 
-`@pollar/react-native` ships full type support. Key exported types:
+`@chettapay/react-native` ships full type support. Key exported types:
 
 ```ts
 import type {
@@ -156,9 +156,9 @@ import type {
   AuthContextValue,
   LoginButtonProps,
   AuthModalProps,
-  PollarConfig,
-  PollarStyles,
-} from '@pollar/react-native';
+  ChettaPayConfig,
+  ChettaPayStyles,
+} from '@chettapay/react-native';
 ```
 
 ---

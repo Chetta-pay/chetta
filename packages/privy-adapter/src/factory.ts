@@ -1,5 +1,5 @@
-import type { InteractiveAuthAdapter } from '@pollar/core';
-import type { PollarPrivyConfig } from './config';
+import type { InteractiveAuthAdapter } from '@chettapay/core';
+import type { ChettaPayPrivyConfig } from './config';
 import { buildPrivyAdapter, type PrivyAdapterHandle } from './runtime';
 
 /**
@@ -10,11 +10,11 @@ import { buildPrivyAdapter, type PrivyAdapterHandle } from './runtime';
 const handlesByAdapter = new WeakMap<InteractiveAuthAdapter, PrivyAdapterHandle>();
 
 /**
- * Create a Privy-backed wallet adapter for `@pollar/core`. Platform-agnostic; the
+ * Create a Privy-backed wallet adapter for `@chettapay/core`. Platform-agnostic; the
  * returned adapter is inert until a platform provider (web `PrivyAdapterProvider`
  * or the Expo one) mounts and attaches Privy's runtime. See each entry point.
  */
-export function createPrivyAdapter(config: PollarPrivyConfig): InteractiveAuthAdapter {
+export function createPrivyAdapter(config: ChettaPayPrivyConfig): InteractiveAuthAdapter {
   const handle = buildPrivyAdapter(config);
   handlesByAdapter.set(handle, handle);
   return handle;

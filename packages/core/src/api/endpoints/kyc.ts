@@ -1,5 +1,5 @@
 import type { KycLevel, KycProvider, KycStartBody, KycStartResponse, KycStatus } from '../../types';
-import type { PollarApiClient } from '../client';
+import type { ChettaPayApiClient } from '../client';
 
 /**
  * GET /kyc/status
@@ -7,7 +7,7 @@ import type { PollarApiClient } from '../client';
  * Requires a valid auth token in the API client.
  */
 export async function getKycStatus(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   providerId?: string,
 ): Promise<{ status: KycStatus; level?: KycLevel | undefined; providerId: string; expiresAt?: string }> {
   const { data, error } = await api.GET('/kyc/status', {
@@ -23,7 +23,7 @@ export async function getKycStatus(
  * GET /kyc/providers
  * Returns available KYC providers for a given country.
  */
-export async function getKycProviders(api: PollarApiClient, country: string): Promise<{ providers: KycProvider[] }> {
+export async function getKycProviders(api: ChettaPayApiClient, country: string): Promise<{ providers: KycProvider[] }> {
   const { data, error } = await api.GET('/kyc/providers', { params: { query: { country } } });
   if (!data?.content || error) throw new Error((error as any)?.code ?? (error as any)?.error ?? 'Failed to get KYC providers');
   return data.content;
@@ -35,7 +35,7 @@ export async function getKycProviders(api: PollarApiClient, country: string): Pr
  * - flow=iframe/redirect: returns kycUrl to embed or redirect to
  * - flow=form: returns fields[] to render a custom form
  */
-export async function startKyc(api: PollarApiClient, body: KycStartBody): Promise<KycStartResponse> {
+export async function startKyc(api: ChettaPayApiClient, body: KycStartBody): Promise<KycStartResponse> {
   const { data, error } = await api.POST('/kyc/start', { body });
   if (!data?.content || error) throw new Error((error as any)?.code ?? (error as any)?.error ?? 'Failed to start KYC');
   return data.content;
@@ -48,7 +48,7 @@ export async function startKyc(api: PollarApiClient, body: KycStartBody): Promis
  * 3. Otherwise starts KYC and returns the session (kycUrl or fields)
  */
 export async function resolveKyc(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   providerId: string,
   level: KycLevel = 'basic',
 ): Promise<{ alreadyApproved: boolean } & Partial<KycStartResponse>> {
@@ -63,7 +63,7 @@ export async function resolveKyc(
  * Throws if timeoutMs is exceeded.
  */
 export async function pollKycStatus(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   providerId: string,
   { intervalMs = 3000, timeoutMs = 300_000 }: { intervalMs?: number; timeoutMs?: number } = {},
 ): Promise<KycStatus> {

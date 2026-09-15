@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
+import { CHETTA, modalChrome } from '../modal-theme';
 import { WalletButtonTemplate } from './WalletButtonTemplate';
 import './WalletButton.css';
 
@@ -21,7 +22,7 @@ export function WalletButton() {
     openRampModal,
     openDistributionRulesModal,
     tx: transaction,
-  } = usePollar();
+  } = useChettaPay();
   // The address shown (and copied) is the one on the app's FIRST configured
   // chain, not `wallet.address` - that field is the Stellar wallet by definition
   // in core, so this button used to say "Stellar" to an app whose users live on
@@ -44,11 +45,13 @@ export function WalletButton() {
   const canCreateAccount =
     !created && wallet?.custody === 'external' && wallet.existsOnStellar === false && wallet.fundingMode === 'IMMEDIATE';
 
-  const { theme = 'light', accentColor = '#005DB4' } = styles;
+  // The dropdown sits outside the modal chrome, so it resolves its own colors -
+  // but from `modalChrome`, so the accent default can't drift from the modals'.
+  const { theme, accentColor } = modalChrome(styles);
   const isDark = theme === 'dark';
-  const dropdownBg = isDark ? '#18181b' : '#fff';
-  const dropdownBorder = isDark ? '#3f3f46' : '#e4e4e7';
-  const itemColor = isDark ? '#fafafa' : '#18181b';
+  const dropdownBg = isDark ? CHETTA.sable : '#fff';
+  const dropdownBorder = isDark ? CHETTA.bark : CHETTA.bone;
+  const itemColor = isDark ? CHETTA.cream : CHETTA.ink;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

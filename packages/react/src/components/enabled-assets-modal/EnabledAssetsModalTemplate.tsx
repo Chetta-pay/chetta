@@ -1,9 +1,9 @@
 'use client';
 
-import { EnabledAssetRecord, EnabledAssetsState, WalletChain } from '@pollar/core';
+import { EnabledAssetRecord, EnabledAssetsState, WalletChain } from '@chettapay/core';
 import { useState } from 'react';
 import { ChainSelect, resolveChain } from '../ChainSelect';
-import { BusyOverlay, CopyButton, cropAddress, PollarModalFooter, Toggle, useStickyData } from '../commons';
+import { BusyOverlay, CopyButton, cropAddress, ChettaPayModalFooter, Toggle, useStickyData } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
 function assetKey(record: { code: string; issuer?: string }): string {
@@ -35,28 +35,28 @@ function AssetItem({
   const isStellar = resolveChain(record.chain) === 'STELLAR';
 
   return (
-    <div className="pollar-asset-item">
-      <div className="pollar-asset-info">
-        <div className="pollar-asset-code-row">
-          <span className="pollar-asset-code">{record.code}</span>
-          {record.enabledInApp && <span className="pollar-asset-tag">App</span>}
+    <div className="chettapay-asset-item">
+      <div className="chettapay-asset-info">
+        <div className="chettapay-asset-code-row">
+          <span className="chettapay-asset-code">{record.code}</span>
+          {record.enabledInApp && <span className="chettapay-asset-tag">App</span>}
         </div>
-        {record.name && <span className="pollar-asset-name">{record.name}</span>}
+        {record.name && <span className="chettapay-asset-name">{record.name}</span>}
         {record.issuer && (
-          <span className="pollar-issuer">
-            <span className="pollar-issuer-addr">{cropAddress(record.issuer)}</span>
-            <CopyButton value={record.issuer} label="Copy issuer address" className="pollar-copy-btn-sm" />
+          <span className="chettapay-issuer">
+            <span className="chettapay-issuer-addr">{cropAddress(record.issuer)}</span>
+            <CopyButton value={record.issuer} label="Copy issuer address" className="chettapay-copy-btn-sm" />
           </span>
         )}
         {isStellar && !isNative && record.enabledInApp && (
-          <span className="pollar-asset-sponsor">
+          <span className="chettapay-asset-sponsor">
             {record.sponsored ? 'Reserve sponsored by the app' : 'You pay the reserve (~0.5 XLM)'}
           </span>
         )}
       </div>
       {isStellar && (
-        <div className="pollar-asset-actions">
-          <span className="pollar-asset-trustline-label">Trustline</span>
+        <div className="chettapay-asset-actions">
+          <span className="chettapay-asset-trustline-label">Trustline</span>
           {/* Native XLM needs no trustline - it is implicit and can't be removed,
               so the switch shows the state but stays locked on. */}
           <Toggle
@@ -125,26 +125,26 @@ export function EnabledAssetsModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-asset-modal"
+      className="chettapay-modal-card chettapay-asset-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
       {isLoading && data && <BusyOverlay label="Refreshing assets…" />}
 
-      <div className="pollar-modal-header">
-        <h2 className="pollar-modal-title">Assets</h2>
-        <div className="pollar-modal-header-actions">
+      <div className="chettapay-modal-header">
+        <h2 className="chettapay-modal-title">Assets</h2>
+        <div className="chettapay-modal-header-actions">
           <button
             type="button"
-            className="pollar-modal-close"
+            className="chettapay-modal-close"
             onClick={onRefresh}
             disabled={isLoading || busy}
             aria-label="Refresh"
             title="Refresh"
           >
             <svg
-              className={isLoading ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+              className={isLoading ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -160,7 +160,7 @@ export function EnabledAssetsModalTemplate({
               />
             </svg>
           </button>
-          <button className="pollar-modal-close" onClick={onClose} aria-label="Close">
+          <button className="chettapay-modal-close" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -171,30 +171,30 @@ export function EnabledAssetsModalTemplate({
       <ChainSelect value={selectedChain} options={chains} onChange={onSelectChain} disabled={isLoading || busy} />
 
       {walletAddress && (
-        <div className="pollar-address-row">
-          <span className="pollar-address">{cropAddress(walletAddress)}</span>
+        <div className="chettapay-address-row">
+          <span className="chettapay-address">{cropAddress(walletAddress)}</span>
           <CopyButton value={walletAddress} label="Copy wallet address" />
         </div>
       )}
 
       {/* First load only - a refresh keeps the old list under the overlay. */}
       {isLoading && !data && (
-        <div className="pollar-loading-block">
-          <div className="pollar-spinner" />
+        <div className="chettapay-loading-block">
+          <div className="chettapay-spinner" />
           <span>Loading…</span>
         </div>
       )}
 
-      {enabledAssets.step === 'error' && <div className="pollar-modal-error">{enabledAssets.message}</div>}
+      {enabledAssets.step === 'error' && <div className="chettapay-modal-error">{enabledAssets.message}</div>}
 
-      {actionError && <div className="pollar-modal-action-error">{actionError}</div>}
+      {actionError && <div className="chettapay-modal-action-error">{actionError}</div>}
 
-      {data && !data.exists && <div className="pollar-modal-empty">Account not found on {data.network}.</div>}
+      {data && !data.exists && <div className="chettapay-modal-empty">Account not found on {data.network}.</div>}
 
-      {data && assets.length === 0 && <div className="pollar-modal-empty">No assets found on this network.</div>}
+      {data && assets.length === 0 && <div className="chettapay-modal-empty">No assets found on this network.</div>}
 
       {data && assets.length > 0 && (
-        <div className="pollar-asset-list">
+        <div className="chettapay-asset-list">
           {assets.map((a) => (
             <AssetItem
               key={rowKey(a)}
@@ -208,12 +208,12 @@ export function EnabledAssetsModalTemplate({
       )}
 
       {isStellarSelected && (
-        <button className="pollar-asset-add-custom" onClick={onAddCustom} disabled={busy}>
+        <button className="chettapay-asset-add-custom" onClick={onAddCustom} disabled={busy}>
           + Add custom trustline
         </button>
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }
@@ -262,38 +262,38 @@ export function CustomTrustlineModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-asset-modal"
+      className="chettapay-modal-card chettapay-asset-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pollar-modal-header">
-        <div className="pollar-modal-header-actions">
-          <button className="pollar-modal-close" onClick={onBack} disabled={busy} aria-label="Back">
+      <div className="chettapay-modal-header">
+        <div className="chettapay-modal-header-actions">
+          <button className="chettapay-modal-close" onClick={onBack} disabled={busy} aria-label="Back">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h2 className="pollar-modal-title">Add custom trustline</h2>
+          <h2 className="chettapay-modal-title">Add custom trustline</h2>
         </div>
-        <button className="pollar-modal-close" onClick={onClose} aria-label="Close">
+        <button className="chettapay-modal-close" onClick={onClose} aria-label="Close">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
             <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
       </div>
 
-      <p className="pollar-asset-custom-hint">
+      <p className="chettapay-asset-custom-hint">
         Custom trustlines aren&apos;t sponsored — your wallet pays the 0.5 XLM reserve and the transaction fee.
       </p>
 
-      <div className="pollar-field">
-        <label className="pollar-label" htmlFor="pollar-trustline-code">
+      <div className="chettapay-field">
+        <label className="chettapay-label" htmlFor="chettapay-trustline-code">
           Asset code
         </label>
         <input
-          id="pollar-trustline-code"
-          className="pollar-input"
+          id="chettapay-trustline-code"
+          className="chettapay-input"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="USDC"
@@ -304,13 +304,13 @@ export function CustomTrustlineModalTemplate({
         />
       </div>
 
-      <div className="pollar-field">
-        <label className="pollar-label" htmlFor="pollar-trustline-issuer">
+      <div className="chettapay-field">
+        <label className="chettapay-label" htmlFor="chettapay-trustline-issuer">
           Issuer
         </label>
         <input
-          id="pollar-trustline-issuer"
-          className="pollar-input"
+          id="chettapay-trustline-issuer"
+          className="chettapay-input"
           value={issuer}
           onChange={(e) => setIssuer(e.target.value)}
           placeholder="G…"
@@ -319,17 +319,17 @@ export function CustomTrustlineModalTemplate({
           disabled={busy}
         />
         {issuer.trim().length > 0 && !issuerOk && (
-          <span className="pollar-field-error">Issuer must be a 56-character Stellar address starting with G.</span>
+          <span className="chettapay-field-error">Issuer must be a 56-character Stellar address starting with G.</span>
         )}
       </div>
 
-      <div className="pollar-field">
-        <label className="pollar-label" htmlFor="pollar-trustline-limit">
-          Limit <span className="pollar-label-optional">(optional)</span>
+      <div className="chettapay-field">
+        <label className="chettapay-label" htmlFor="chettapay-trustline-limit">
+          Limit <span className="chettapay-label-optional">(optional)</span>
         </label>
         <input
-          id="pollar-trustline-limit"
-          className="pollar-input"
+          id="chettapay-trustline-limit"
+          className="chettapay-input"
           value={limit}
           onChange={(e) => setLimit(e.target.value)}
           placeholder="Maximum"
@@ -340,13 +340,13 @@ export function CustomTrustlineModalTemplate({
         />
       </div>
 
-      {actionError && <div className="pollar-modal-action-error">{actionError}</div>}
+      {actionError && <div className="chettapay-modal-action-error">{actionError}</div>}
 
-      <div className="pollar-modal-actions">
-        <button type="button" className="pollar-btn-primary" onClick={submit} disabled={!canSubmit}>
+      <div className="chettapay-modal-actions">
+        <button type="button" className="chettapay-btn-primary" onClick={submit} disabled={!canSubmit}>
           {busy ? (
             <>
-              <span className="pollar-spinner pollar-spinner-sm" />
+              <span className="chettapay-spinner chettapay-spinner-sm" />
               Enabling…
             </>
           ) : (
@@ -355,7 +355,7 @@ export function CustomTrustlineModalTemplate({
         </button>
       </div>
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

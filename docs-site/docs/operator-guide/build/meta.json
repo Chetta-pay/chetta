@@ -1,0 +1,13 @@
+{
+  "title": "Build",
+  "description": "Build-time configuration: settings, chains, API keys, domains, webhooks, branding, and members.",
+  "pages": [
+    "settings",
+    "chains",
+    "api-keys",
+    "domains",
+    "webhooks",
+    "branding",
+    "members"
+  ]
+}

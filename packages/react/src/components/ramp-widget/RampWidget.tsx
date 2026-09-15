@@ -8,9 +8,9 @@ import type {
   RampsOfframpBody,
   RampsOnrampBody,
   RampTxStatus,
-} from '@pollar/core';
+} from '@chettapay/core';
 import { useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import type { RampFieldSpec, RampStep } from './RampWidgetTemplate';
 import { RampWidgetTemplate } from './RampWidgetTemplate';
 import '../shared.css';
@@ -123,7 +123,7 @@ interface RampResult {
 }
 
 export function RampWidget({ onClose }: RampWidgetProps) {
-  const { getClient, signTx, wallet, styles, network } = usePollar();
+  const { getClient, signTx, wallet, styles, network } = useChettaPay();
   const walletAddress = wallet?.address ?? '';
   const client = getClient();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
@@ -455,7 +455,7 @@ export function RampWidget({ onClose }: RampWidgetProps) {
   const flowStepIndex = flowSteps.indexOf(STEP_LABEL[step] ?? '');
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <RampWidgetTemplate
         theme={theme}
         accentColor={accentColor}

@@ -19,18 +19,18 @@ import type { KeyManager, PublicEcJwk } from './types';
  * key exfiltration, not signing-oracle attacks. See SECURITY.md.
  */
 
-const DB_NAME = 'pollar-keys';
+const DB_NAME = 'chettapay-keys';
 const DB_VERSION = 1;
 const STORE_NAME = 'keys';
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
-      reject(new Error('[PollarClient:keys] IndexedDB not available'));
+      reject(new Error('[ChettaPayClient:keys] IndexedDB not available'));
       return;
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onerror = (): void => reject(req.error ?? new Error('[PollarClient:keys] IDB open failed'));
+    req.onerror = (): void => reject(req.error ?? new Error('[ChettaPayClient:keys] IDB open failed'));
     req.onsuccess = (): void => resolve(req.result);
     req.onupgradeneeded = (): void => {
       const db = req.result;
@@ -44,7 +44,7 @@ function openDb(): Promise<IDBDatabase> {
 function awaitTx<T>(req: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     req.onsuccess = (): void => resolve(req.result);
-    req.onerror = (): void => reject(req.error ?? new Error('[PollarClient:keys] IDB request failed'));
+    req.onerror = (): void => reject(req.error ?? new Error('[ChettaPayClient:keys] IDB request failed'));
   });
 }
 
@@ -58,10 +58,10 @@ function awaitTx<T>(req: IDBRequest<T>): Promise<T> {
  */
 function awaitWriteTx(tx: IDBTransaction, req: IDBRequest): Promise<void> {
   return new Promise((resolve, reject) => {
-    req.onerror = (): void => reject(req.error ?? new Error('[PollarClient:keys] IDB write request failed'));
+    req.onerror = (): void => reject(req.error ?? new Error('[ChettaPayClient:keys] IDB write request failed'));
     tx.oncomplete = (): void => resolve();
-    tx.onerror = (): void => reject(tx.error ?? new Error('[PollarClient:keys] IDB write transaction failed'));
-    tx.onabort = (): void => reject(tx.error ?? new Error('[PollarClient:keys] IDB write transaction aborted'));
+    tx.onerror = (): void => reject(tx.error ?? new Error('[ChettaPayClient:keys] IDB write transaction failed'));
+    tx.onabort = (): void => reject(tx.error ?? new Error('[ChettaPayClient:keys] IDB write transaction aborted'));
   });
 }
 
@@ -117,7 +117,9 @@ export class WebCryptoKeyManager implements KeyManager {
 
   constructor(apiKey: string) {
     if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
-      throw new Error('[PollarClient:keys] SubtleCrypto is unavailable. DPoP requires a secure context (HTTPS or localhost).');
+      throw new Error(
+        '[ChettaPayClient:keys] SubtleCrypto is unavailable. DPoP requires a secure context (HTTPS or localhost).',
+      );
     }
     this.apiKey = apiKey;
   }
@@ -140,7 +142,7 @@ export class WebCryptoKeyManager implements KeyManager {
       this._initPromise = this._doInit().catch((err) => {
         // Clear the promise so the next call retries instead of permanently
         // returning a rejected promise. The error propagates to the caller -
-        // `PollarClient` logs it through its configured logger, so we don't
+        // `ChettaPayClient` logs it through its configured logger, so we don't
         // double-log (raw, ungated) here.
         this._initPromise = null;
         throw err;
@@ -203,7 +205,7 @@ export class WebCryptoKeyManager implements KeyManager {
       const raw = new Uint8Array(await globalThis.crypto.subtle.exportKey('raw', publicKey));
       // Uncompressed P-256 point: 65 bytes, leading 0x04 tag.
       if (raw.length !== 65 || raw[0] !== 0x04) {
-        throw new Error(`[PollarClient:keys] Unexpected raw EC point (len=${raw.length}, tag=${raw[0]})`);
+        throw new Error(`[ChettaPayClient:keys] Unexpected raw EC point (len=${raw.length}, tag=${raw[0]})`);
       }
       return {
         kty: 'EC',
@@ -277,7 +279,7 @@ export class WebCryptoKeyManager implements KeyManager {
   async getPublicJwk(): Promise<PublicEcJwk> {
     if (!this.publicJwk) await this.init();
     if (!this.publicJwk) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; getPublicJwk unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; getPublicJwk unavailable');
     }
     // Return a fresh copy so callers cannot mutate our cached state.
     return { kty: this.publicJwk.kty, crv: this.publicJwk.crv, x: this.publicJwk.x, y: this.publicJwk.y };
@@ -286,7 +288,7 @@ export class WebCryptoKeyManager implements KeyManager {
   async getThumbprint(): Promise<string> {
     if (!this.thumbprint) await this.init();
     if (!this.thumbprint) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; getThumbprint unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; getThumbprint unavailable');
     }
     return this.thumbprint;
   }
@@ -294,7 +296,7 @@ export class WebCryptoKeyManager implements KeyManager {
   async sign(payload: Uint8Array): Promise<Uint8Array> {
     if (!this.keyPair) await this.init();
     if (!this.keyPair) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; sign unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; sign unavailable');
     }
     // Cast through BufferSource: TypeScript 5.7's strict typing distinguishes
     // Uint8Array<ArrayBuffer> from Uint8Array<SharedArrayBuffer>, but every

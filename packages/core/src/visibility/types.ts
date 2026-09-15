@@ -12,11 +12,11 @@
  * environments is a noop that always reports "visible".
  *
  * React Native: import the shipped `AppState`-backed provider and pass it via
- * `PollarClientConfig.visibilityProvider`:
+ * `ChettaPayClientConfig.visibilityProvider`:
  *
- *   import { createAppStateVisibilityProvider } from '@pollar/core/adapters/react-native-appstate';
+ *   import { createAppStateVisibilityProvider } from '@chettapay/core/adapters/react-native-appstate';
  *   const visibilityProvider = await createAppStateVisibilityProvider();
- *   new PollarClient({ apiKey, visibilityProvider });
+ *   new ChettaPayClient({ apiKey, visibilityProvider });
  */
 export interface VisibilityProvider {
   isVisible(): boolean;

@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { WalletButtonTemplate } from './WalletButtonUI'; // Bypassing cache
+import { CHETTA, defaultAccent } from '../../theme';
 
 export function WalletButton() {
-    const { getClient, walletAddress, styles, openLoginModal, openTxHistoryModal, openWalletBalanceModal } = usePollar();
+    const { getClient, walletAddress, styles, openLoginModal, openTxHistoryModal, openWalletBalanceModal } = useChettaPay();
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    const { theme = 'light', accentColor = '#005DB4' } = styles;
+    const { theme = 'light', accentColor = defaultAccent(theme) } = styles;
     const isDark = theme === 'dark';
-    const dropdownBg = isDark ? '#18181b' : '#fff';
-    const dropdownBorder = isDark ? '#3f3f46' : '#e4e4e7';
-    const itemColor = isDark ? '#fafafa' : '#18181b';
+    const dropdownBg = isDark ? CHETTA.sable : '#fff';
+    const dropdownBorder = isDark ? CHETTA.bark : CHETTA.bone;
+    const itemColor = isDark ? CHETTA.cream : CHETTA.sable;
 
     async function handleCopy() {
         if (!walletAddress) return;

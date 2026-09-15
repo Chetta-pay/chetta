@@ -1,0 +1,8 @@
+{
+  "title": "Users",
+  "description": "Browse and manage your end users and their wallets.",
+  "pages": [
+    "accounts",
+    "wallets"
+  ]
+}

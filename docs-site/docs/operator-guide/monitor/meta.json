@@ -1,0 +1,9 @@
+{
+  "title": "Monitor",
+  "description": "Transactions, logs, and alerts for your app.",
+  "pages": [
+    "transactions",
+    "logs",
+    "alerts"
+  ]
+}

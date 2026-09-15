@@ -6,7 +6,7 @@ export interface PrivyUserResolution {
   created: boolean;
 }
 
-// Privy stores the Pollar-userId -> did:privy:... mapping natively in
+// Privy stores the ChettaPay-userId -> did:privy:... mapping natively in
 // linked_accounts[type=custom_auth]. We never persist it on the adapter side:
 // every resolution round-trips to Privy. On miss, we create the Privy user
 // atomically with a stellar embedded wallet so the next call already has

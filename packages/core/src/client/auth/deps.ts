@@ -1,15 +1,15 @@
-import { PollarApiClient } from '../../api/client';
+import { ChettaPayApiClient } from '../../api/client';
 import type { PublicEcJwk } from '../../keys/types';
-import type { PollarLogger } from '../../lib/logger';
-import { AUTH_ERROR_CODES, AuthState, PasskeyCeremony, PollarApplicationConfigContent } from '../../types';
+import type { ChettaPayLogger } from '../../lib/logger';
+import { AUTH_ERROR_CODES, AuthState, PasskeyCeremony, ChettaPayApplicationConfigContent } from '../../types';
 import { WalletAdapter, WalletId } from '../../wallets';
 import { logApiError } from './logging';
 
 export type FlowDeps = {
-  api: PollarApiClient;
-  /** Level-gated logger from the owning `PollarClient`. */
-  logger: PollarLogger;
-  /** API origin + version prefix (e.g. `https://sdk.api.pollar.xyz/v2`). Used to
+  api: ChettaPayApiClient;
+  /** Level-gated logger from the owning `ChettaPayClient`. */
+  logger: ChettaPayLogger;
+  /** API origin + version prefix (e.g. `https://chettapay-api.vercel.app/v2`). Used to
    *  build the non-streaming status-poll URL on runtimes without fetch streaming. */
   basePath: string;
   /**
@@ -34,7 +34,7 @@ export type FlowDeps = {
    * persisted `dpopJkt` records the BOUND key, not whatever key happens to be
    * loaded at store time (they differ if the key rotated mid-login).
    */
-  storeSession: (session: PollarApplicationConfigContent, boundDpopJkt?: string) => void | Promise<void>;
+  storeSession: (session: ChettaPayApplicationConfigContent, boundDpopJkt?: string) => void | Promise<void>;
   clearSession: () => void | Promise<void>;
   /** Persists the connected adapter (in memory + the stored wallet id) so a
    *  returning session restores it. Keyed by `adapter.type`. */

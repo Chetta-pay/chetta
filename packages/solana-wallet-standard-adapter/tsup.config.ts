@@ -11,5 +11,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   target: 'es2020',
-  external: ['@pollar/core'],
+  external: ['@chettapay/core'],
 });

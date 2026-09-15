@@ -23,7 +23,7 @@ export const createApp = (deps: AdapterDeps): Hono<AppEnv> => {
 
   app.route('/health', createHealthRoute());
 
-  const auth = createBearerMiddleware(deps.config.pollarApiSecret);
+  const auth = createBearerMiddleware(deps.config.chettaPayApiSecret);
   app.use('/wallets/*', auth);
 
   app.route('/wallets/create', createWalletsCreateRoute(deps));

@@ -1,8 +1,8 @@
 'use client';
 
-import { WalletChain } from '@pollar/core';
+import { WalletChain } from '@chettapay/core';
 import { useCallback, useEffect, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
 import { addressForChain } from '../ChainSelect';
 import '../shared.css';
@@ -17,7 +17,7 @@ interface TxHistoryModalProps {
 }
 
 export function TxHistoryModal({ onClose }: TxHistoryModalProps) {
-  const { getClient, styles, txHistory, wallets } = usePollar();
+  const { getClient, styles, txHistory, wallets } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
   const [offset, setOffset] = useState(0);
 
@@ -53,7 +53,7 @@ export function TxHistoryModal({ onClose }: TxHistoryModalProps) {
   };
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <TxHistoryModalTemplate
         theme={theme}
         accentColor={accentColor}

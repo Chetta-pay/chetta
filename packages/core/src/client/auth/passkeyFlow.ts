@@ -21,7 +21,7 @@ export async function smartWalletFlow(deps: FlowDeps, mode: PasskeyMode): Promis
   const { api, logger, signal, setAuthState, passkey } = deps;
 
   if (!passkey) {
-    logger.error('[PollarClient:auth] passkey ceremony not configured');
+    logger.error('[ChettaPayClient:auth] passkey ceremony not configured');
     setAuthState({
       step: 'error',
       previousStep: 'creating_session',

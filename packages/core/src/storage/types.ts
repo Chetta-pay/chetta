@@ -1,5 +1,5 @@
 /**
- * Pluggable storage interface used by `PollarClient` to persist session and
+ * Pluggable storage interface used by `ChettaPayClient` to persist session and
  * key material. All operations are async to accommodate native backends like
  * Expo SecureStore and react-native-keychain whose underlying APIs are async.
  */

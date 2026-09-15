@@ -1,6 +1,6 @@
 type StateStatus = 'NONE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
-import type { PollarLogger } from '@pollar/core';
+import type { ChettaPayLogger } from '@chettapay/core';
 import {
   Component,
   useEffect,
@@ -10,15 +10,15 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
-import { LOGO_POLLAR } from '../constants';
+import { LOGO_CHETTAPAY } from '../constants';
 
-declare const __POLLAR_VERSION__: string;
+declare const __CHETTAPAY_VERSION__: string;
 
 // Module-level sink for the error boundary (a class component, so it can't read
-// React context inside `componentDidCatch`). `PollarProvider` points this at the
+// React context inside `componentDidCatch`). `ChettaPayProvider` points this at the
 // client's level-gated logger on mount; defaults to `console` until then.
-let _modalLog: PollarLogger = console;
-export function setModalErrorLogger(logger: PollarLogger): void {
+let _modalLog: ChettaPayLogger = console;
+export function setModalErrorLogger(logger: ChettaPayLogger): void {
   _modalLog = logger;
 }
 
@@ -34,7 +34,7 @@ export class ModalErrorBoundary extends Component<{ children: ReactNode; onClose
   }
 
   componentDidCatch(error: unknown) {
-    _modalLog.error('[PollarProvider] Modal crashed:', error);
+    _modalLog.error('[ChettaPayProvider] Modal crashed:', error);
   }
 
   render() {
@@ -46,14 +46,14 @@ export class ModalErrorBoundary extends Component<{ children: ReactNode; onClose
   }
 }
 
-export const PollarModalFooter = () => {
+export const ChettaPayModalFooter = () => {
   return (
-    <div className="pollar-footer">
-      <span className="pollar-footer-protected">Protected by</span>
-      <div className="pollar-footer-brand">
-        <img src={LOGO_POLLAR} alt="Pollar" className="pollar-footer-logo" />
-        <span className="pollar-footer-name">Pollar</span>
-        <span className="pollar-footer-version">v{__POLLAR_VERSION__}</span>
+    <div className="chettapay-footer">
+      <span className="chettapay-footer-protected">Protected by</span>
+      <div className="chettapay-footer-brand">
+        <img src={LOGO_CHETTAPAY} alt="ChettaPay" className="chettapay-footer-logo" />
+        <span className="chettapay-footer-name">ChettaPay</span>
+        <span className="chettapay-footer-version">v{__CHETTAPAY_VERSION__}</span>
       </div>
     </div>
   );
@@ -64,7 +64,7 @@ interface CopyButtonProps {
   value: string;
   /** Accessible label for the button (e.g. "Copy address"). */
   label?: string;
-  /** Extra class (e.g. `pollar-copy-btn-sm` for the compact issuer variant). */
+  /** Extra class (e.g. `chettapay-copy-btn-sm` for the compact issuer variant). */
   className?: string;
 }
 
@@ -95,7 +95,7 @@ export function CopyButton({ value, label = 'Copy', className }: CopyButtonProps
   return (
     <button
       type="button"
-      className={`pollar-copy-btn${className ? ` ${className}` : ''}`}
+      className={`chettapay-copy-btn${className ? ` ${className}` : ''}`}
       onClick={handleCopy}
       aria-label={copied ? 'Copied' : label}
     >
@@ -127,7 +127,7 @@ interface ModalStatusBannerProps {
 
 export function ModalStatusBanner({ message, status, onCancel, onRetry }: ModalStatusBannerProps) {
   if (!message && status === 'NONE') {
-    return <div className="pollar-status" />;
+    return <div className="chettapay-status" />;
   }
 
   const isLoading = status === 'LOADING';
@@ -147,16 +147,16 @@ export function ModalStatusBanner({ message, status, onCancel, onRetry }: ModalS
     ) : null;
 
   return (
-    <div className="pollar-status" data-kind={status}>
+    <div className="chettapay-status" data-kind={status}>
       {icon}
       <span>{message}</span>
       {isLoading && onCancel && (
-        <button type="button" className="pollar-status-cancel" onClick={onCancel}>
+        <button type="button" className="chettapay-status-cancel" onClick={onCancel}>
           Cancel
         </button>
       )}
       {status === 'ERROR' && onRetry && (
-        <button type="button" className="pollar-status-cancel" onClick={onRetry}>
+        <button type="button" className="chettapay-status-cancel" onClick={onRetry}>
           Retry
         </button>
       )}
@@ -179,9 +179,9 @@ const CHAIN_TAG: Record<string, { label: string; color: string }> = {
 };
 
 export function ChainTag({ chain }: { chain: string }) {
-  const tag = CHAIN_TAG[chain] ?? { label: chain, color: '#6b7280' };
+  const tag = CHAIN_TAG[chain] ?? { label: chain, color: '#7A6A55' };
   return (
-    <span className="pollar-chain-tag" style={{ '--pollar-chain-color': tag.color } as CSSProperties}>
+    <span className="chettapay-chain-tag" style={{ '--chettapay-chain-color': tag.color } as CSSProperties}>
       {tag.label}
     </span>
   );
@@ -214,9 +214,9 @@ export function useStickyData<T>(data: T | null): T | null {
  */
 export function BusyOverlay({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className="pollar-busy-overlay" aria-busy="true" aria-live="polite">
-      <div className="pollar-busy-overlay-inner">
-        <div className="pollar-spinner" />
+    <div className="chettapay-busy-overlay" aria-busy="true" aria-live="polite">
+      <div className="chettapay-busy-overlay-inner">
+        <div className="chettapay-spinner" />
         <span>{label}</span>
       </div>
     </div>
@@ -242,12 +242,12 @@ export function Toggle({ checked, onChange, disabled = false, busy = false, labe
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      className={`pollar-switch${checked ? ' pollar-switch-on' : ''}${busy ? ' pollar-switch-busy' : ''}`}
+      className={`chettapay-switch${checked ? ' chettapay-switch-on' : ''}${busy ? ' chettapay-switch-busy' : ''}`}
       onClick={onChange}
       disabled={disabled || busy}
     >
-      <span className="pollar-switch-knob">
-        {busy && <span className="pollar-spinner pollar-spinner-sm pollar-spinner-current" />}
+      <span className="chettapay-switch-knob">
+        {busy && <span className="chettapay-spinner chettapay-spinner-sm chettapay-spinner-current" />}
       </span>
     </button>
   );

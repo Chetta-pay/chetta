@@ -1,13 +1,13 @@
 {
-  "name": "@pollar/privy-server-adapter",
+  "name": "@chettapay/privy-server-adapter",
   "version": "0.11.2",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pollar-xyz/pollar.git",
+    "url": "git+https://github.com/Chetta-pay/chetta.git",
     "directory": "packages/privy-server-adapter"
   },
-  "description": "Stateless HTTP proxy that lets Pollar sign Stellar transactions through your Privy account, without your Privy app secret leaving your infrastructure.",
+  "description": "Stateless HTTP proxy that lets ChettaPay sign Stellar transactions through your Privy account, without your Privy app secret leaving your infrastructure.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

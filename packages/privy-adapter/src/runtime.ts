@@ -7,10 +7,10 @@ import type {
   SignAuthEntryResponse,
   SignTransactionOptions,
   SignTransactionResponse,
-} from '@pollar/core';
-import type { PollarPrivyConfig, PrivyLoginMethod } from './config';
+} from '@chettapay/core';
+import type { ChettaPayPrivyConfig, PrivyLoginMethod } from './config';
 
-export type { AuthOption, InteractiveAuthAdapter } from '@pollar/core';
+export type { AuthOption, InteractiveAuthAdapter } from '@chettapay/core';
 import { PrivyAdapterUnsupportedError, RUNTIME_ATTACH_TIMEOUT_MS, UNSUPPORTED_MESSAGE } from './environment.ts';
 import { log, setPrivyAdapterDebug } from './log.ts';
 
@@ -58,7 +58,7 @@ export interface PrivyRuntime {
  */
 export interface PrivyAdapterHandle extends InteractiveAuthAdapter {
   /** The config the adapter was created with (so the provider can default it). */
-  readonly config: PollarPrivyConfig;
+  readonly config: ChettaPayPrivyConfig;
   /** @internal Called by the platform bridge once Privy's hooks are captured. */
   _attachRuntime(runtime: PrivyRuntime): void;
   /** @internal Called by the platform bridge on unmount. */
@@ -80,7 +80,7 @@ const LOGIN_METHOD_TO_OPTION: Record<PrivyLoginMethod, AuthOption> = {
  * - the signal that there is no React/Expo host (e.g. Angular/Vue) or the bridge
  * was never mounted.
  */
-export function buildPrivyAdapter(config: PollarPrivyConfig): PrivyAdapterHandle {
+export function buildPrivyAdapter(config: ChettaPayPrivyConfig): PrivyAdapterHandle {
   setPrivyAdapterDebug(config.debug ?? false);
   log('adapter created', { type: PRIVY_ID, loginMethods: config.loginMethods });
 

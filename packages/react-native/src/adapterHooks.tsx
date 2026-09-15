@@ -1,18 +1,18 @@
-import type { EscrowAdapter } from '@pollar/core';
+import type { EscrowAdapter } from '@chettapay/core';
 // Force TS refresh
-import { usePollar } from './context';
+import { useChettaPay } from './context';
 
 type WrappedAdapter<T extends EscrowAdapter> = {
     [K in keyof T]: (params: Parameters<T[K]>[0]) => Promise<void>;
 };
 
-export function createPollarAdapterHook<T extends EscrowAdapter>(key: string) {
-    return function usePollarAdapter(): WrappedAdapter<T> {
-        const { adapters, signAndSubmitTx } = usePollar();
+export function createChettaPayAdapterHook<T extends EscrowAdapter>(key: string) {
+    return function useChettaPayAdapter(): WrappedAdapter<T> {
+        const { adapters, signAndSubmitTx } = useChettaPay();
         const adapter = adapters?.[key] as T | undefined;
 
         if (!adapter) {
-            throw new Error(`No adapter "${key}" provided to PollarProvider`);
+            throw new Error(`No adapter "${key}" provided to ChettaPayProvider`);
         }
 
         return Object.fromEntries(

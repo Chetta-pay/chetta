@@ -1,8 +1,8 @@
 'use client';
 
-import { TransactionState, WalletId } from '@pollar/core';
+import { TransactionState, WalletId } from '@chettapay/core';
 import React from 'react';
-import { PollarModalFooter } from '../commons';
+import { ChettaPayModalFooter } from '../commons';
 import { TxStatusView } from './TxStatusView';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
@@ -41,11 +41,16 @@ export function TransactionModalTemplate({
   const cssVars = buildModalCssVars(theme, accentColor, styleOverrides);
 
   return (
-    <div className="pollar-modal-card pollar-tx-modal" data-theme={theme} style={cssVars} onClick={(e) => e.stopPropagation()}>
-      <div className="pollar-modal-header">
-        <h2 className="pollar-modal-title">Transaction</h2>
+    <div
+      className="chettapay-modal-card chettapay-tx-modal"
+      data-theme={theme}
+      style={cssVars}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="chettapay-modal-header">
+        <h2 className="chettapay-modal-title">Transaction</h2>
       </div>
-      <button type="button" className="pollar-close-btn" onClick={onClose} aria-label="Close">
+      <button type="button" className="chettapay-close-btn" onClick={onClose} aria-label="Close">
         <svg
           width="18"
           height="18"
@@ -74,7 +79,7 @@ export function TransactionModalTemplate({
         onDone={onClose}
       />
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

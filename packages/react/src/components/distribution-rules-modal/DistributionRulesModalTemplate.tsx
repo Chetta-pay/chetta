@@ -1,7 +1,7 @@
 'use client';
 
-import { DistributionRule, DistributionRulesState } from '@pollar/core';
-import { PollarModalFooter } from '../commons';
+import { DistributionRule, DistributionRulesState } from '@chettapay/core';
+import { ChettaPayModalFooter } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
 interface DistributionRulesModalTemplateProps {
@@ -28,7 +28,7 @@ const PERIOD_LABEL: Record<DistributionRule['period'], string> = {
 };
 
 // Reasons returned by sdk-api are the ErrorCode enum values from
-// @pollar/shared. Mapped to short user-facing strings; anything unknown
+// @chettapay/shared. Mapped to short user-facing strings; anything unknown
 // falls back to "Not available".
 const REASON_LABEL: Record<string, string> = {
   DISTRIBUTION_RULE_DISABLED: 'Disabled',
@@ -77,27 +77,32 @@ function RuleCard({
   const effectivelyClaimable = rule.claimable && !isClaimed;
 
   return (
-    <div className="pollar-dist-item" data-claimable={effectivelyClaimable ? 'true' : 'false'}>
-      <div className="pollar-dist-item-row">
-        <span className="pollar-dist-item-name">{rule.name}</span>
-        <span className="pollar-dist-item-amount">
-          {formatAmount(rule.amount)} <span className="pollar-dist-item-asset">{rule.assetCode}</span>
+    <div className="chettapay-dist-item" data-claimable={effectivelyClaimable ? 'true' : 'false'}>
+      <div className="chettapay-dist-item-row">
+        <span className="chettapay-dist-item-name">{rule.name}</span>
+        <span className="chettapay-dist-item-amount">
+          {formatAmount(rule.amount)} <span className="chettapay-dist-item-asset">{rule.assetCode}</span>
         </span>
       </div>
-      <div className="pollar-dist-item-meta">
+      <div className="chettapay-dist-item-meta">
         <span>{PERIOD_LABEL[rule.period]}</span>
         {validity && <span>· {validity}</span>}
       </div>
-      <div className="pollar-dist-item-action">
+      <div className="chettapay-dist-item-action">
         {isClaimed ? (
-          <span className="pollar-dist-item-status" data-kind="claimed">
+          <span className="chettapay-dist-item-status" data-kind="claimed">
             Claimed
           </span>
         ) : effectivelyClaimable ? (
-          <button type="button" className="pollar-btn-primary pollar-dist-claim-btn" onClick={onClaim} disabled={isClaiming}>
+          <button
+            type="button"
+            className="chettapay-btn-primary chettapay-dist-claim-btn"
+            onClick={onClaim}
+            disabled={isClaiming}
+          >
             {isClaiming ? (
               <>
-                <span className="pollar-spinner pollar-spinner-sm" />
+                <span className="chettapay-spinner chettapay-spinner-sm" />
                 Claiming…
               </>
             ) : (
@@ -105,12 +110,12 @@ function RuleCard({
             )}
           </button>
         ) : (
-          <span className="pollar-dist-item-status" data-kind="unavailable">
+          <span className="chettapay-dist-item-status" data-kind="unavailable">
             {reasonLabel(rule.reason)}
           </span>
         )}
       </div>
-      {errorMessage && <div className="pollar-dist-item-error">{errorMessage}</div>}
+      {errorMessage && <div className="chettapay-dist-item-error">{errorMessage}</div>}
     </div>
   );
 }
@@ -134,24 +139,24 @@ export function DistributionRulesModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-dist-modal"
+      className="chettapay-modal-card chettapay-dist-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pollar-modal-header">
-        <h2 className="pollar-modal-title">Distribution Rules</h2>
-        <div className="pollar-modal-header-actions">
+      <div className="chettapay-modal-header">
+        <h2 className="chettapay-modal-title">Distribution Rules</h2>
+        <div className="chettapay-modal-header-actions">
           <button
             type="button"
-            className="pollar-modal-close"
+            className="chettapay-modal-close"
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Refresh"
             title="Refresh"
           >
             <svg
-              className={isLoading ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+              className={isLoading ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -167,7 +172,7 @@ export function DistributionRulesModalTemplate({
               />
             </svg>
           </button>
-          <button className="pollar-modal-close" onClick={onClose} aria-label="Close">
+          <button className="chettapay-modal-close" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -175,16 +180,16 @@ export function DistributionRulesModalTemplate({
         </div>
       </div>
 
-      <div className="pollar-dist-list">
+      <div className="chettapay-dist-list">
         {isLoading && (
-          <div className="pollar-loading-block">
-            <div className="pollar-spinner" />
+          <div className="chettapay-loading-block">
+            <div className="chettapay-spinner" />
             <span>Loading…</span>
           </div>
         )}
-        {state.step === 'error' && <div className="pollar-modal-error">{state.message}</div>}
+        {state.step === 'error' && <div className="chettapay-modal-error">{state.message}</div>}
         {state.step === 'loaded' && rules.length === 0 && (
-          <div className="pollar-modal-empty">No distribution rules available.</div>
+          <div className="chettapay-modal-empty">No distribution rules available.</div>
         )}
         {rules.map((rule) => (
           <RuleCard
@@ -198,7 +203,7 @@ export function DistributionRulesModalTemplate({
         ))}
       </div>
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

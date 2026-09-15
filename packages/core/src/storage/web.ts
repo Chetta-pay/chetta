@@ -1,7 +1,7 @@
-import type { PollarLogger } from '../lib/logger';
+import type { ChettaPayLogger } from '../lib/logger';
 import type { OnStorageDegrade, Storage, StorageDegradeReason } from './types';
 
-const LOG_PREFIX = '[PollarClient:storage]';
+const LOG_PREFIX = '[ChettaPayClient:storage]';
 
 /**
  * In-memory storage backed by a `Map`. Always available, never throws.
@@ -34,9 +34,9 @@ export interface LocalStorageAdapterOptions {
   onDegrade?: OnStorageDegrade;
   /**
    * Logger for the one-shot degrade warning. Defaults to the global `console`;
-   * `PollarClient` passes its level-gated logger so `logLevel` applies here too.
+   * `ChettaPayClient` passes its level-gated logger so `logLevel` applies here too.
    */
-  logger?: PollarLogger;
+  logger?: ChettaPayLogger;
 }
 
 /**

@@ -2,11 +2,11 @@ import { timingSafeEqual } from 'node:crypto';
 import type { Context, Next } from 'hono';
 import { ErrorCode, type AppEnv } from '../types';
 
-const WWW_AUTH_MISSING = 'Bearer realm="pollar-privy-adapter"';
-const WWW_AUTH_INVALID = 'Bearer realm="pollar-privy-adapter", error="invalid_token"';
+const WWW_AUTH_MISSING = 'Bearer realm="chettapay-privy-adapter"';
+const WWW_AUTH_INVALID = 'Bearer realm="chettapay-privy-adapter", error="invalid_token"';
 
-export const createBearerMiddleware = (pollarApiSecret: string) => {
-  const expected = Buffer.from(pollarApiSecret, 'utf8');
+export const createBearerMiddleware = (chettaPayApiSecret: string) => {
+  const expected = Buffer.from(chettaPayApiSecret, 'utf8');
 
   return async (c: Context<AppEnv>, next: Next): Promise<Response | void> => {
     const auth = c.req.header('Authorization');

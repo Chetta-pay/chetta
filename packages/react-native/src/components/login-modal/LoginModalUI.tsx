@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { AUTH_ERROR_CODES, AuthState } from '@pollar/core';
-import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_POLLAR } from '../../constants';
-import { ModalStatusBanner, PollarModalFooter, PollarOverlay } from '../commons';
+import { AUTH_ERROR_CODES, AuthState } from '@chettapay/core';
+import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_CHETTAPAY } from '../../constants';
+import { ModalStatusBanner, ChettaPayModalFooter, ChettaPayOverlay } from '../commons';
+import { CHETTA } from '../../theme';
 
 type StateStatus = 'NONE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
@@ -97,11 +98,11 @@ export function LoginModalTemplate({
     const enabledSocial = Object.entries(providers).filter(([, enabled]) => enabled);
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        inputBg: isDark ? '#374151' : '#f9fafb',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        inputBg: isDark ? CHETTA.soot : CHETTA.sand,
     };
 
     const status = authStateToStatus(authState.step);
@@ -122,7 +123,7 @@ export function LoginModalTemplate({
     );
 
     return (
-        <PollarOverlay onCancel={onCancel}>
+        <ChettaPayOverlay onCancel={onCancel}>
             <View style={[styles.card, { backgroundColor: colors.bg, borderColor: colors.border }]}>
                 <TouchableOpacity style={[styles.iconButton, styles.closeBtn, { borderColor: colors.border }]} onPress={onCancel}>
                     <Text style={{ color: colors.muted, fontSize: 16 }}>✕</Text>
@@ -130,7 +131,7 @@ export function LoginModalTemplate({
 
                 <View style={styles.header}>
                     <View style={styles.logoWrap}>
-                        <Image source={{ uri: logoUrl ?? LOGO_POLLAR }} style={styles.logo} />
+                        <Image source={{ uri: logoUrl ?? LOGO_CHETTAPAY }} style={styles.logo} />
                     </View>
                     <Text style={[styles.title, { color: colors.text }]}>{appName}</Text>
                     <Text style={[styles.subtitle, { color: colors.muted }]}>Log in or sign up</Text>
@@ -234,9 +235,9 @@ export function LoginModalTemplate({
                     onRetry={isEmailCodeError ? undefined : onRetry}
                 />
 
-                <PollarModalFooter />
+                <ChettaPayModalFooter />
             </View>
-        </PollarOverlay>
+        </ChettaPayOverlay>
     );
 }
 

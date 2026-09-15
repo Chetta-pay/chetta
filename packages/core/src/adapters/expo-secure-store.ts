@@ -40,7 +40,7 @@ export const SECURE_STORE_MAX_VALUE_BYTES = 4096;
 /**
  * Map a logical storage key onto one Expo SecureStore accepts. SecureStore keys
  * must match `[A-Za-z0-9._-]`, but the SDK namespaces its keys with `:`
- * (`pollar:<apiKeyHash>:session`, `pollar:dpop-key:<apiKeyHash>`, ...), which
+ * (`chettapay:<apiKeyHash>:session`, `chettapay:dpop-key:<apiKeyHash>`, ...), which
  * SecureStore rejects with an `Invalid key` error. Replace every disallowed
  * character with `_`. The transform is deterministic and collision-free for the
  * SDK's fixed key templates - their only variable segment is a hex hash - so a
@@ -67,7 +67,7 @@ async function loadSecureStore(): Promise<SecureStoreApi> {
     return mod as unknown as SecureStoreApi;
   } catch (error) {
     const message =
-      `[PollarClient:storage] Failed to load 'expo-secure-store'. ` +
+      `[ChettaPayClient:storage] Failed to load 'expo-secure-store'. ` +
       `Install it in your Expo app: \`npx expo install expo-secure-store\`. ` +
       `Original error: ${error instanceof Error ? error.message : String(error)}`;
     throw new Error(message, { cause: error });
@@ -111,7 +111,7 @@ export async function createSecureStoreAdapter(options: SecureStoreAdapterOption
       const size = utf8ByteLength(value);
       if (size > SECURE_STORE_MAX_VALUE_BYTES) {
         throw new Error(
-          `[PollarClient:storage] Value for "${key}" is ${size} bytes, exceeds SecureStore limit ${SECURE_STORE_MAX_VALUE_BYTES}`,
+          `[ChettaPayClient:storage] Value for "${key}" is ${size} bytes, exceeds SecureStore limit ${SECURE_STORE_MAX_VALUE_BYTES}`,
         );
       }
       await SecureStore.setItemAsync(

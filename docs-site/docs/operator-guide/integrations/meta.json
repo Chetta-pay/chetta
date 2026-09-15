@@ -1,0 +1,11 @@
+{
+  "title": "Integrations",
+  "description": "Authentication, KYC, ramps, and ChettaPay Checkout.",
+  "pages": [
+    "authentication",
+    "kyc",
+    "ramps",
+    "checkout",
+    "wallets"
+  ]
+}

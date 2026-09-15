@@ -8,7 +8,7 @@ import type {
   RampQuote,
   RampScannable,
   RampTxStatus,
-} from '@pollar/core';
+} from '@chettapay/core';
 import { RouteDisplay } from './RouteDisplay';
 import { CopyButton } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
@@ -245,16 +245,22 @@ export function RampWidgetTemplate({
   };
 
   return (
-    <div className="pollar-modal-card pollar-ramp-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
-      <div className="pollar-modal-header">
-        <div className="pollar-ramp-header-text">
-          <h2 className="pollar-modal-title">{stepTitle[step]}</h2>
-          <p className="pollar-ramp-subtitle">{stepSubtitle[step]}</p>
+    <div className="chettapay-modal-card chettapay-ramp-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
+      <div className="chettapay-modal-header">
+        <div className="chettapay-ramp-header-text">
+          <h2 className="chettapay-modal-title">{stepTitle[step]}</h2>
+          <p className="chettapay-ramp-subtitle">{stepSubtitle[step]}</p>
         </div>
-        <div className="pollar-modal-header-actions">
-          <button type="button" className="pollar-modal-close" onClick={onRefresh} disabled={refreshing} aria-label="Refresh">
+        <div className="chettapay-modal-header-actions">
+          <button
+            type="button"
+            className="chettapay-modal-close"
+            onClick={onRefresh}
+            disabled={refreshing}
+            aria-label="Refresh"
+          >
             <svg
-              className={refreshing ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+              className={refreshing ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -270,7 +276,7 @@ export function RampWidgetTemplate({
               />
             </svg>
           </button>
-          <button type="button" className="pollar-modal-close" onClick={onClose} aria-label="Close">
+          <button type="button" className="chettapay-modal-close" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -282,12 +288,12 @@ export function RampWidgetTemplate({
           from a constant: a provider that collects no fields genuinely has one
           step fewer. Hidden on the error step, which is not part of the flow. */}
       {flowStepIndex >= 0 && flowSteps.length > 0 && (
-        <div className="pollar-ramp-steps">
-          <span className="pollar-ramp-steps-label">
+        <div className="chettapay-ramp-steps">
+          <span className="chettapay-ramp-steps-label">
             Step {flowStepIndex + 1} of {flowSteps.length}
           </span>
           <div
-            className="pollar-ramp-steps-track"
+            className="chettapay-ramp-steps-track"
             role="progressbar"
             aria-valuenow={flowStepIndex + 1}
             aria-valuemin={1}
@@ -295,7 +301,7 @@ export function RampWidgetTemplate({
             aria-label={flowSteps[flowStepIndex]}
           >
             {flowSteps.map((label, i) => (
-              <span key={label} className="pollar-ramp-steps-segment" data-done={i <= flowStepIndex || undefined} />
+              <span key={label} className="chettapay-ramp-steps-segment" data-done={i <= flowStepIndex || undefined} />
             ))}
           </div>
         </div>
@@ -303,10 +309,10 @@ export function RampWidgetTemplate({
 
       {step === 'input' && (
         <>
-          <div className="pollar-tabs">
+          <div className="chettapay-tabs">
             <button
               type="button"
-              className="pollar-tab"
+              className="chettapay-tab"
               data-active={direction === 'onramp'}
               onClick={() => onDirectionChange('onramp')}
             >
@@ -314,7 +320,7 @@ export function RampWidgetTemplate({
             </button>
             <button
               type="button"
-              className="pollar-tab"
+              className="chettapay-tab"
               data-active={direction === 'offramp'}
               onClick={() => onDirectionChange('offramp')}
             >
@@ -322,17 +328,17 @@ export function RampWidgetTemplate({
             </button>
           </div>
 
-          <div className="pollar-ramp-field">
-            <label className="pollar-ramp-label">Country</label>
+          <div className="chettapay-ramp-field">
+            <label className="chettapay-ramp-label">Country</label>
             {countriesLoading ? (
-              <div className="pollar-ramp-input pollar-select-loading">
-                <span className="pollar-spinner pollar-spinner-sm" />
+              <div className="chettapay-ramp-input chettapay-select-loading">
+                <span className="chettapay-spinner chettapay-spinner-sm" />
                 <span>Loading countries…</span>
               </div>
             ) : countries.length === 0 ? (
-              <div className="pollar-modal-error">No ramp providers available on this network yet.</div>
+              <div className="chettapay-modal-error">No ramp providers available on this network yet.</div>
             ) : (
-              <select className="pollar-ramp-input" value={country} onChange={(e) => onCountryChange(e.target.value)}>
+              <select className="chettapay-ramp-input" value={country} onChange={(e) => onCountryChange(e.target.value)}>
                 {countries.map((c) => (
                   <option key={c.code} value={c.code}>
                     {flagEmoji(c.code)} {c.code}
@@ -343,11 +349,11 @@ export function RampWidgetTemplate({
             )}
           </div>
 
-          <div className="pollar-ramp-field">
-            <label className="pollar-ramp-label">Amount{currency ? ` (${currency})` : ''}</label>
+          <div className="chettapay-ramp-field">
+            <label className="chettapay-ramp-label">Amount{currency ? ` (${currency})` : ''}</label>
             <input
               type="number"
-              className="pollar-ramp-input"
+              className="chettapay-ramp-input"
               placeholder="0.00"
               value={amount}
               min="0"
@@ -355,16 +361,16 @@ export function RampWidgetTemplate({
             />
             {/* Why the user was sent back here (e.g. the route's minimum), kept
                 under the field they came to fix. Clears as soon as they type. */}
-            {errorMsg && <span className="pollar-ramp-field-error">{errorMsg}</span>}
+            {errorMsg && <span className="chettapay-ramp-field-error">{errorMsg}</span>}
           </div>
 
-          <div className="pollar-modal-actions">
-            <button type="button" className="pollar-btn-secondary" onClick={onClose}>
+          <div className="chettapay-modal-actions">
+            <button type="button" className="chettapay-btn-secondary" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="pollar-btn-primary"
+              className="chettapay-btn-primary"
               disabled={!amount || isLoading || countriesLoading || countries.length === 0}
               onClick={onFindRoute}
             >
@@ -375,11 +381,11 @@ export function RampWidgetTemplate({
       )}
 
       {step === 'loading_quote' && (
-        <div className="pollar-ramp-loading">
-          <div className="pollar-spinner pollar-ramp-loading-spinner" />
+        <div className="chettapay-ramp-loading">
+          <div className="chettapay-spinner chettapay-ramp-loading-spinner" />
           {LOADING_STEPS.map((text, i) => (
-            <div key={i} className="pollar-ramp-loading-row">
-              <div className="pollar-ramp-loading-dot" />
+            <div key={i} className="chettapay-ramp-loading-row">
+              <div className="chettapay-ramp-loading-dot" />
               <span>{text}</span>
             </div>
           ))}
@@ -388,7 +394,7 @@ export function RampWidgetTemplate({
 
       {step === 'select_route' && (
         <>
-          <div className="pollar-ramp-route-list">
+          <div className="chettapay-ramp-route-list">
             {quotes.map((q, i) => (
               <RouteDisplay
                 key={i}
@@ -403,14 +409,14 @@ export function RampWidgetTemplate({
               can pick another route or go back and edit - without leaving the
               list for the error step. */}
           {errorMsg && (
-            <p className="pollar-ramp-payment-note" style={{ color: 'var(--pollar-error-text)' }}>
+            <p className="chettapay-ramp-payment-note" style={{ color: 'var(--chettapay-error-text)' }}>
               {errorMsg}
             </p>
           )}
           {/* Back returns to the amount, which is the only way out of a route
               whose minimum the amount misses - so it takes the primary weight
               while that message is up. The header's X still closes the modal. */}
-          <button type="button" className={errorMsg ? 'pollar-btn-primary' : 'pollar-btn-secondary'} onClick={onBack}>
+          <button type="button" className={errorMsg ? 'chettapay-btn-primary' : 'chettapay-btn-secondary'} onClick={onBack}>
             Back
           </button>
         </>
@@ -419,14 +425,14 @@ export function RampWidgetTemplate({
       {step === 'contact' && (
         <>
           {requiredFields.map((f) => (
-            <div key={f.key} className="pollar-ramp-field">
-              <label className="pollar-ramp-label">
+            <div key={f.key} className="chettapay-ramp-field">
+              <label className="chettapay-ramp-label">
                 {f.label}
-                {f.optional && <span className="pollar-ramp-field-optional"> (optional)</span>}
+                {f.optional && <span className="chettapay-ramp-field-optional"> (optional)</span>}
               </label>
               {f.type === 'select' ? (
                 <select
-                  className="pollar-ramp-input"
+                  className="chettapay-ramp-input"
                   value={fieldValues[f.key] ?? ''}
                   onChange={(e) => onFieldChange(f.key, e.target.value)}
                 >
@@ -442,33 +448,33 @@ export function RampWidgetTemplate({
               ) : (
                 <input
                   type={f.type}
-                  className="pollar-ramp-input"
+                  className="chettapay-ramp-input"
                   value={fieldValues[f.key] ?? ''}
                   placeholder={placeholderFor(f, requiredFields, fieldValues)}
                   autoComplete={f.type === 'email' ? 'email' : 'off'}
                   onChange={(e) => onFieldChange(f.key, e.target.value)}
                 />
               )}
-              {f.hint && <span className="pollar-ramp-field-hint">{f.hint}</span>}
+              {f.hint && <span className="chettapay-ramp-field-hint">{f.hint}</span>}
               {f.type === 'email' && (fieldValues[f.key] ?? '').trim() !== '' && !isFieldValid(f, fieldValues[f.key]) && (
-                <span className="pollar-ramp-field-error">Enter a valid email address.</span>
+                <span className="chettapay-ramp-field-error">Enter a valid email address.</span>
               )}
             </div>
           ))}
 
-          <div className="pollar-modal-actions">
-            <button type="button" className="pollar-btn-secondary" onClick={onBack}>
+          <div className="chettapay-modal-actions">
+            <button type="button" className="chettapay-btn-secondary" onClick={onBack}>
               Back
             </button>
             <button
               type="button"
-              className="pollar-btn-primary"
+              className="chettapay-btn-primary"
               disabled={requiredFields.some((f) => !isFieldValid(f, fieldValues[f.key])) || isLoading}
               onClick={onContactContinue}
             >
               {isLoading ? (
                 <>
-                  <span className="pollar-spinner pollar-spinner-sm" />
+                  <span className="chettapay-spinner chettapay-spinner-sm" />
                   Starting…
                 </>
               ) : (
@@ -480,30 +486,30 @@ export function RampWidgetTemplate({
       )}
 
       {step === 'status' && (
-        <div className="pollar-ramp-payment">
-          <div className="pollar-ramp-payment-field">
-            <span className="pollar-ramp-payment-label">Provider</span>
-            <div className="pollar-ramp-payment-value">
+        <div className="chettapay-ramp-payment">
+          <div className="chettapay-ramp-payment-field">
+            <span className="chettapay-ramp-payment-label">Provider</span>
+            <div className="chettapay-ramp-payment-value">
               <code>{provider}</code>
             </div>
           </div>
 
-          <div className="pollar-ramp-payment-field">
-            <span className="pollar-ramp-payment-label">Status</span>
-            <div className="pollar-ramp-payment-value">
-              <code style={{ color: txStatus === 'completed' ? 'var(--pollar-success-text)' : undefined }}>
+          <div className="chettapay-ramp-payment-field">
+            <span className="chettapay-ramp-payment-label">Status</span>
+            <div className="chettapay-ramp-payment-value">
+              <code style={{ color: txStatus === 'completed' ? 'var(--chettapay-success-text)' : undefined }}>
                 {txStatus ? STATUS_LABEL[txStatus] : 'Processing'}
               </code>
               {txStatus !== 'completed' && txStatus !== 'failed' && (
-                <span className="pollar-spinner pollar-spinner-sm" aria-label="Checking status" />
+                <span className="chettapay-spinner chettapay-spinner-sm" aria-label="Checking status" />
               )}
             </div>
           </div>
 
           {stellarTxHash && (
-            <div className="pollar-ramp-payment-field">
-              <span className="pollar-ramp-payment-label">Stellar tx</span>
-              <div className="pollar-ramp-payment-value" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="chettapay-ramp-payment-field">
+              <span className="chettapay-ramp-payment-label">Stellar tx</span>
+              <div className="chettapay-ramp-payment-value" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <code style={{ flex: 1, wordBreak: 'break-all' }}>
                   {stellarTxHash.slice(0, 8)}…{stellarTxHash.slice(-8)}
                 </code>
@@ -513,7 +519,7 @@ export function RampWidgetTemplate({
                     href={explorerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="pollar-copy-btn"
+                    className="chettapay-copy-btn"
                     aria-label="View on Stellar Expert"
                     title="View on Stellar Expert"
                   >
@@ -540,16 +546,16 @@ export function RampWidgetTemplate({
           )}
 
           {/* The code to scan. The server sends it rendered, so there is no QR
-              library here and no per-provider branch: a Pollar-made SVG is
+              library here and no per-provider branch: a ChettaPay-made SVG is
               inlined (it uses `currentColor`, so it follows the modal's theme),
               and a provider's own bitmap goes through an <img>. */}
           {depositInstructions?.scannable && txStatus !== 'completed' && (
-            <div className="pollar-ramp-payment-field">
-              <span className="pollar-ramp-payment-label">Payment QR</span>
-              <div className="pollar-ramp-payment-value">
+            <div className="chettapay-ramp-payment-field">
+              <span className="chettapay-ramp-payment-label">Payment QR</span>
+              <div className="chettapay-ramp-payment-value">
                 {depositInstructions.scannable.image.inlineSafe ? (
                   <div
-                    className="pollar-ramp-qr"
+                    className="chettapay-ramp-qr"
                     aria-label="Payment QR"
                     dangerouslySetInnerHTML={{ __html: depositInstructions.scannable.image.data }}
                   />
@@ -570,9 +576,9 @@ export function RampWidgetTemplate({
           {depositInstructions?.scannable?.payload &&
             depositInstructions.scannable.payloadLabel &&
             txStatus !== 'completed' && (
-              <div className="pollar-ramp-payment-field">
-                <span className="pollar-ramp-payment-label">{depositInstructions.scannable.payloadLabel}</span>
-                <div className="pollar-ramp-payment-value">
+              <div className="chettapay-ramp-payment-field">
+                <span className="chettapay-ramp-payment-label">{depositInstructions.scannable.payloadLabel}</span>
+                <div className="chettapay-ramp-payment-value">
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <code style={{ flex: 1, wordBreak: 'break-all' }}>{depositInstructions.scannable.payload}</code>
                     <CopyButton
@@ -589,9 +595,9 @@ export function RampWidgetTemplate({
           {depositInstructions &&
             txStatus !== 'completed' &&
             depositInstructions.fields.map((f) => (
-              <div key={f.key} className="pollar-ramp-payment-field">
-                <span className="pollar-ramp-payment-label">{f.label}</span>
-                <div className="pollar-ramp-payment-value">
+              <div key={f.key} className="chettapay-ramp-payment-field">
+                <span className="chettapay-ramp-payment-label">{f.label}</span>
+                <div className="chettapay-ramp-payment-value">
                   {f.copyable ? (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <code style={{ flex: 1, wordBreak: 'break-all' }}>{f.value}</code>
@@ -612,13 +618,13 @@ export function RampWidgetTemplate({
               instructions exist - by then onboarding is done and the only
               remaining action is to pay using the instructions above. */}
           {tosUrl && !depositInstructions && txStatus !== 'completed' && (
-            <button type="button" className="pollar-btn-primary" onClick={onOpenTos}>
+            <button type="button" className="chettapay-btn-primary" onClick={onOpenTos}>
               Accept terms at {provider}
             </button>
           )}
 
           {kycUrl && !depositInstructions && txStatus !== 'completed' && (
-            <button type="button" className="pollar-btn-primary" onClick={onOpenKyc}>
+            <button type="button" className="chettapay-btn-primary" onClick={onOpenKyc}>
               Continue at {provider}
             </button>
           )}
@@ -627,7 +633,7 @@ export function RampWidgetTemplate({
               is blocking and keep the withdraw button out of reach. No funds
               have moved and nothing was signed. */}
           {kycBlocking && (
-            <p className="pollar-ramp-payment-note">
+            <p className="chettapay-ramp-payment-note">
               {provider} needs to verify your identity before this payout. Nothing has been sent yet — complete verification
               with {provider}, and this will update on its own.
             </p>
@@ -638,20 +644,20 @@ export function RampWidgetTemplate({
               out of reach and the only way forward is a fresh quote. */}
           {kycJustApproved && (
             <>
-              <p className="pollar-ramp-payment-note">
+              <p className="chettapay-ramp-payment-note">
                 {provider} approved your verification. Request a new quote to continue — the previous one was consumed.
               </p>
-              <button type="button" className="pollar-btn-primary" onClick={onRetry}>
+              <button type="button" className="chettapay-btn-primary" onClick={onRetry}>
                 Request a new quote
               </button>
             </>
           )}
 
           {canComplete && (
-            <button type="button" className="pollar-btn-primary" disabled={completing} onClick={onCompleteWithdraw}>
+            <button type="button" className="chettapay-btn-primary" disabled={completing} onClick={onCompleteWithdraw}>
               {completing ? (
                 <>
-                  <span className="pollar-spinner pollar-spinner-sm" />
+                  <span className="chettapay-spinner chettapay-spinner-sm" />
                   Submitting…
                 </>
               ) : (
@@ -661,27 +667,27 @@ export function RampWidgetTemplate({
           )}
 
           {errorMsg && (
-            <p className="pollar-ramp-payment-note" style={{ color: 'var(--pollar-error-text)' }}>
+            <p className="chettapay-ramp-payment-note" style={{ color: 'var(--chettapay-error-text)' }}>
               {errorMsg}
             </p>
           )}
 
-          <button type="button" className="pollar-btn-secondary" onClick={onClose}>
+          <button type="button" className="chettapay-btn-secondary" onClick={onClose}>
             {txStatus === 'completed' ? 'Done' : 'Close'}
           </button>
         </div>
       )}
 
       {step === 'error' && (
-        <div className="pollar-ramp-payment">
-          <p className="pollar-ramp-payment-note" style={{ color: 'var(--pollar-error-text)' }}>
+        <div className="chettapay-ramp-payment">
+          <p className="chettapay-ramp-payment-note" style={{ color: 'var(--chettapay-error-text)' }}>
             {errorMsg ?? 'Unexpected error.'}
           </p>
-          <div className="pollar-modal-actions">
-            <button type="button" className="pollar-btn-secondary" onClick={onClose}>
+          <div className="chettapay-modal-actions">
+            <button type="button" className="chettapay-btn-secondary" onClick={onClose}>
               Close
             </button>
-            <button type="button" className="pollar-btn-primary" onClick={onRetry}>
+            <button type="button" className="chettapay-btn-primary" onClick={onRetry}>
               Try again
             </button>
           </div>

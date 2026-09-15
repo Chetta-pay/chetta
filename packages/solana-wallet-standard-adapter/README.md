@@ -1,15 +1,15 @@
-# @pollar/solana-wallet-standard-adapter
+# @chettapay/solana-wallet-standard-adapter
 
 Connect user-controlled Solana wallets (Phantom, Solflare, Backpack, ...) to
-`@pollar/core` through the [Wallet Standard](https://github.com/wallet-standard/wallet-standard),
+`@chettapay/core` through the [Wallet Standard](https://github.com/wallet-standard/wallet-standard),
 the headless substrate that `@solana/wallet-adapter` is built on. No wallet SDK is
-bundled into `@pollar/core`.
+bundled into `@chettapay/core`.
 
-This is the Solana counterpart to `@pollar/stellar-wallets-kit-adapter`. Login uses
+This is the Solana counterpart to `@chettapay/stellar-wallets-kit-adapter`. Login uses
 **SIWS (Sign In With Solana)** via the wallet's native `solana:signIn` feature -
 the Solana analogue of Stellar's SEP-10 challenge.
 
-> **0.11.2** requires `@pollar/core@^0.11.2` (peer range bump only; no adapter
+> **0.11.2** requires `@chettapay/core@^0.11.2` (peer range bump only; no adapter
 > changes).
 >
 > **0.11.1** introduced the adapter. It declares
@@ -20,20 +20,20 @@ the Solana analogue of Stellar's SEP-10 challenge.
 ## Installation
 
 ```bash
-npm install @pollar/solana-wallet-standard-adapter @pollar/core
+npm install @chettapay/solana-wallet-standard-adapter @chettapay/core
 ```
 
-`@pollar/core` is the only peer dependency. The `@wallet-standard/*` packages and
+`@chettapay/core` is the only peer dependency. The `@wallet-standard/*` packages and
 `@solana/wallet-standard-features` are real dependencies of this adapter, so you
 do not install them yourself.
 
 ## Usage
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { solanaWalletStandardAdapters } from '@pollar/solana-wallet-standard-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { solanaWalletStandardAdapters } from '@chettapay/solana-wallet-standard-adapter';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: '...',
   walletAdapters: [...solanaWalletStandardAdapters()],
 });
@@ -41,26 +41,26 @@ const client = new PollarClient({
 
 `solanaWalletStandardAdapters()` discovers every installed Solana wallet and returns one
 adapter each. It is SSR-safe (returns `[]` when `window` is undefined), so build
-the `PollarClient` on the client.
+the `ChettaPayClient` on the client.
 
 ### Alongside Stellar wallets
 
 `walletAdapters` is one flat list, so Stellar and Solana wallets coexist in it.
 That needs two packages the install command above does not cover -
-`@pollar/stellar-wallets-kit-adapter` and its own peer
+`@chettapay/stellar-wallets-kit-adapter` and its own peer
 `@creit.tech/stellar-wallets-kit`:
 
 ```bash
-npm install @pollar/stellar-wallets-kit-adapter @creit.tech/stellar-wallets-kit
+npm install @chettapay/stellar-wallets-kit-adapter @creit.tech/stellar-wallets-kit
 ```
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { solanaWalletStandardAdapters } from '@pollar/solana-wallet-standard-adapter';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { solanaWalletStandardAdapters } from '@chettapay/solana-wallet-standard-adapter';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: '...',
   walletAdapters: [...stellarWalletsKitAdapters({ network: Networks.PUBLIC }), ...solanaWalletStandardAdapters()],
 });
@@ -75,7 +75,7 @@ const client = new PollarClient({
 
 ### `SolanaWalletStandardAdapter`
 
-The class behind the factory, exported for direct use outside `PollarClient`.
+The class behind the factory, exported for direct use outside `ChettaPayClient`.
 Beyond the shared `WalletAdapter` contract it carries the Solana-specific
 surface:
 

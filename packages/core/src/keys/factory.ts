@@ -4,7 +4,7 @@ import type { KeyManager } from './types';
 /**
  * Module-level registry for the platform-default `KeyManager` factory. Each
  * entry point (web `index.ts`, RN `index.rn.ts`) registers its own factory
- * at module-load time, so that `PollarClient` can resolve a default manager
+ * at module-load time, so that `ChettaPayClient` can resolve a default manager
  * without statically importing both implementations into every bundle.
  *
  * The split exists because `NobleKeyManager` pulls in `@noble/curves`, which
@@ -28,15 +28,15 @@ export function _setDefaultKeyManagerFactory(factory: KeyManagerFactory): void {
 
 /**
  * Construct the default `KeyManager` for the current runtime. Throws if no
- * factory has been registered - that only happens if `@pollar/core` was
+ * factory has been registered - that only happens if `@chettapay/core` was
  * imported in a way that bypassed the entry-point module (a bundler or
  * test setup bug).
  */
 export function defaultKeyManager(storage: Storage, apiKey: string): KeyManager {
   if (!_factory) {
     throw new Error(
-      '[PollarClient] No default KeyManager factory registered. ' +
-        'Did you import from "@pollar/core" via a non-standard path?',
+      '[ChettaPayClient] No default KeyManager factory registered. ' +
+        'Did you import from "@chettapay/core" via a non-standard path?',
     );
   }
   return _factory(storage, apiKey);

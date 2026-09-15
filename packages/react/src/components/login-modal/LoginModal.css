@@ -1,66 +1,66 @@
 /* ---- Modal card ---- */
-.pollar-modal {
+.chettapay-modal {
   max-width: 460px;
 }
 
 /* ---- Header ---- */
-.pollar-header {
+.chettapay-header {
   margin-bottom: 1.75rem;
   text-align: center;
 }
 
-.pollar-logo-wrap {
+.chettapay-logo-wrap {
   margin-bottom: 1rem;
   display: flex;
   justify-content: center;
 }
 
-.pollar-logo {
+.chettapay-logo {
   height: 4rem;
   width: 4rem;
   object-fit: contain;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 
-.pollar-title {
+.chettapay-title {
   margin: 0 0 0.5rem;
-  font-size: var(--pollar-modal-heading-size, 1.375rem);
+  font-size: var(--chettapay-modal-heading-size, 1.375rem);
   font-weight: 700;
-  color: var(--pollar-text);
+  color: var(--chettapay-text);
 }
 
-.pollar-subtitle {
+.chettapay-subtitle {
   margin: 0;
-  font-size: var(--pollar-modal-subtitle-size, 0.9rem);
-  color: var(--pollar-muted);
+  font-size: var(--chettapay-modal-subtitle-size, 0.9rem);
+  color: var(--chettapay-muted);
 }
 
 /* ---- Error ---- */
-.pollar-error {
+.chettapay-error {
   margin: 0 0 1rem;
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: var(--pollar-error-bg);
-  border: 1px solid var(--pollar-error-border);
-  color: var(--pollar-error-text);
+  background-color: var(--chettapay-error-bg);
+  border: 1px solid var(--chettapay-error-border);
+  color: var(--chettapay-error-text);
   font-size: 13px;
   line-height: 1.4;
 }
 
 /* ---- Email ---- */
-.pollar-email-section {
+.chettapay-email-section {
   margin-bottom: 1rem;
 }
 
-/* Email field reuses the shared .pollar-input (see shared.css). */
+/* Email field reuses the shared .chettapay-input (see shared.css). */
 
 /* ---- Divider ---- */
-.pollar-divider {
+.chettapay-divider {
   position: relative;
   margin: 1.25rem 0;
 }
 
-.pollar-divider-line {
+.chettapay-divider-line {
   position: absolute;
   inset: 0;
   display: flex;
@@ -68,98 +68,98 @@
   pointer-events: none;
 }
 
-.pollar-divider-line::after {
+.chettapay-divider-line::after {
   content: '';
   width: 100%;
-  border-top: 1px solid var(--pollar-border);
+  border-top: 1px solid var(--chettapay-border);
 }
 
-.pollar-divider-label {
+.chettapay-divider-label {
   position: relative;
   display: flex;
   justify-content: center;
   font-size: 0.875rem;
 }
 
-.pollar-divider-text {
+.chettapay-divider-text {
   padding: 0 1rem;
   font-weight: 500;
-  color: var(--pollar-muted);
-  background-color: var(--pollar-bg);
+  color: var(--chettapay-muted);
+  background-color: var(--chettapay-bg);
 }
 
 /* ---- Social ---- */
-.pollar-social-list {
+.chettapay-social-list {
   margin-bottom: 0.625rem;
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
 }
 
-.pollar-social-btn {
+.chettapay-social-btn {
   display: flex;
   width: 100%;
-  height: var(--pollar-buttons-height, 44px);
+  height: var(--chettapay-buttons-height, 44px);
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border-radius: var(--pollar-buttons-border-radius, 0.5rem);
-  border: 1px solid var(--pollar-border);
-  background-color: var(--pollar-btn-secondary-bg, var(--pollar-input-bg));
+  border-radius: var(--chettapay-buttons-border-radius, 0.5rem);
+  border: 1px solid var(--chettapay-border);
+  background-color: var(--chettapay-btn-secondary-bg, var(--chettapay-input-bg));
   padding: 0 1rem;
   cursor: pointer;
   transition: all 0.15s;
   box-sizing: border-box;
 }
 
-.pollar-social-btn:hover:not(:disabled) {
+.chettapay-social-btn:hover:not(:disabled) {
   transform: scale(1.01);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.pollar-social-btn:active:not(:disabled) {
+.chettapay-social-btn:active:not(:disabled) {
   transform: scale(0.99);
 }
 
-.pollar-social-btn:disabled {
+.chettapay-social-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pollar-social-btn-text {
+.chettapay-social-btn-text {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--pollar-btn-secondary-fg, var(--pollar-text));
+  color: var(--chettapay-btn-secondary-fg, var(--chettapay-text));
 }
 
 /* ---- Wallets ---- */
-.pollar-wallet-section {
+.chettapay-wallet-section {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
 }
 
-.pollar-wallet-list {
+.chettapay-wallet-list {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
   margin-top: 0.5rem;
 }
 
-/* Same secondary-button style as .pollar-wallet-entry-btn / social buttons:
+/* Same secondary-button style as .chettapay-wallet-entry-btn / social buttons:
  * full width, centered icon + label, identical border/bg/radius/height/hover. */
-.pollar-wallet-list-btn {
+.chettapay-wallet-list-btn {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  min-height: var(--pollar-buttons-height, 44px);
+  min-height: var(--chettapay-buttons-height, 44px);
   padding: 0 1rem;
-  border-radius: var(--pollar-buttons-border-radius, 0.5rem);
-  border: 1px solid var(--pollar-border);
-  background-color: var(--pollar-btn-secondary-bg, var(--pollar-input-bg));
-  color: var(--pollar-btn-secondary-fg, var(--pollar-text));
+  border-radius: var(--chettapay-buttons-border-radius, 0.5rem);
+  border: 1px solid var(--chettapay-border);
+  background-color: var(--chettapay-btn-secondary-bg, var(--chettapay-input-bg));
+  color: var(--chettapay-btn-secondary-fg, var(--chettapay-text));
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -168,22 +168,22 @@
   text-align: center;
 }
 
-.pollar-wallet-list-btn:hover:not(:disabled) {
-  border-color: var(--pollar-accent);
-  color: var(--pollar-accent);
+.chettapay-wallet-list-btn:hover:not(:disabled) {
+  border-color: var(--chettapay-accent);
+  color: var(--chettapay-accent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.pollar-wallet-list-btn:active:not(:disabled) {
+.chettapay-wallet-list-btn:active:not(:disabled) {
   transform: scale(0.99);
 }
 
-.pollar-wallet-list-btn:disabled {
+.chettapay-wallet-list-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pollar-wallet-list-icon {
+.chettapay-wallet-list-icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 0.375rem;
@@ -191,32 +191,32 @@
   object-fit: contain;
 }
 
-.pollar-wallet-list-name {
+.chettapay-wallet-list-name {
   font-size: 1rem;
   font-weight: 500;
 }
 
-.pollar-wallet-label {
+.chettapay-wallet-label {
   margin: 0;
   font-size: 0.6875rem;
   font-weight: 500;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--pollar-muted);
+  color: var(--chettapay-muted);
 }
 
-.pollar-wallet-btn {
+.chettapay-wallet-btn {
   display: flex;
   width: 100%;
-  height: var(--pollar-buttons-height, 44px);
+  height: var(--chettapay-buttons-height, 44px);
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border-radius: var(--pollar-buttons-border-radius, 0.5rem);
-  border: 1px solid var(--pollar-border);
-  background-color: var(--pollar-btn-secondary-bg, var(--pollar-input-bg));
-  color: var(--pollar-btn-secondary-fg, var(--pollar-text));
+  border-radius: var(--chettapay-buttons-border-radius, 0.5rem);
+  border: 1px solid var(--chettapay-border);
+  background-color: var(--chettapay-btn-secondary-bg, var(--chettapay-input-bg));
+  color: var(--chettapay-btn-secondary-fg, var(--chettapay-text));
   padding: 0 1rem;
   font-size: 1rem;
   font-weight: 500;
@@ -225,31 +225,31 @@
   box-sizing: border-box;
 }
 
-.pollar-wallet-btn:hover:not(:disabled) {
+.chettapay-wallet-btn:hover:not(:disabled) {
   transform: scale(1.01);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.pollar-wallet-btn:active:not(:disabled) {
+.chettapay-wallet-btn:active:not(:disabled) {
   transform: scale(0.99);
 }
 
-.pollar-wallet-btn:disabled {
+.chettapay-wallet-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pollar-wallet-entry-btn {
+.chettapay-wallet-entry-btn {
   display: flex;
   width: 100%;
-  height: var(--pollar-buttons-height, 44px);
+  height: var(--chettapay-buttons-height, 44px);
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border-radius: var(--pollar-buttons-border-radius, 0.5rem);
-  border: 1px solid var(--pollar-border);
-  background-color: var(--pollar-btn-secondary-bg, var(--pollar-input-bg));
-  color: var(--pollar-btn-secondary-fg, var(--pollar-text));
+  border-radius: var(--chettapay-buttons-border-radius, 0.5rem);
+  border: 1px solid var(--chettapay-border);
+  background-color: var(--chettapay-btn-secondary-bg, var(--chettapay-input-bg));
+  color: var(--chettapay-btn-secondary-fg, var(--chettapay-text));
   padding: 0 1rem;
   font-size: 1rem;
   font-weight: 500;
@@ -259,66 +259,66 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.pollar-wallet-entry-btn:hover:not(:disabled) {
-  border-color: var(--pollar-accent);
-  color: var(--pollar-accent);
+.chettapay-wallet-entry-btn:hover:not(:disabled) {
+  border-color: var(--chettapay-accent);
+  color: var(--chettapay-accent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.pollar-wallet-entry-btn:active:not(:disabled) {
+.chettapay-wallet-entry-btn:active:not(:disabled) {
   transform: scale(0.99);
 }
 
-.pollar-wallet-entry-btn:disabled {
+.chettapay-wallet-entry-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pollar-wallet-icon {
+.chettapay-wallet-icon {
   width: 1.125rem;
   height: 1.125rem;
   flex-shrink: 0;
 }
 
 /* ---- Code input ---- */
-.pollar-code-section {
+.chettapay-code-section {
   margin-bottom: 1rem;
 }
 
-.pollar-code-label {
+.chettapay-code-label {
   margin: 0 0 1rem;
   font-size: 0.875rem;
-  color: var(--pollar-muted);
+  color: var(--chettapay-muted);
   text-align: center;
 }
 
-.pollar-code-inputs {
+.chettapay-code-inputs {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
   margin-bottom: 0.75rem;
 }
 
-.pollar-code-input {
+.chettapay-code-input {
   width: 2.75rem;
   height: 3rem;
   border-radius: 0.5rem;
-  border: 1px solid var(--pollar-border);
-  background-color: var(--pollar-input-bg);
+  border: 1px solid var(--chettapay-border);
+  background-color: var(--chettapay-input-bg);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--pollar-text);
+  color: var(--chettapay-text);
   text-align: center;
   outline: none;
   box-sizing: border-box;
 }
 
-.pollar-code-input:focus {
-  box-shadow: 0 0 0 2px var(--pollar-accent);
+.chettapay-code-input:focus {
+  box-shadow: 0 0 0 2px var(--chettapay-accent);
   border-color: transparent;
 }
 
-.pollar-code-input:disabled {
+.chettapay-code-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

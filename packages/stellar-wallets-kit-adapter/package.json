@@ -1,13 +1,13 @@
 {
-  "name": "@pollar/stellar-wallets-kit-adapter",
+  "name": "@chettapay/stellar-wallets-kit-adapter",
   "version": "0.11.2",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pollar-xyz/pollar.git",
+    "url": "git+https://github.com/Chetta-pay/chetta.git",
     "directory": "packages/stellar-wallets-kit-adapter"
   },
-  "description": "Stellar Wallets Kit adapter for @pollar/core - plug additional wallet modules (xBull, Lobstr, WalletConnect, hardware wallets...) into Pollar without bundling them into @pollar/core.",
+  "description": "Stellar Wallets Kit adapter for @chettapay/core - plug additional wallet modules (xBull, Lobstr, WalletConnect, hardware wallets...) into ChettaPay without bundling them into @chettapay/core.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -39,12 +39,12 @@
   },
   "peerDependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.0.0",
-    "@pollar/core": "^0.11.2"
+    "@chettapay/core": "^0.11.2"
   },
   "devDependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.3.0",
     "@eslint/js": "^10.0.1",
-    "@pollar/core": "^0.11.2",
+    "@chettapay/core": "^0.11.2",
     "eslint": "^10.5.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",

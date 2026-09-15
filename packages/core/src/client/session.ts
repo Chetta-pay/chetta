@@ -1,13 +1,13 @@
-import type { PollarLogger } from '../lib/logger';
+import type { ChettaPayLogger } from '../lib/logger';
 import type { Storage } from '../storage/types';
-import type { PollarPersistedSession } from '../types';
+import type { ChettaPayPersistedSession } from '../types';
 
 /**
  * Persisted session shape (stored via the injected `Storage` adapter).
  *
  * Compared to the full `/auth/login` response:
  *   - `data.{mail,first_name,last_name,avatar,providers}` is dropped - that
- *     PII is held in memory only on `PollarClient`, fetched from
+ *     PII is held in memory only on `ChettaPayClient`, fetched from
  *     `/applications/config` after auth.
  *   - All string fields are length-bounded as defense-in-depth: even though
  *     JWT/UUID/Stellar-pubkey shapes are bounded by their own grammars,
@@ -22,7 +22,7 @@ const WALLET_TYPE_SUFFIX = ':walletType';
 const DPOP_NONCE_SUFFIX = ':dpopNonce';
 
 export function sessionStorageKey(apiKeyHash: string): string {
-  return `pollar:${apiKeyHash}${SESSION_SUFFIX}`;
+  return `chettapay:${apiKeyHash}${SESSION_SUFFIX}`;
 }
 
 /**
@@ -38,11 +38,11 @@ export function sessionStorageKey(apiKeyHash: string): string {
  * server answers with a fresh nonce and the middleware retries once.
  */
 export function dpopNonceStorageKey(apiKeyHash: string): string {
-  return `pollar:${apiKeyHash}${DPOP_NONCE_SUFFIX}`;
+  return `chettapay:${apiKeyHash}${DPOP_NONCE_SUFFIX}`;
 }
 
 export function walletTypeStorageKey(apiKeyHash: string): string {
-  return `pollar:${apiKeyHash}${WALLET_TYPE_SUFFIX}`;
+  return `chettapay:${apiKeyHash}${WALLET_TYPE_SUFFIX}`;
 }
 
 // Bounds are defense-in-depth against a hostile/buggy blob, not a spec limit:
@@ -86,64 +86,64 @@ function isBoundedString(v: unknown, max: number, allowEmpty = false): v is stri
   return v.length <= max;
 }
 
-export function isValidSession(value: unknown, logger: PollarLogger = console): value is PollarPersistedSession {
+export function isValidSession(value: unknown, logger: ChettaPayLogger = console): value is ChettaPayPersistedSession {
   if (typeof value !== 'object' || value === null) {
-    logger.debug('[PollarClient:session] Invalid session — value is not an object');
+    logger.debug('[ChettaPayClient:session] Invalid session — value is not an object');
     return false;
   }
   const s = value as Record<string, unknown>;
 
   if (!isBoundedString(s['clientSessionId'], MAX_CLIENT_SESSION_ID)) {
-    logger.debug('[PollarClient:session] Invalid session — clientSessionId missing/empty/too long');
+    logger.debug('[ChettaPayClient:session] Invalid session — clientSessionId missing/empty/too long');
     return false;
   }
   if (s['userId'] !== null && !isBoundedString(s['userId'], MAX_USER_ID)) {
-    logger.debug('[PollarClient:session] Invalid session — userId must be string|null');
+    logger.debug('[ChettaPayClient:session] Invalid session — userId must be string|null');
     return false;
   }
   if (!isBoundedString(s['status'], MAX_STATUS)) {
-    logger.debug('[PollarClient:session] Invalid session — status must be string');
+    logger.debug('[ChettaPayClient:session] Invalid session — status must be string');
     return false;
   }
 
   const token = s['token'];
   if (typeof token !== 'object' || token === null) {
-    logger.debug('[PollarClient:session] Invalid session — token missing or not an object');
+    logger.debug('[ChettaPayClient:session] Invalid session — token missing or not an object');
     return false;
   }
   const t = token as Record<string, unknown>;
   if (!isBoundedString(t['accessToken'], MAX_ACCESS_TOKEN)) {
-    logger.debug('[PollarClient:session] Invalid session — token.accessToken missing/empty/too long');
+    logger.debug('[ChettaPayClient:session] Invalid session — token.accessToken missing/empty/too long');
     return false;
   }
   if (!isBoundedString(t['refreshToken'], MAX_REFRESH_TOKEN)) {
-    logger.debug('[PollarClient:session] Invalid session — token.refreshToken missing/empty/too long');
+    logger.debug('[ChettaPayClient:session] Invalid session — token.refreshToken missing/empty/too long');
     return false;
   }
   if (typeof t['expiresAt'] !== 'number' || !Number.isFinite(t['expiresAt'])) {
-    logger.debug('[PollarClient:session] Invalid session — token.expiresAt must be a finite number');
+    logger.debug('[ChettaPayClient:session] Invalid session — token.expiresAt must be a finite number');
     return false;
   }
 
-  // Optional DPoP key binding (see PollarPersistedSession.dpopJkt). Absent on
+  // Optional DPoP key binding (see ChettaPayPersistedSession.dpopJkt). Absent on
   // sessions persisted by older SDKs - never required.
   if (s['dpopJkt'] !== undefined && !isBoundedString(s['dpopJkt'], MAX_DPOP_JKT)) {
-    logger.debug('[PollarClient:session] Invalid session — dpopJkt must be a non-empty string if present');
+    logger.debug('[ChettaPayClient:session] Invalid session — dpopJkt must be a non-empty string if present');
     return false;
   }
 
   const user = s['user'];
   if (typeof user !== 'object' || user === null) {
-    logger.debug('[PollarClient:session] Invalid session — user missing or not an object');
+    logger.debug('[ChettaPayClient:session] Invalid session — user missing or not an object');
     return false;
   }
   const u = user as Record<string, unknown>;
   if (u['id'] !== undefined && !isBoundedString(u['id'], MAX_USER_ID)) {
-    logger.debug('[PollarClient:session] Invalid session — user.id must be string if present');
+    logger.debug('[ChettaPayClient:session] Invalid session — user.id must be string if present');
     return false;
   }
   if (typeof u['ready'] !== 'boolean') {
-    logger.debug('[PollarClient:session] Invalid session — user.ready must be boolean');
+    logger.debug('[ChettaPayClient:session] Invalid session — user.ready must be boolean');
     return false;
   }
 
@@ -166,11 +166,11 @@ export function isValidSession(value: unknown, logger: PollarLogger = console): 
   const wallets = s['wallets'];
   if (wallets !== undefined) {
     if (!Array.isArray(wallets)) {
-      logger.debug('[PollarClient:session] Invalid session — wallets must be an array if present');
+      logger.debug('[ChettaPayClient:session] Invalid session — wallets must be an array if present');
       return false;
     }
     if (wallets.length > MAX_WALLETS) {
-      logger.debug('[PollarClient:session] Invalid session — wallets exceeds the maximum entry count');
+      logger.debug('[ChettaPayClient:session] Invalid session — wallets exceeds the maximum entry count');
       return false;
     }
     for (let i = 0; i < wallets.length; i++) {
@@ -186,38 +186,38 @@ export function isValidSession(value: unknown, logger: PollarLogger = console): 
  * `wallet` field and every entry of `wallets[]`. `label` only names the field
  * in the debug log.
  */
-function isValidWallet(value: unknown, label: string, logger: PollarLogger): boolean {
+function isValidWallet(value: unknown, label: string, logger: ChettaPayLogger): boolean {
   if (typeof value !== 'object' || value === null) {
-    logger.debug(`[PollarClient:session] Invalid session — ${label} missing or not an object`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label} missing or not an object`);
     return false;
   }
   const w = value as Record<string, unknown>;
   if (w['type'] !== 'internal' && w['type'] !== 'smart' && w['type'] !== 'external') {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.type must be internal|smart|external`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.type must be internal|smart|external`);
     return false;
   }
   if (w['provider'] !== undefined && typeof w['provider'] !== 'string') {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.provider must be a string if present`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.provider must be a string if present`);
     return false;
   }
   if (w['address'] !== null && !isBoundedString(w['address'], MAX_WALLET_PUBLIC_KEY)) {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.address must be string|null`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.address must be string|null`);
     return false;
   }
   if (w['chain'] !== undefined && w['chain'] !== 'STELLAR' && w['chain'] !== 'POLYGON' && w['chain'] !== 'SOLANA') {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.chain must be STELLAR|POLYGON|SOLANA if present`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.chain must be STELLAR|POLYGON|SOLANA if present`);
     return false;
   }
   if (w['existsOnStellar'] !== undefined && typeof w['existsOnStellar'] !== 'boolean') {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.existsOnStellar must be boolean if present`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.existsOnStellar must be boolean if present`);
     return false;
   }
   if (w['createdAt'] !== undefined && (typeof w['createdAt'] !== 'number' || !Number.isFinite(w['createdAt']))) {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.createdAt must be a finite number if present`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.createdAt must be a finite number if present`);
     return false;
   }
   if (w['linkedAt'] !== undefined && (typeof w['linkedAt'] !== 'number' || !Number.isFinite(w['linkedAt']))) {
-    logger.debug(`[PollarClient:session] Invalid session — ${label}.linkedAt must be a finite number if present`);
+    logger.debug(`[ChettaPayClient:session] Invalid session — ${label}.linkedAt must be a finite number if present`);
     return false;
   }
   return true;
@@ -226,8 +226,8 @@ function isValidWallet(value: unknown, label: string, logger: PollarLogger): boo
 export async function readStorage(
   storage: Storage,
   apiKeyHash: string,
-  logger: PollarLogger = console,
-): Promise<PollarPersistedSession | null> {
+  logger: ChettaPayLogger = console,
+): Promise<ChettaPayPersistedSession | null> {
   const raw = await storage.get(sessionStorageKey(apiKeyHash));
   if (!raw) return null;
 
@@ -255,7 +255,7 @@ export async function readStorage(
       if (Array.isArray(list)) {
         const known = list.filter((entry) => isKnownWalletShape(entry));
         if (known.length !== list.length) {
-          logger.warn('[PollarClient:session] Pruned wallets[] entries this SDK does not recognize', {
+          logger.warn('[ChettaPayClient:session] Pruned wallets[] entries this SDK does not recognize', {
             dropped: list.length - known.length,
           });
           (session as { wallets?: unknown }).wallets = known;
@@ -268,7 +268,7 @@ export async function readStorage(
       // the session down in all of them - so one document running an older
       // build, or hitting a bound, would log everybody out. A row this build
       // cannot read is simply ignored; the next login overwrites it.
-      logger.warn('[PollarClient:session] Stored session is invalid — ignoring it (left in storage)');
+      logger.warn('[ChettaPayClient:session] Stored session is invalid — ignoring it (left in storage)');
       return null;
     }
     if (session.token.expiresAt * 1000 < Date.now()) {
@@ -280,12 +280,12 @@ export async function readStorage(
   } catch (error) {
     // Same reasoning as the invalid-session branch: never delete a shared row we
     // merely failed to read.
-    logger.error('[PollarClient:session] Failed to parse session from storage', error);
+    logger.error('[ChettaPayClient:session] Failed to parse session from storage', error);
     return null;
   }
 }
 
-export async function writeStorage(storage: Storage, apiKeyHash: string, session: PollarPersistedSession): Promise<void> {
+export async function writeStorage(storage: Storage, apiKeyHash: string, session: ChettaPayPersistedSession): Promise<void> {
   await storage.set(sessionStorageKey(apiKeyHash), JSON.stringify(session));
 }
 
@@ -296,7 +296,7 @@ export async function removeStorage(storage: Storage, apiKeyHash: string): Promi
 
 export async function writeWalletType(storage: Storage, apiKeyHash: string, type: string): Promise<void> {
   if (type.length > MAX_WALLET_TYPE) {
-    throw new Error(`[PollarClient:session] walletType too long: ${type.length} > ${MAX_WALLET_TYPE}`);
+    throw new Error(`[ChettaPayClient:session] walletType too long: ${type.length} > ${MAX_WALLET_TYPE}`);
   }
   await storage.set(walletTypeStorageKey(apiKeyHash), type);
 }

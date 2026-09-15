@@ -3,11 +3,11 @@
 ## 0.11.3
 
 > Patch release. Headlines: **sessions no longer die on reload when the DPoP
-> keypair fails to persist** (thumbprint-mismatch logout loop), **`PollarProvider`
-> no longer leaves a second `PollarClient` running under React StrictMode** (the
+> keypair fails to persist** (thumbprint-mismatch logout loop), **`ChettaPayProvider`
+> no longer leaves a second `ChettaPayClient` running under React StrictMode** (the
 > trigger behind "session cleared ~700ms after login" in development), and the
 > **Smart Wallet passkey ceremony is now installed however the client reaches
-> `PollarProvider`**, so a consumer-built `PollarClient` no longer silently
+> `ChettaPayProvider`**, so a consumer-built `ChettaPayClient` no longer silently
 > loses passkey login. The release also carries the **ramp-widget work** that
 > landed before the cut: server-normalized deposit instructions, a KYC gate,
 > pre-submit amount limits, navigable flow steps, per-field placeholders and
@@ -16,7 +16,7 @@
 > templates, called out inline below (the normalized deposit-instructions
 > shape, and a dead wallet-button template prop).
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **Fix: a superseded `logout()` no longer disconnects the wallet adapter.**
   The adapter disconnect ran before the logout's generation guard, and
@@ -40,7 +40,7 @@
   logout disconnects exactly once.
 - **Fix: `logout()` no longer destroys a session created while it runs.**
   `logout()` awaits a network call and an adapter disconnect, and consumers
-  routinely do not await it (`@pollar/react` fires it from the login modal and
+  routinely do not await it (`@chettapay/react` fires it from the login modal and
   the wallet button, then offers the login UI). A complete new login could land
   inside that window - the abort below only cancels a login already running -
   and the teardown then ran against whatever state existed when the awaits
@@ -48,7 +48,7 @@
   just been bound to. The whole teardown is now guarded on the session
   generation snapshotted at the top of `logout()`.
 - **Fix: `logout()` rotates the DPoP keypair only when it still owns the
-  session row.** The keypair record (`pollar-keys/<apiKeyHash>`) is shared by
+  session row.** The keypair record (`chettapay-keys/<apiKeyHash>`) is shared by
   every document on the origin and is MORE shared than the session row, which
   was already ownership-gated. A client whose session had been superseded still
   destroyed the key the current row's session was bound to, leaving that session
@@ -61,7 +61,7 @@
   the instances (not just a count) and the clear is announced in-process,
   mirroring what the cross-document handler does.
 - **Change: the last server-issued `DPoP-Nonce` is persisted**
-  (`pollar:<apiKeyHash>:dpopNonce`) and restored at startup. The server requires
+  (`chettapay:<apiKeyHash>:dpopNonce`) and restored at startup. The server requires
   a nonce on every proof, so without it the first authenticated request of every
   page load was a guaranteed 401 `use_dpop_nonce` challenge plus a retry. sdk-api
   nonces verify for days (24h active + a 3-day rotation overlap), carry no user
@@ -159,12 +159,12 @@
   never replaces ones that were, so React Native keeps injecting its native
   provider through the constructor. Core still ships no WebAuthn implementation
   of its own and stays platform-agnostic; the web implementation lives in
-  `@pollar/react`. `_passkey` / `_passkeySign` stop being `readonly` to allow
+  `@chettapay/react`. `_passkey` / `_passkeySign` stop being `readonly` to allow
   this. Both are read per login and per signature, never latched at
   construction, so filling them in later takes effect immediately.
 - **Fix: a logout sticks, and a login can no longer be undone by a write
   already in flight.** Every mutation of the shared
-  `pollar:<apiKeyHash>:session` row now goes through one serialized writer that
+  `chettapay:<apiKeyHash>:session` row now goes through one serialized writer that
   re-checks the session generation immediately before it writes, instead of
   after. Previously a persist that started before a logout landed after it and
   re-created the row: the client went `idle` but the session came back on the
@@ -212,7 +212,7 @@
   methods, so all five providers ride one flow and the widget does not fork
   per provider. `schema.d.ts` regenerated from `openapi.v2.json`; v2 mounts
   v1's ramp routes unchanged, so the new paths appear in both documents.
-- **New: `PollarApiError`.** The ten ramp endpoint helpers collapsed every
+- **New: `ChettaPayApiError`.** The ten ramp endpoint helpers collapsed every
   failure into `new Error(code)`, discarding the body the server answered
   with. They now share one wrapper carrying the code, the server's `details`
   and the whole body, so a ramp failure reaches the caller with its cause
@@ -220,11 +220,11 @@
   unchanged.
 - **New exported types:** `RampDepositInstructions`, `RampScannable` and
   `RampInstructionField`, so a payment screen can be rendered without
-  `@pollar/react` and without reaching into the generated schema.
+  `@chettapay/react` and without reaching into the generated schema.
 
-### `@pollar/react`
+### `@chettapay/react`
 
-- **Fix: StrictMode no longer leaves an orphaned `PollarClient` running.**
+- **Fix: StrictMode no longer leaves an orphaned `ChettaPayClient` running.**
   The provider builds the client in a `useState` initializer, and React
   StrictMode double-invokes that initializer in development while discarding the
   first pass's hook state entirely - the instance the component keeps comes from
@@ -250,20 +250,20 @@
   pass's instance instead of constructing another. The entry is dropped as soon
   as the mount effect claims the client, so a later provider rendered with the
   same retained config object still builds its own. Consumers who pass a
-  ready-made `PollarClient` are unaffected - that path never constructed
+  ready-made `ChettaPayClient` are unaffected - that path never constructed
   anything. No API change.
 
-- **Fix: a client from a second copy of `@pollar/core` is recognised as one.**
-  `PollarProvider` decided between "a ready client" and "a config" with
-  `client instanceof PollarClient`. With two copies of core in the tree that is
+- **Fix: a client from a second copy of `@chettapay/core` is recognised as one.**
+  `ChettaPayProvider` decided between "a ready client" and "a config" with
+  `client instanceof ChettaPayClient`. With two copies of core in the tree that is
   `false` for a real client, so the provider took the config branch and spread a
-  live instance into `new PollarClient({...})` - the spread carries `apiKey`, so
+  live instance into `new ChettaPayClient({...})` - the spread carries `apiKey`, so
   it quietly produced a SECOND client on the same API key rather than failing
   outright, which is the same shared-session-row configuration everything else
-  in this release had to defend against. It now uses `isPollarClient()`, which
+  in this release had to defend against. It now uses `isChettaPayClient()`, which
   sees through the copy boundary.
-- **Fix: a pre-built `PollarClient` no longer loses passkey support.**
-  `PollarProvider` injected `browserPasskeyCeremony` only on the branch that
+- **Fix: a pre-built `ChettaPayClient` no longer loses passkey support.**
+  `ChettaPayProvider` injected `browserPasskeyCeremony` only on the branch that
   builds the client from a config object. A consumer passing a ready instance
   (a module singleton shared with non-React code, say) got a client with no
   ceremony, so `createSmartWallet()` / `loginSmartWallet()` failed at the first
@@ -277,14 +277,14 @@
   overrode `browserPasskeyCeremony`. Defaults now apply with `??`: an
   explicitly configured ceremony still wins, an absent one still falls back.
 - `browserPasskeyCeremony` and `browserPasskeySigner` are now exported, for
-  consumers who build their own `PollarClient` and want the ceremony wired at
+  consumers who build their own `ChettaPayClient` and want the ceremony wired at
   construction, or who want to wrap it (logging, a custom `rpId`).
 
-- **New: `isPollarClient(value)`.** A cross-copy type guard for `PollarClient`,
+- **New: `isChettaPayClient(value)`.** A cross-copy type guard for `ChettaPayClient`,
   additive to the public surface. `instanceof` compares against one specific
   class object, so it answers `false` for an instance built by a different copy
-  of `@pollar/core` - and a second copy is easy to end up with. Every instance
-  now carries a `Symbol.for('@pollar/core.PollarClient')` brand, which resolves
+  of `@chettapay/core` - and a second copy is easy to end up with. Every instance
+  now carries a `Symbol.for('@chettapay/core.ChettaPayClient')` brand, which resolves
   through the runtime-wide symbol registry, so any copy recognises the others'
   instances. The guard tries `instanceof` first, so it also accepts instances
   from builds that predate the brand. Use it instead of `instanceof` wherever a
@@ -295,14 +295,14 @@
   the wallet-logo mapping lives in the transaction modal's `TxStatusView`,
   which derives the same value itself. Type-level only - the value carried no
   behavior in this package. A custom template that read `props.walletType` can
-  reconstruct it from `usePollar()`:
+  reconstruct it from `useChettaPay()`:
   `const walletType = wallet?.custody === 'external' ? wallet.provider : null;`
 - **The ramp widget consumes the server's normalized deposit instructions.**
   sdk-api now answers with one shape for every provider, so the widget stopped
   translating: the internal `flattenInstructions` / `INSTRUCTION_LABELS` /
   `InstructionKind` machinery is gone, and three blocks remain - the code to
   scan, the payload as text when the server marks it worth pasting, and a map
-  over `fields` - none of which knows which provider served the route. Pollar's
+  over `fields` - none of which knows which provider served the route. ChettaPay's
   own QR arrives as inline markup so `currentColor` keeps it legible in both
   themes; anything not inline-safe renders through an `<img>` whose data URL
   follows the declared `encoding`, so a provider's `utf8` SVG is escaped rather
@@ -321,7 +321,7 @@
   limits already travelled on the quote and nothing read them) and renders the
   warning in the route list, where another route can be picked without leaving
   the flow; ramp API failures now surface the server's exact bound through
-  `PollarApiError` instead of a bare error code.
+  `ChettaPayApiError` instead of a bare error code.
 - **The widget's flow is navigable and legible.** `select_route` gains Back
   (returning to the amount step and carrying the reason with it, shown under
   the field and cleared on typing), and picking a route shows a spinner and
@@ -353,7 +353,7 @@
   and checks fixed properties after every step, so it looks for the next
   state-disagreement race rather than the last one; a failing seed replays with
   `node tests/smoke-invariants.cjs <seed>`. `smoke-react.cjs` covers
-  `PollarProvider`'s client lifecycle and is what caught the StrictMode orphan
+  `ChettaPayProvider`'s client lifecycle and is what caught the StrictMode orphan
   above. Each suite ships a positive control, and each was verified to fail
   against the code that predates its fix.
 - A fourth new suite, `smoke-cross-document.cjs`, ports the scratchpad
@@ -376,7 +376,7 @@
 
 ### Packaging
 
-- **`@pollar/core` is now a peer dependency only.** `@pollar/react` and the
+- **`@chettapay/core` is now a peer dependency only.** `@chettapay/react` and the
   wallet adapters listed it in `dependencies` AND `peerDependencies`. The
   `dependencies` entry is what told npm to install a package-local copy, and a
   second copy of core is what broke `instanceof`, split the module-level
@@ -384,19 +384,19 @@
   row. It now appears only as a peer (plus a `devDependency` for building here),
   so the application's single copy is the one everybody uses. npm 7+ installs
   peers automatically; on npm 6, Yarn 1, or with `--legacy-peer-deps`, add
-  `@pollar/core` to your own dependencies.
+  `@chettapay/core` to your own dependencies.
 - Version ranges are unchanged and did not need bumping: `^0.11.2` already means
   `>=0.11.2 <0.12.0`, so npm resolves the highest matching version and dedupes
   to one copy. The duplicate only ever came from the `dependencies` entry above,
   or from exact pins that disagree.
-- `@pollar/react` requires `@pollar/core@^0.11.3` (`setPasskeyDefaults()` is new
+- `@chettapay/react` requires `@chettapay/core@^0.11.3` (`setPasskeyDefaults()` is new
   in core; an older one throws
   `client.setPasskeyDefaults is not a function` when the provider mounts).
 
 ## 0.11.2
 
 > Stable release. Published under the default `latest` dist-tag
-> (`npm i @pollar/core`). Headline: **Stellar ownership proofs** — the new
+> (`npm i @chettapay/core`). Headline: **Stellar ownership proofs** — the new
 > `client.stellar` namespace signs SEP-53 messages and SEP-10 challenges across
 > embedded and external wallets — and the **Transaction History modal goes
 > multichain**. Additive, non-breaking on top of 0.11.1.
@@ -416,7 +416,7 @@
 - **`@stellar/freighter-api` 6.0.0.** The Freighter adapter migrated to the v6
   API, which unblocks native SEP-53 message signing.
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - New `client.stellar` namespace (`StellarSepApi`), Stellar-specific standards
   namespaced so the multichain client stays clean:
@@ -439,12 +439,12 @@
   migrated (v6 returns `{ ...data, error? }` instead of throwing, and
   `getUserInfo` is replaced by `getAddress` / `requestAccess`). No change to the
   adapter's own throw-on-failure contract, and it dedupes the second
-  freighter-api copy that `@pollar/stellar-wallets-kit-adapter` already pinned.
+  freighter-api copy that `@chettapay/stellar-wallets-kit-adapter` already pinned.
 - `schema.d.ts` regenerated from sdk-api: the two `/v2/stellar/sep*/sign` paths,
   and the v2 history record now carries `chain` and `fee` (query accepts
   `chain`).
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - The Transaction History modal gains the network picker and address chip the
   Balance / Send modals already have. Selecting a network refetches history
@@ -462,7 +462,7 @@
   Stellar-only, so it is `undefined` off Stellar) and was narrowed to a
   credit_alphanum.
 - **A locally-passed `appConfig` is re-applied after mount.** A consumer that
-  added or swapped `<PollarProvider appConfig>` after the first render got
+  added or swapped `<ChettaPayProvider appConfig>` after the first render got
   `configStatus: 'ready'` while the context kept serving the value from the
   initial state (stale login settings and chain order). The effect keys on the
   serialized config, so an inline `appConfig={{ ... }}` object literal does not
@@ -476,20 +476,20 @@
   sdk-api always populates both fields today, so this is a guard against
   malformed data rather than a live path.
 
-### `@pollar/stellar-wallets-kit-adapter`
+### `@chettapay/stellar-wallets-kit-adapter`
 
 - Implements `signStellarMessage` via `kit.signMessage`, so every kit wallet
   that supports message signing can back a `client.stellar.sep53` proof.
 
 ### Docs
 
-- The `@pollar/core` README's API reference now covers the full `PollarClient`
+- The `@chettapay/core` README's API reference now covers the full `ChettaPayClient`
   surface.
 
 ## 0.11.1
 
 > Stable release. Published under the default `latest` dist-tag
-> (`npm i @pollar/core`). Headline: the per-chain wallet rework plus **Solana
+> (`npm i @chettapay/core`). Headline: the per-chain wallet rework plus **Solana
 > embedded wallets can send** — the atomic tx endpoint went multichain and the
 > Send / Receive modals gained the network picker the balance and asset modals
 > already had.
@@ -512,7 +512,7 @@
   has no transfer path yet, so the Send modal blocks it and `sendPayment()`
   returns an error for it.
 - **Network picker across every wallet modal.** New `ChainSelect` component and
-  `useChains()` hook in `@pollar/react`; the balance, assets, send and receive
+  `useChains()` hook in `@chettapay/react`; the balance, assets, send and receive
   modals filter to the selected chain, and the chain order plus primary address
   come from the app's `/applications/config`.
 - **Trustline sponsorship decided server-side.** `setTrustline` drops the
@@ -521,7 +521,7 @@
 - **`skipSponsorship` on `signTx`** and a **login modal that surfaces
   loading / error state** when the app config fails to load.
 
-### `@pollar/core` — BREAKING (types only)
+### `@chettapay/core` — BREAKING (types only)
 
 - **`TxBuildSignSubmitBody` and `TxBuildSignSubmitContent` are now unions.**
   `POST /v2/tx/build-sign-submit` accepts a `chain` (absent = `STELLAR`) and
@@ -541,7 +541,7 @@
 
   No runtime behaviour changed, and nothing under `/v1` is affected.
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - `GET /v2/wallet/balance` and `GET /v2/wallet/assets` are read through the
   `chains` envelope (`_flattenBalances` / new `_flattenAssets`), both collapsing
@@ -573,14 +573,14 @@
   (`sponsorSignedXdr` or a plain `unsignedXdr`). Pass `skipSponsorship` to force
   a self-pay `change_trust`.
 - New exported types: `WalletAssetsContent`, `EnabledAssetRecord`,
-  `PollarPersistedWallet`, `SendPaymentParams`.
+  `ChettaPayPersistedWallet`, `SendPaymentParams`.
 - `signTx` accepts `skipSponsorship`.
 - Solana wallet endpoints added to the OpenAPI schema and wired into the client.
 - `getWallets()` returns one `WalletInfo` per chain and is surfaced through
-  `@pollar/react`'s context.
+  `@chettapay/react`'s context.
 - The wallet adapter is disconnected on explicit logout.
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - New `ChainSelect` component and `useChains()` hook, exported alongside
   `resolveChain` / `chainsOf` / `addressForChain`. `useChains()` is the single
@@ -590,7 +590,7 @@
   require `chains` / `selectedChain` / `onSelectChain`; these helpers build them.
   Row keys are chain-qualified, since the same code + issuer can exist on two
   chains.
-- `wallets` (one `WalletInfo` per chain) is on the Pollar context, backing every
+- `wallets` (one `WalletInfo` per chain) is on the ChettaPay context, backing every
   network picker.
 - `SendModal` and `ReceiveModal` gained the network picker. The address, assets
   and balances all scope to the selected chain, and Send converts the amount on
@@ -613,7 +613,7 @@
   Stellar.
 - The login modal shows loading / error state when the app config request fails.
 
-### `@pollar/solana-wallet-standard-adapter`
+### `@chettapay/solana-wallet-standard-adapter`
 
 - **First published release.** The adapter was already implemented at 0.11.0 but
   never shipped to npm. Login is wired end to end: the adapter declares
@@ -625,10 +625,10 @@
 - Every package now declares `license: MIT` and a `repository` with its
   `directory`, so relative README links resolve on npmjs.com. Publish scripts
   added for the four packages that lacked one.
-- `docs/1 Pollar react.md` and `docs/2 Pollar core.md` were removed. They were
+- `docs/1 ChettaPay react.md` and `docs/2 ChettaPay core.md` were removed. They were
   hand-maintained copies of the two package READMEs, had drifted to the 0.8/0.9
-  API, and contained examples that no longer compile (`pollar.loginWallet()`,
-  `<PollarProvider config={...}>`, `new StellarClient({ network })`). The package
+  API, and contained examples that no longer compile (`chettapay.loginWallet()`,
+  `<ChettaPayProvider config={...}>`, `new StellarClient({ network })`). The package
   READMEs are the single source of truth; `docs/README.md` points at them.
 - Corrected in the READMEs: `/v1` auth endpoint paths (the SDK has been on `/v2`
   since 0.11.0), the `AuthState.step` union, the persisted-wallet shape, the
@@ -640,17 +640,17 @@
 ## 0.11.0
 
 > Stable release. Published under the default `latest` dist-tag
-> (`npm i @pollar/core`). Headline: the SDK goes **multichain** - Solana joins
+> (`npm i @chettapay/core`). Headline: the SDK goes **multichain** - Solana joins
 > Stellar.
 
 ### Highlights (since 0.10.1)
 
-- **Multichain balances (Stellar + Solana).** `PollarClient` balances now come
+- **Multichain balances (Stellar + Solana).** `ChettaPayClient` balances now come
   from the v2 wallet endpoint: each balance is tagged with its `chain`
   (`STELLAR` | `SOLANA` | `POLYGON`) and the response flags `multichain`. Solana
   (SOL) is reported alongside Stellar assets. On non-Stellar chains only the
   native token is reported for now.
-- **Sign In With Solana (SIWS) contract in `@pollar/core`.** New SIWS login types
+- **Sign In With Solana (SIWS) contract in `@chettapay/core`.** New SIWS login types
   (`SolanaSignInInput` / `SolanaSignInOutput`, with a raw `signMessage` fallback)
   and `signSolanaTransaction` on the wallet-adapter contract - the Solana
   analogue of Stellar's SEP-10 challenge, for login and sponsored external
@@ -658,14 +658,14 @@
 - **Chain-aware `WalletAdapter` contract.** The adapter interface is now
   chain-aware, so a single `walletAdapters` array can carry Stellar and Solana
   adapters side by side.
-- **New package `@pollar/solana-wallet-standard-adapter` (preview).** Connects
+- **New package `@chettapay/solana-wallet-standard-adapter` (preview).** Connects
   user-controlled Solana wallets (Phantom, Solflare, Backpack, ...) through the
-  Wallet Standard, without bundling a wallet SDK into `@pollar/core`. Phase-0:
+  Wallet Standard, without bundling a wallet SDK into `@chettapay/core`. Phase-0:
   the client-side adapter (discovery, connect, SIWS, message / transaction
-  signing) is implemented; full `PollarClient` wiring and the SIWS endpoints
+  signing) is implemented; full `ChettaPayClient` wiring and the SIWS endpoints
   land next.
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - `WalletChain` type (`STELLAR` | `POLYGON` | `SOLANA`); each balance carries a
   `chain`, and the balance response exposes `multichain` (v2 wallet endpoint).
@@ -675,34 +675,34 @@
 - Chain-aware `WalletAdapter` contract: adapters declare their chain so Stellar
   and Solana adapters coexist in one `walletAdapters` array.
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - `WalletBalanceModal` renders multichain balances, tagging each balance with its
   chain. The tag only appears when the app spans more than one chain, so
   single-chain (Stellar-only) apps look unchanged.
 
-### `@pollar/solana-wallet-standard-adapter` (new, preview)
+### `@chettapay/solana-wallet-standard-adapter` (new, preview)
 
 - `solanaWalletStandardAdapters(options?)` discovers every installed Solana wallet
   and returns one `WalletAdapter` each (SSR-safe, returns `[]` without a
-  `window`); `SolanaWalletStandardAdapter` for direct use outside `PollarClient`.
+  `window`); `SolanaWalletStandardAdapter` for direct use outside `ChettaPayClient`.
 - Login uses each wallet's native `solana:signIn` (SIWS). Peer deps:
-  `@pollar/core`, the `@wallet-standard/*` packages, and
+  `@chettapay/core`, the `@wallet-standard/*` packages, and
   `@solana/wallet-standard-features` - no wallet SDK is bundled.
 
 ## 0.10.1
 
 > Stable release. Published under the default `latest` dist-tag
-> (`npm i @pollar/core`). This is the promotion of the `0.10.1-rc.*` line
+> (`npm i @chettapay/core`). This is the promotion of the `0.10.1-rc.*` line
 > (rc.0 -> rc.12); the per-rc detail is preserved in the sections below.
 
 ### Highlights (since 0.10.0)
 
-- **Earn - yield vaults + lending.** New `earn` surface in `@pollar/core`
+- **Earn - yield vaults + lending.** New `earn` surface in `@chettapay/core`
   (`getEarnProviders` / `getEarnOpportunities` / `getEarnPosition` /
   `earnDeposit` / `earnWithdraw`) unifies DeFindex vaults and Blend pools behind
-  one provider-selected API; each opportunity carries its live APY. `@pollar/react`
-  ships an `EarnModal` and mirrors the methods on `usePollar()`, with auto-trustline
+  one provider-selected API; each opportunity carries its live APY. `@chettapay/react`
+  ships an `EarnModal` and mirrors the methods on `useChettaPay()`, with auto-trustline
   on deposit, wallet-balance display and over-spend guards.
 - **All swap venues executable.** SDEX and Soroswap builds now run end-to-end
   (`swap()` dispatches on the quote's build shape - a prebuilt XDR goes straight
@@ -731,7 +731,7 @@
   every component class, standardized loading indicators, shared `AssetSelect`,
   copyable address chips, monospace 7-decimal balances).
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **Earn client methods (Blend + DeFindex).** `getEarnProviders()` returns the
   yield providers this app exposes (empty = Earn disabled); `getEarnOpportunities(provider)`
@@ -755,9 +755,9 @@
   the API key server-side). Request schema decoupled from the internal type.
 - OpenAPI types regenerated for the new endpoints.
 
-### `@pollar/react`
+### `@chettapay/react`
 
-- **`EarnModal` + `usePollar()` earn methods** (`getEarnProviders`,
+- **`EarnModal` + `useChettaPay()` earn methods** (`getEarnProviders`,
   `getEarnOpportunities`, `getEarnPosition`, `earnDeposit`, `earnWithdraw`,
   `openEarnModal`). Deposits establish the buy-asset trustline automatically (up to
   two signatures); the deposit step shows the wallet balance, guards against
@@ -775,7 +775,7 @@
 - **Tx-history polish** - 3-line rows with a copyable hash and issuer, and Stellar
   addresses rendered as copyable chips.
 - **Wallet-balance modal** - copy buttons, issuer, and monospace 7-decimal balances.
-- **Modal UI/UX standardization** - every component class is now `pollar-`
+- **Modal UI/UX standardization** - every component class is now `chettapay-`
   prefixed, loading indicators are standardized (spinner + left-aligned label,
   moved into the asset selects), and modal headers are consistent (X + reload).
 
@@ -787,9 +787,9 @@
 
 ## 0.10.1-rc.0
 
-> Release candidate. Published under the `next` dist-tag (`npm i @pollar/core@next`).
+> Release candidate. Published under the `next` dist-tag (`npm i @chettapay/core@next`).
 
-### `@pollar/core` - features
+### `@chettapay/core` - features
 
 - **All swap venues wired.** `swap()` now dispatches on the quote's build shape:
   a prebuilt XDR (Soroswap) goes straight to `signAndSubmitTx`, while an
@@ -797,7 +797,7 @@
   build type is a union of `invoke_contract | path_payment_strict_send |
 { unsignedXdr }`. At 0.10.0 only Aquarius was executable.
 
-### `@pollar/react` - features
+### `@chettapay/react` - features
 
 - **Soroswap + Stellar DEX enabled in the `SwapModal` route selector.** All three
   venues (SDEX, Soroswap, Aquarius) are now selectable. (Soroswap only returns
@@ -807,49 +807,49 @@
 
 - **Corrected the "custom auth providers" claim.** The rc.7 note advertised
   registering providers via a `providers: [...]` config field, but no such field
-  or registration API exists - `PollarAuthProvider` is an internal contract only.
-  Updated the rc.7 CHANGELOG entry and the `PollarAuthProvider` JSDoc
-  (`@pollar/core`) accordingly. Custom login still goes through the built-in
+  or registration API exists - `ChettaPayAuthProvider` is an internal contract only.
+  Updated the rc.7 CHANGELOG entry and the `ChettaPayAuthProvider` JSDoc
+  (`@chettapay/core`) accordingly. Custom login still goes through the built-in
   providers and `providerAction(...)`; external wallets through `walletAdapters`.
-- **Fixed stale `@pollar/core` JSDoc** that referenced the removed `loginWallet()`
-  method and the non-existent `PollarClientConfig.providers` field.
-- **`@pollar/privy-adapter` config JSDoc** now states that `redirectUri` is
+- **Fixed stale `@chettapay/core` JSDoc** that referenced the removed `loginWallet()`
+  method and the non-existent `ChettaPayClientConfig.providers` field.
+- **`@chettapay/privy-adapter` config JSDoc** now states that `redirectUri` is
   reserved / not currently applied, and that `appearance` is web-only (ignored on
   the React Native / Expo entry) - matching the README.
 
 ## 0.10.0
 
 > Stable release. Published under the default `latest` dist-tag
-> (`npm i @pollar/core`). This is the promotion of the `0.10.0-rc.*` line;
+> (`npm i @chettapay/core`). This is the promotion of the `0.10.0-rc.*` line;
 > the per-rc detail is preserved in the sections below.
 
 ### Highlights (since 0.9.0)
 
 - **Unified wallet adapters (breaking).** External wallets are now registered as
-  a `walletAdapters: WalletAdapter[]` array on `PollarClient`; each adapter
+  a `walletAdapters: WalletAdapter[]` array on `ChettaPayClient`; each adapter
   auto-renders as a login entry and overrides a built-in by its `type`. The old
   singular `walletAdapter` resolver and `loginWallet(id)` method are gone - enter
   any wallet through the unified `login({ provider: id })`. See UPGRADE.md.
 - **Multi-venue swaps.** `getSwapQuote()` quotes across SDEX, Soroswap and
   Aquarius and returns routes ranked best-first (`provider: 'auto'`); `swap()`
   sets the buy-asset trustline and executes through the existing `runTx`
-  pipeline with on-chain `minReceived` slippage. `@pollar/react` ships a
+  pipeline with on-chain `minReceived` slippage. `@chettapay/react` ships a
   `SwapModal` with a venue route selector.
 - **SEP-24 on/off-ramps.** New `ramps` endpoints drive the anchor
   deposit/withdraw interactive flow through core, with a `RampWidget` in
-  `@pollar/react` (external wallets sign the SEP-24 pending XDR in the widget).
-- **Self-driving Privy adapter.** `@pollar/privy-adapter` was reworked from a
+  `@chettapay/react` (external wallets sign the SEP-24 pending XDR in the widget).
+- **Self-driving Privy adapter.** `@chettapay/privy-adapter` was reworked from a
   signer skeleton into a full adapter that drives login + embedded-wallet
   creation + signing, on web and React Native / Expo.
 - **Network resilience.** Every request now has a client-side timeout (default
   10s) and idempotent-request retry; a refresh timeout no longer logs the user
-  out. New typed `PollarNetworkError` + `isPollarNetworkError`.
+  out. New typed `ChettaPayNetworkError` + `isChettaPayNetworkError`.
 
 ### New packages
 
-- **`@pollar/accesly-adapter`** - client-side Accesly smart-wallet adapter.
-- **`@pollar/privy-server-adapter`** - server-side Privy adapter (formerly named
-  `@pollar/privy-adapter` before the client-side rewrite took that name).
+- **`@chettapay/accesly-adapter`** - client-side Accesly smart-wallet adapter.
+- **`@chettapay/privy-server-adapter`** - server-side Privy adapter (formerly named
+  `@chettapay/privy-adapter` before the client-side rewrite took that name).
 
 ### Upgrade notes
 
@@ -860,13 +860,13 @@
 
 ## 0.10.0-rc.10
 
-> Release candidate. Published under the `next` dist-tag (`npm i @pollar/core@next`).
+> Release candidate. Published under the `next` dist-tag (`npm i @chettapay/core@next`).
 >
 > This RC bundles every change since the last published build (`rc.8`): the
 > `rc.9` network-timeout/retry work below plus swaps, on/off-ramps, the
 > self-driving Privy adapter, and two newly published packages.
 
-### `@pollar/core` - features
+### `@chettapay/core` - features
 
 - **Multi-venue swaps.** `getSwapQuote(params)` quotes across venues (SDEX,
   Soroswap, Aquarius) and returns `SwapQuote[]` ranked best-first (`provider:
@@ -877,7 +877,7 @@
 - **SEP-24 on/off-ramps.** New `ramps` endpoints wire the anchor deposit/withdraw
   interactive flow through core so hosts can drive a ramp from the SDK.
 
-### `@pollar/core` - fixes
+### `@chettapay/core` - fixes
 
 - **Swaps fail fast on smart (passkey) wallets.** Smart C-address wallets cannot
   swap yet (the backend smart-account build path only supports `payment`, and the
@@ -889,7 +889,7 @@
   reason) while still redacting enumerable custom props, and the wallet-flow catch
   tags the failing phase (connect/sign/authenticate).
 
-### `@pollar/react` - features
+### `@chettapay/react` - features
 
 - **`SwapModal`** - a drop-in swap UI over the core swap API, with a route
   selector across venues and a smart-wallet guard. (At 0.10.0 only Aquarius was
@@ -899,7 +899,7 @@
   renders a login entry per registered wallet adapter and drives interactive
   adapters (e.g. Privy) to completion before running `login({ provider })`.
 
-### `@pollar/privy-adapter` - features
+### `@chettapay/privy-adapter` - features
 
 - **Self-driving adapter.** Reworked from a signer skeleton into a full adapter
   that drives email/Google/GitHub login, creates the Stellar embedded wallet, and
@@ -909,11 +909,11 @@
 - **React Native / Expo support** via `@privy-io/expo` (native entry with in-session
   OAuth), plus a shared factory and dual `tsup` build.
 - **Auto-sync + URL cleanup.** The adapter emits its provider auth state so
-  `@pollar/react` triggers login on the rising edge (fixes web OAuth redirect and
+  `@chettapay/react` triggers login on the rising edge (fixes web OAuth redirect and
   persisted Privy sessions); `cleanupOAuthRedirect` strips `privy_oauth_*` params
   from the URL. Gated `[privy-adapter]` debug logger.
 
-### `@pollar/stellar-wallets-kit-adapter` - fixes
+### `@chettapay/stellar-wallets-kit-adapter` - fixes
 
 - **SSR-safe.** `stellarWalletsKitAdapters()` no longer touches `window` on the
   server (Next.js/Remix); it returns `[]` during SSR and builds the real adapter
@@ -921,16 +921,16 @@
 
 ### New packages (first publish under `next`)
 
-- **`@pollar/accesly-adapter`** - client-side Accesly smart-wallet adapter
+- **`@chettapay/accesly-adapter`** - client-side Accesly smart-wallet adapter
   (single-s naming to match the upstream `@accesly/*` brand).
-- **`@pollar/privy-server-adapter`** - server-side Privy adapter (the former
-  `@pollar/privy-adapter` before the client-side rewrite took that name).
+- **`@chettapay/privy-server-adapter`** - server-side Privy adapter (the former
+  `@chettapay/privy-adapter` before the client-side rewrite took that name).
 
 ## 0.10.0-rc.9
 
-> Release candidate. Published under the `next` dist-tag (`npm i @pollar/core@next`).
+> Release candidate. Published under the `next` dist-tag (`npm i @chettapay/core@next`).
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **HTTP requests can no longer hang forever.** Every SDK call now has a
   client-side request timeout (default **10s**). Previously `fetch` had no
@@ -938,7 +938,7 @@
   network at cold start) left `client.refresh()` — and every other call —
   pending indefinitely: it neither resolved nor rejected, trapping callers that
   `await` it (e.g. a returning user stuck on the splash screen). A stalled
-  request now rejects with a typed `PollarNetworkError` (`code:
+  request now rejects with a typed `ChettaPayNetworkError` (`code:
 'SDK_NETWORK_TIMEOUT'`) instead.
 - **A refresh that times out no longer logs the user out.** A transient network
   timeout during `/auth/refresh` keeps the session intact (the refresh token is
@@ -947,19 +947,19 @@
   once connectivity returns. Genuine refresh failures (4xx/5xx, malformed
   response) still clear the session as before.
 
-### `@pollar/core` — features
+### `@chettapay/core` — features
 
-- **New `PollarClient` options.** `requestTimeoutMs` (default `10000`; `0`
+- **New `ChettaPayClient` options.** `requestTimeoutMs` (default `10000`; `0`
   disables) tunes the per-attempt timeout, and `retry` (default
   `{ attempts: 2, baseDelayMs: 300 }`) controls automatic backoff retry for
   idempotent, transient-failure requests (token refresh + GETs). Only
   transport-level failures retry — an HTTP response is never retried.
-- **Exported `PollarNetworkError` + `isPollarNetworkError`** for programmatic
+- **Exported `ChettaPayNetworkError` + `isChettaPayNetworkError`** for programmatic
   handling of timeouts.
 
 ## 0.10.0-rc.7
 
-> Release candidate. Published under the `next` dist-tag (`npm i @pollar/core@next`).
+> Release candidate. Published under the `next` dist-tag (`npm i @chettapay/core@next`).
 >
 > **⚠️ One-time re-login on upgrade (SDK only).** The local storage namespace was
 > widened — the apiKey hash went from 8 to 32 hex chars (128-bit) — which
@@ -968,14 +968,14 @@
 > stale/corrupt session state left by older builds. No migration, no backend
 > change, no action required.
 
-### `@pollar/core` — features
+### `@chettapay/core` — features
 
-- **Custom auth provider contract (`PollarAuthProvider`)** - the extension point
+- **Custom auth provider contract (`ChettaPayAuthProvider`)** - the extension point
   that backs the built-in Google / GitHub / email flows and `providerAction(...)`.
   Correction (see 0.10.1-rc.0): this shipped as an internal contract only; there
   is no public `providers: [...]` config field to register your own providers.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **React Native token refresh** — the `/auth/refresh` retry after a DPoP
   `use_dpop_nonce` challenge no longer replays an empty body, and a rotated token
@@ -998,17 +998,17 @@
 
 ## 0.9.1-rc.0
 
-> Release candidate. Published under the `next` dist-tag (`npm i @pollar/core@next`).
+> Release candidate. Published under the `next` dist-tag (`npm i @chettapay/core@next`).
 > No breaking changes since `0.9.0`.
 
-### `@pollar/core` — features
+### `@chettapay/core` — features
 
 - **All SDK API calls are now logged** — successful requests at `debug`, errors at
   `error` — to aid integration debugging.
 - **Backend error codes are mapped to friendly auth messages** so failed logins
   surface human-readable reasons instead of raw codes.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **Native adapter load failures now attach a `cause`**, preserving the original
   error when an Expo / React Native secure-storage adapter fails to load.
@@ -1023,11 +1023,11 @@
 
 > **⚠️ BREAKING CHANGES (SDK packages only — the SDK API stays backward-compatible).**
 >
-> - **`session.wallet.type` value `'custodial'` → `'internal'`** in `@pollar/core`.
+> - **`session.wallet.type` value `'custodial'` → `'internal'`** in `@chettapay/core`.
 >   The developer-facing union is now `'internal' | 'smart' | 'external'` (aligns
 >   with the DB `SdkUserWalletSource.INTERNAL`). Apps branching on
 >   `wallet.type === 'custodial'` must switch to `'internal'`. **The wire is
->   unchanged**: `sdk-api` still emits `'custodial'`, and `@pollar/core` ≥0.9.0
+>   unchanged**: `sdk-api` still emits `'custodial'`, and `@chettapay/core` ≥0.9.0
 >   remaps it to `'internal'` at the client boundary — so SDKs ≤0.8.x keep
 >   working and no coordinated backend deploy is required.
 > - The session wallet drops the legacy `publicKey` alias. `session.wallet`
@@ -1039,15 +1039,15 @@
 >   both `publicKey` and `address`, so SDKs ≤0.8.x keep working.
 > - `sdk-api` `/tx/*` now accept **either `address` (preferred) or `publicKey`
 >   (legacy)** in the request body — `address` wins when both are sent. Old SDKs
->   that send `publicKey` keep working; `@pollar/core` 0.9.0 sends `address`.
->   ⚠️ **Deploy ordering:** ship the `sdk-api` change before/with `@pollar/core`
+>   that send `publicKey` keep working; `@chettapay/core` 0.9.0 sends `address`.
+>   ⚠️ **Deploy ordering:** ship the `sdk-api` change before/with `@chettapay/core`
 >   0.9.0, since that core sends `address` and needs a backend that accepts it.
-> - Apps consuming `@pollar/react`'s `usePollar().walletAddress` need **no
+> - Apps consuming `@chettapay/react`'s `useChettaPay().walletAddress` need **no
 >   changes** — the field is resolved internally.
 
-### `@pollar/core` — BREAKING
+### `@chettapay/core` — BREAKING
 
-- **`wallet.type` `'custodial'` → `'internal'`.** `PollarPersistedSession.wallet.type`
+- **`wallet.type` `'custodial'` → `'internal'`.** `ChettaPayPersistedSession.wallet.type`
   and the `isValidSession` check now use `'internal' | 'smart' | 'external'`.
   Code branching on `'custodial'` must switch to `'internal'`. The change is
   **SDK-only**: the `sdk-api` wire still emits `'custodial'`, and core remaps it
@@ -1055,7 +1055,7 @@
   persisted sessions). The DB enum stays `SdkUserWalletSource.INTERNAL` — no
   migration. This keeps clients ≤0.8.x working while the SDK surface and the DB
   speak one vocabulary.
-- **`PollarPersistedSession.wallet.publicKey` removed.** The persisted session
+- **`ChettaPayPersistedSession.wallet.publicKey` removed.** The persisted session
   wallet is now `{ type, address, existsOnStellar?, createdAt?, linkedAt?,
 network?, deployTxHash? }`. `address` is the on-chain address for every type
   (G-address internal, C-address smart/passkey, connected pubkey external).
@@ -1063,17 +1063,17 @@ network?, deployTxHash? }`. `address` is the on-chain address for every type
   `publicKey` field is gone; the built-in `FreighterAdapter` / `AlbedoAdapter`
   and any custom adapter must return `address` only.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **Login no longer clears the session on every embedded (email/OAuth) login.**
   `authenticate()` validates the raw `/auth/login` wire response with
   `isValidSession()` **before** `_storeSession` remaps `custodial → internal`,
   so the transitional wire value `'custodial'` is tolerated at the guard and the
   flow no longer falls through to the error branch → `clearSession()`
-  (`[PollarClient] Session cleared`). Callers still remap it before it reaches
+  (`[ChettaPayClient] Session cleared`). Callers still remap it before it reaches
   app code, so the persisted/SDK surface vocabulary is unchanged.
 
-### `@pollar/core` — internal
+### `@chettapay/core` — internal
 
 - **Sessions persisted by older SDKs (≤0.8.x) are migrated transparently.**
   `readStorage` backfills `address` from the legacy `publicKey` key and remaps
@@ -1086,12 +1086,12 @@ network?, deployTxHash? }`. `address` is the on-chain address for every type
 
 ### Configurable logging — new features (all SDK packages)
 
-- **`logLevel` + `logger` on `PollarClientConfig`.** A new `LogLevel`
+- **`logLevel` + `logger` on `ChettaPayClientConfig`.** A new `LogLevel`
   (`silent` < `error` < `warn` < `info` < `debug`, default **`info`**) filters
-  SDK logging, and an optional `logger?: PollarLogger` routes logs to a custom
+  SDK logging, and an optional `logger?: ChettaPayLogger` routes logs to a custom
   sink (pino, Sentry breadcrumbs, a test spy…) instead of `console`. Exported
-  `createLogger(level, sink?)` and the `LogLevel` / `PollarLogger` types from
-  `@pollar/core`. `PollarClient.getLogger()` exposes the configured logger so
+  `createLogger(level, sink?)` and the `LogLevel` / `ChettaPayLogger` types from
+  `@chettapay/core`. `ChettaPayClient.getLogger()` exposes the configured logger so
   the runtime layer reuses the same level + sink.
 - **State-transition chatter is now `debug`.** The per-transition
   `auth:…` / `transaction:…` / `network:…` logs, the session-status retry
@@ -1101,30 +1101,30 @@ network?, deployTxHash? }`. `address` is the on-chain address for every type
   validation detail dropped to `debug` too.
 - **No more double-logged key-manager init failures.** `NobleKeyManager` /
   `WebCryptoKeyManager` no longer `console.error` on init failure — the error
-  already propagates to `PollarClient`, which logs it once through the
+  already propagates to `ChettaPayClient`, which logs it once through the
   configured logger.
-- **`@pollar/stellar-wallets-kit-adapter`** gains `logLevel` / `logger` on
+- **`@chettapay/stellar-wallets-kit-adapter`** gains `logLevel` / `logger` on
   `StellarWalletsKitAdapterOptions` (set once at init — the kit is a global
-  singleton). **`@pollar/react`** routes the provider's logs and the modal
-  error boundary through the client's logger via `PollarClient.getLogger()`.
+  singleton). **`@chettapay/react`** routes the provider's logs and the modal
+  error boundary through the client's logger via `ChettaPayClient.getLogger()`.
 
-### `@pollar/react` — BREAKING
+### `@chettapay/react` — BREAKING
 
 - **`walletAddress` now derives from `session.wallet.address`** instead of
-  `session.wallet.publicKey`. The public `usePollar().walletAddress` value is
+  `session.wallet.publicKey`. The public `useChettaPay().walletAddress` value is
   identical — no consumer change needed. The internal session-equality check
   compares `wallet.address`.
 
-### `@pollar/stellar-wallets-kit-adapter` — BREAKING
+### `@chettapay/stellar-wallets-kit-adapter` — BREAKING
 
 - **`connect()` returns `{ address }` only** (matches the new
-  `ConnectWalletResponse`). Requires `@pollar/core@^0.9.0` /
-  `@pollar/react@^0.9.0` (peer ranges pinned).
+  `ConnectWalletResponse`). Requires `@chettapay/core@^0.9.0` /
+  `@chettapay/react@^0.9.0` (peer ranges pinned).
 
-### `@pollar/privy-adapter` — release alignment
+### `@chettapay/privy-adapter` — release alignment
 
 - **Version bump to `0.9.0` only — no functional changes.** Republished so all
-  `@pollar/*` packages share a single `0.9.0` release line. The adapter API,
+  `@chettapay/*` packages share a single `0.9.0` release line. The adapter API,
   config fields, and error envelope are identical to `0.8.1`.
 
 ### Migration
@@ -1152,11 +1152,11 @@ async connect(): Promise<ConnectWalletResponse> {
 }
 ```
 
-`@pollar/react` consumers using `usePollar().walletAddress`: **no change**.
+`@chettapay/react` consumers using `useChettaPay().walletAddress`: **no change**.
 
 ## 0.8.3
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
 - **Session resume on cold start — sessions are revalidated and the profile is
   repopulated after a reload/reopen.** Until now, `_restoreSession()` rehydrated
@@ -1181,24 +1181,24 @@ async connect(): Promise<ConnectWalletResponse> {
   a restored session is still optimistic (pre-revalidation), `true` after a
   fresh login/refresh or a successful resume. Gate sensitive actions on it.
 
-### `@pollar/react` — new features
+### `@chettapay/react` — new features
 
-- **`usePollar().verified`** exposes the new `verified` flag so apps can gate
+- **`useChettaPay().verified`** exposes the new `verified` flag so apps can gate
   sensitive actions (e.g. signing) until the cold-start session is confirmed.
 
 ## 0.8.2
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
-- **`POLLAR_CORE_VERSION` export + version in the init log.** The package version
+- **`CHETTAPAY_CORE_VERSION` export + version in the init log.** The package version
   is injected at build time (tsup `define`) and exported as
-  `POLLAR_CORE_VERSION` (e.g. `'0.8.2'`, `'dev'` when running unbundled). The
-  `PollarClient` startup log now includes it:
-  `[PollarClient] Initialized v0.8.2 — endpoint: …, network: …`. Named per
-  package so it won't collide with a future `POLLAR_REACT_VERSION`, letting apps
+  `CHETTAPAY_CORE_VERSION` (e.g. `'0.8.2'`, `'dev'` when running unbundled). The
+  `ChettaPayClient` startup log now includes it:
+  `[ChettaPayClient] Initialized v0.8.2 — endpoint: …, network: …`. Named per
+  package so it won't collide with a future `CHETTAPAY_REACT_VERSION`, letting apps
   report both in one diagnostics line.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **SHA-256 no longer requires `crypto.subtle` — React Native runs in Expo Go.**
   `sha256` ran on `crypto.subtle.digest('SHA-256')`, which is absent on
@@ -1218,8 +1218,8 @@ async connect(): Promise<ConnectWalletResponse> {
   keys.** `createSecureStoreAdapter()` passed keys straight to
   `expo-secure-store`, but SecureStore only accepts keys matching
   `[A-Za-z0-9._-]` while the SDK namespaces its keys with `:`
-  (`pollar:<apiKeyHash>:session`, `pollar:<apiKeyHash>:walletType`,
-  `pollar:dpop-key:<apiKeyHash>`). Every read/write failed with an
+  (`chettapay:<apiKeyHash>:session`, `chettapay:<apiKeyHash>:walletType`,
+  `chettapay:dpop-key:<apiKeyHash>`). Every read/write failed with an
   `Invalid key` error on React Native / Expo. The adapter now sanitizes each
   key (disallowed characters → `_`) before calling SecureStore. The transform
   is deterministic and collision-free for the SDK's fixed key templates. No
@@ -1229,7 +1229,7 @@ async connect(): Promise<ConnectWalletResponse> {
 
 ## 0.8.1
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
 - **React Native / Expo runtime support.** The DPoP path no longer assumes a
   browser-grade runtime, so the SDK now boots on React Native / Hermes once the
@@ -1265,14 +1265,14 @@ async connect(): Promise<ConnectWalletResponse> {
   the polyfills that provide them (`react-native-get-random-values`,
   `react-native-quick-crypto`, `react-native-polyfill-globals`).
 
-### `@pollar/react` — fixes
+### `@chettapay/react` — fixes
 
 - **`onWalletConnect` is now optional on `<LoginModalTemplate>`.** The prop
   changed from required to `onWalletConnect?: (id: WalletId) => void` and
   defaults to a no-op. Consumers that drive the wallet picker entirely through
   `ui.renderWallets` no longer have to thread a handler they don't use.
 
-### `@pollar/privy-adapter` — new features
+### `@chettapay/privy-adapter` — new features
 
 - **Operation allowlist.** The adapter signs through Privy `rawSign`, so only the
   transaction _hash_ ever reaches Privy and Privy cannot enforce per-operation
@@ -1300,40 +1300,40 @@ async connect(): Promise<ConnectWalletResponse> {
 
 > **⚠️ BREAKING CHANGES.**
 >
-> - `<PollarProvider>` props are reshaped: `config` is now `client` (and accepts
->   either a `PollarClient` instance or a `PollarClientConfig`), `styles` moves
+> - `<ChettaPayProvider>` props are reshaped: `config` is now `client` (and accepts
+>   either a `ChettaPayClient` instance or a `ChettaPayClientConfig`), `styles` moves
 >   under `appConfig.styles`, and the remote `/applications/config` fetch is now
 >   opt-out by passing `appConfig` (even `{}`). New `ui.renderWallets` slot lets
 >   external picker components replace the default Freighter/Albedo list.
-> - `@pollar/stellar-wallets-kit-adapter` now **requires** `network` — the
+> - `@chettapay/stellar-wallets-kit-adapter` now **requires** `network` — the
 >   `Networks.TESTNET` default is gone. Per-call `networkPassphrase` overrides
 >   are rejected if they don't match init.
-> - `@pollar/core` external-wallet `submitTx` no longer hits Horizon directly —
+> - `@chettapay/core` external-wallet `submitTx` no longer hits Horizon directly —
 >   all submissions route through `/tx/submit`. The same call may now resolve to
 >   `pending` instead of `success` / `error` (previously synchronous-only).
 
-### `@pollar/react` — BREAKING
+### `@chettapay/react` — BREAKING
 
-- **`<PollarProvider>` shape**:
-  - `config: PollarClientConfig` → `client: PollarClient | PollarClientConfig`. Pass
-    the config inline (provider constructs the client) or a pre-built `PollarClient`
+- **`<ChettaPayProvider>` shape**:
+  - `config: ChettaPayClientConfig` → `client: ChettaPayClient | ChettaPayClientConfig`. Pass
+    the config inline (provider constructs the client) or a pre-built `ChettaPayClient`
     (testing, reusing the client outside React). The client is locked at first render.
-  - `styles?: PollarStyles` → moved under `appConfig.styles`.
-  - New `appConfig?: PollarConfig`. Presence is the opt-out switch for the remote
+  - `styles?: ChettaPayStyles` → moved under `appConfig.styles`.
+  - New `appConfig?: ChettaPayConfig`. Presence is the opt-out switch for the remote
     `/applications/config` fetch: if you pass it (even `{}`), no fetch happens and
     missing fields fall back to the defaults baked into `LoginModalTemplate`. If you
     don't pass it, the SDK fetches `/applications/config` on mount (current behavior).
   - New `ui?: { renderWallets?: RenderWalletsSlot }`.
 - **Fetch errors are no longer silenced**. Failures of `getAppConfig()` now log via
-  `console.error('[PollarProvider] getAppConfig failed', err)` instead of swallowing.
+  `console.error('[ChettaPayProvider] getAppConfig failed', err)` instead of swallowing.
 - **Three-level styles merge removed**. The previous
   `{ ...fetched.styles, ...propStyles, providers: { ...remote, ...local } }` merge is
   gone. Either pass `appConfig` (no remote) or don't (full remote). No silent overlay.
 
-### `@pollar/react` — new features
+### `@chettapay/react` — new features
 
 - **`renderWallets` slot.** New `ui.renderWallets?: RenderWalletsSlot` prop on
-  `<PollarProvider>`. When provided, replaces the hardcoded Freighter+Albedo buttons
+  `<ChettaPayProvider>`. When provided, replaces the hardcoded Freighter+Albedo buttons
   in the LoginModal wallet picker. The slot receives `{ onConnect, authState }` and
   is expected to render a list of wallet buttons that call `onConnect(walletId)` on
   click. Default behavior is unchanged when the slot is not provided.
@@ -1344,32 +1344,32 @@ async connect(): Promise<ConnectWalletResponse> {
 
 ```tsx
 // BEFORE (0.7.x)
-<PollarProvider config={{ apiKey, walletAdapter }} styles={{ theme: 'dark' }}>
+<ChettaPayProvider config={{ apiKey, walletAdapter }} styles={{ theme: 'dark' }}>
 
 // AFTER (0.8.0) — common case (no remote-config fetch)
-<PollarProvider
+<ChettaPayProvider
   client={{ apiKey, walletAdapter }}
   appConfig={{ styles: { theme: 'dark' } }}
 >
 
 // AFTER (0.8.0) — keep the remote /applications/config fetch
-<PollarProvider client={{ apiKey, walletAdapter }}>
+<ChettaPayProvider client={{ apiKey, walletAdapter }}>
 
 // AFTER (0.8.0) — power user, pre-built client
-const client = new PollarClient({ apiKey, walletAdapter });
-<PollarProvider client={client} appConfig={{ styles: { theme: 'dark' } }}>
+const client = new ChettaPayClient({ apiKey, walletAdapter });
+<ChettaPayProvider client={client} appConfig={{ styles: { theme: 'dark' } }}>
 ```
 
-### `@pollar/react` — fixes
+### `@chettapay/react` — fixes
 
 - **Provider props are read directly in the context value** instead of via a
-  stale ref — `<PollarProvider>` now updates without remounting when callers
+  stale ref — `<ChettaPayProvider>` now updates without remounting when callers
   swap `adapters` / `ui` references between renders.
-- **Timers cleared on unmount** in `<PollarProvider>` and the session change
+- **Timers cleared on unmount** in `<ChettaPayProvider>` and the session change
   effect uses explicit equality so identical sessions don't trigger spurious
   re-renders.
 
-### `@pollar/stellar-wallets-kit-adapter` — BREAKING
+### `@chettapay/stellar-wallets-kit-adapter` — BREAKING
 
 - **`network` is now required** on `StellarWalletsKitAdapterOptions` (and on
   `createStellarWalletsKitBundle`). The previous `Networks.TESTNET` default is
@@ -1381,17 +1381,17 @@ const client = new PollarClient({ apiKey, walletAdapter });
   the init network. `signTransaction()` / `signAuthEntry()` throw instead of
   silently signing on the wrong chain.
 
-### `@pollar/stellar-wallets-kit-adapter` — new features
+### `@chettapay/stellar-wallets-kit-adapter` — new features
 
 - **`<KitWalletPicker>` and `createStellarWalletsKitBundle`** on the new
-  `@pollar/stellar-wallets-kit-adapter/picker` subpath. Drop the bundle into
-  `<PollarProvider>`'s new `renderWallets` slot to render the full Stellar
+  `@chettapay/stellar-wallets-kit-adapter/picker` subpath. Drop the bundle into
+  `<ChettaPayProvider>`'s new `renderWallets` slot to render the full Stellar
   Wallets Kit wallet list (Albedo, Bitget, CactusLink, Fordefi, Freighter,
   Hana, HotWallet, Klever, Lobstr, OneKey, Rabet, xBull, plus any custom
   modules):
 
   ```tsx
-  import { createStellarWalletsKitBundle } from '@pollar/stellar-wallets-kit-adapter/picker';
+  import { createStellarWalletsKitBundle } from '@chettapay/stellar-wallets-kit-adapter/picker';
   import { Networks } from '@creit.tech/stellar-wallets-kit';
 
   const bundle = createStellarWalletsKitBundle({
@@ -1399,7 +1399,7 @@ const client = new PollarClient({ apiKey, walletAdapter });
     picker: { wallets: ['xbull', 'lobstr', 'freighter'] },
   });
 
-  <PollarProvider
+  <ChettaPayProvider
     client={{ apiKey: '…', walletAdapter: bundle.walletAdapter }}
     ui={{ renderWallets: bundle.renderWallets }}
   >
@@ -1415,23 +1415,23 @@ const client = new PollarClient({ apiKey, walletAdapter });
   flag the kit already populates from each module's `isAvailable()` probe).
   No second-pass probing per render.
 
-### `@pollar/stellar-wallets-kit-adapter` — fixes
+### `@chettapay/stellar-wallets-kit-adapter` — fixes
 
 - **Second-init network mismatch is now flagged.** Calling
   `stellarWalletsKit({ network })` a second time with a different network logs
   a clear warning instead of silently keeping the first init's network.
 
-### `@pollar/stellar-wallets-kit-adapter` — packaging
+### `@chettapay/stellar-wallets-kit-adapter` — packaging
 
 - React is now an **optional peer dependency**. The root export
   (`stellarWalletsKit`) stays headless — consumers that only need the
   `WalletAdapterResolver` continue to work without installing React.
-  Only the `/picker` subpath pulls in `react` / `react-dom` / `@pollar/react`.
+  Only the `/picker` subpath pulls in `react` / `react-dom` / `@chettapay/react`.
 - Bumped to `0.8.0`. Existing `stellarWalletsKit({ network })`-only consumers
   do not need to change anything beyond making the `network` argument
   explicit if they were relying on the testnet default.
 
-### `@pollar/core` — BREAKING (behavior)
+### `@chettapay/core` — BREAKING (behavior)
 
 - **`submitTx` always routes through `/tx/submit`.** External wallets no longer
   submit directly to the public RPC; both embedded and external paths now go
@@ -1446,22 +1446,22 @@ const client = new PollarClient({ apiKey, walletAdapter });
 
   Cost: ~50–150 ms extra latency vs. the legacy direct-Horizon path.
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
 - **Proactive token refresh with a visibility-aware scheduler.** Tokens are
   refreshed before they expire instead of on the first 401. The scheduler
   pauses when the tab is hidden and resumes when it becomes visible again, so
   background tabs don't churn refreshes.
 - **`onStorageDegrade` subscription** — opt-in telemetry hook on
-  `PollarClientConfig` (mirrored on `<PollarProvider>` config). Fires when the
+  `ChettaPayClientConfig` (mirrored on `<ChettaPayProvider>` config). Fires when the
   client falls back from secure storage (e.g. IndexedDB → in-memory) so apps
   can surface the degradation to users / dashboards.
-- **Wallet adapter resolver timeout.** `PollarClient` now times out
+- **Wallet adapter resolver timeout.** `ChettaPayClient` now times out
   `walletAdapter(id)` resolutions so a stuck resolver can't hang the login
   flow indefinitely. The timeout produces a regular auth error that flows
   through the existing error surface.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **Only idempotent methods retry after a post-refresh 401.** The auto-retry
   path previously re-ran any method that returned 401 after a token refresh;
@@ -1472,7 +1472,7 @@ const client = new PollarClient({ apiKey, walletAdapter });
   login now also cancels the wallet adapter resolution, instead of leaving
   the resolver running until completion.
 
-### `@pollar/privy-adapter` — fixes
+### `@chettapay/privy-adapter` — fixes
 
 - **Self-heal wallet cache on stale entries.** If a cached wallet id no longer
   exists at Privy, the adapter clears the entry and recreates it on the next
@@ -1500,7 +1500,7 @@ to network, waiting for ledger" intermediate state). Existing `0.7.x`
 consumers that don't render `TransactionState` themselves keep working
 unchanged.
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
 - **`buildTx` and `signAndSubmitTx` now return outcomes.** Their return types
   changed from `Promise<void>` to `Promise<BuildOutcome>` and
@@ -1529,12 +1529,12 @@ unchanged.
   regenerated against `sdk-api` — adds `/tx/sign`, `/tx/submit`,
   `/tx/build-sign-submit` paths.
 
-### `@pollar/react` — new features
+### `@chettapay/react` — new features
 
-- **Context exposes the new methods.** `usePollar()` now returns `signTx`,
+- **Context exposes the new methods.** `useChettaPay()` now returns `signTx`,
   `submitTx`, `buildAndSignAndSubmitTx`, and `runTx` in addition to the
   existing `buildTx` / `signAndSubmitTx`. Return types match the core SDK.
-- **`usePollarAdapter` returns outcomes.** `WrappedAdapter<T>` methods now
+- **`useChettaPayAdapter` returns outcomes.** `WrappedAdapter<T>` methods now
   resolve to `Promise<SubmitOutcome>` instead of `Promise<void>`. Adapter
   callers can inspect `result.status` to branch on `success` / `pending` /
   `error` without subscribing to the global state.
@@ -1582,14 +1582,14 @@ The `TransactionState` discriminated union grew from 6 step values to 11:
 
 ## 0.7.1
 
-Patch release on top of 0.7.0 — adds a distribution-rules surface to `@pollar/core` and
-`@pollar/react`, and fixes the auto-retry path that silently broke for any request with
+Patch release on top of 0.7.0 — adds a distribution-rules surface to `@chettapay/core` and
+`@chettapay/react`, and fixes the auto-retry path that silently broke for any request with
 a body (POST/PUT/PATCH) once the original `Request.body` stream had been consumed by
 `fetch()`.
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
-- **Distribution rules.** Two new endpoints on `PollarClient`:
+- **Distribution rules.** Two new endpoints on `ChettaPayClient`:
   - `listDistributionRules(): Promise<DistributionRule[]>` — returns the rules visible
     to the calling sdk-user, each decorated with `claimable: boolean` and (when not
     claimable) a `reason` `ErrorCode` the UI maps to a friendly message.
@@ -1602,7 +1602,7 @@ a body (POST/PUT/PATCH) once the original `Request.body` stream had been consume
   `/distribution/claim` paths and refreshes the `409` envelope shape on existing
   operations.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
 - **Auto-retry on `401` / DPoP nonce challenge now works for POST/PUT/PATCH.** The
   previous implementation called `originalRequest.clone()` inside `_retryRequest`,
@@ -1611,18 +1611,18 @@ a body (POST/PUT/PATCH) once the original `Request.body` stream had been consume
   or a `use_dpop_nonce` challenge. `onRequest` now snapshots the body into a
   `WeakMap<Request, ArrayBuffer>` _before_ `fetch` disturbs it, and `_retryRequest`
   builds a brand-new `Request` with the cached body, fresh headers, and a fresh DPoP
-  proof. The `X-Pollar-Retried` header guard was dropped — `openapi-fetch` only runs
+  proof. The `X-ChettaPay-Retried` header guard was dropped — `openapi-fetch` only runs
   `onResponse` once per request, so it was redundant.
 - `buildTx` no longer swallows its catch silently; the underlying error is logged via
   `console.error` before the transaction state flips to `error`.
 
-### `@pollar/react` — new features
+### `@chettapay/react` — new features
 
 - **New: `DistributionRulesModal`.** Drop-in UI that lists every distribution rule
   available to the logged-in user, with a per-row claim button. Handles loading,
   empty / error states, per-row `claiming` spinner, per-row claim errors, and a
   "claimed" badge once a claim succeeds. Available via the new
-  `openDistributionRulesModal()` action on `usePollar()`. The pure presentational
+  `openDistributionRulesModal()` action on `useChettaPay()`. The pure presentational
   `DistributionRulesModalTemplate` is exported alongside for consumers who want to swap
   the chrome while keeping the wiring.
 
@@ -1638,7 +1638,7 @@ a body (POST/PUT/PATCH) once the original `Request.body` stream had been consume
 > **⚠️ BREAKING CHANGE.** This release ships sender-constrained tokens via DPoP (RFC 9449). The persisted session shape,
 > the storage namespace, the `Authorization` scheme, and the `AuthState.session` type all change. Sessions written by
 > 0.6.x are invalidated — every user re-logs in once. The full threat model and residual-risk write-up will live at
-> [docs.pollar.xyz](https://docs.pollar.xyz).
+> [chettapay-docs.vercel.app](https://chettapay-docs.vercel.app).
 
 ### Why
 
@@ -1667,11 +1667,11 @@ fails.
 ### Breaking changes
 
 - **Persisted session shape** — the `data.{mail,first_name,last_name,avatar,providers}` subtree is no longer written to
-  storage. PII now lives in memory on `PollarClient`, accessible via `client.getUserProfile()`. **Old `pollar:session`
+  storage. PII now lives in memory on `ChettaPayClient`, accessible via `client.getUserProfile()`. **Old `chettapay:session`
   blobs from 0.6.x are invalid against the new validator and are silently dropped — every user re-logs in once.**
-- **Storage namespace** — keys moved from `pollar:session` and `pollar:walletType` to `pollar:${apiKeyHash}:session` and
-  `pollar:${apiKeyHash}:walletType` so multiple SDK instances on the same origin don't collide.
-- **`AuthState.authenticated.session` type** changed from `PollarApplicationConfigContent` to `PollarPersistedSession`.
+- **Storage namespace** — keys moved from `chettapay:session` and `chettapay:walletType` to `chettapay:${apiKeyHash}:session` and
+  `chettapay:${apiKeyHash}:walletType` so multiple SDK instances on the same origin don't collide.
+- **`AuthState.authenticated.session` type** changed from `ChettaPayApplicationConfigContent` to `ChettaPayPersistedSession`.
   Code that read `authState.session.data.mail` (or any other `data.*` field) breaks at compile time. Migrate to
   `client.getUserProfile()`.
 - **`Authorization` scheme** changed from `Bearer <AT>` to `DPoP <AT>` for any token issued with `dpopJwk` in the login
@@ -1680,26 +1680,26 @@ fails.
   SDK fails fast on HTTP origins. In React Native, import `react-native-get-random-values` at app entry.
 - **React Native users must inject storage** — `defaultStorage()` only autodetects `localStorage`. RN apps pass
   `createSecureStoreAdapter()` (Expo) or `createKeychainAdapter()` (`react-native-keychain`).
-- **`PollarClient.logout()` returns `Promise<void>`** (was `void`). Existing fire-and-forget call sites keep working,
+- **`ChettaPayClient.logout()` returns `Promise<void>`** (was `void`). Existing fire-and-forget call sites keep working,
   but consumers that want to observe the server-side revocation must now `await` the call.
 - **SSE session-status payload trimmed** — `/auth/session/status/{clientSessionId}` no longer emits `user.id` or
   `data.*`. Identity data is delivered exclusively through the authenticated `/auth/login` response. Code that read PII
   from the SSE stream must migrate to `client.getUserProfile()` after login completes.
-- **Adapter types renamed** — `EscrowFn` → `AdapterFn` and `EscrowAdapter` → `PollarAdapter` in `@pollar/core`. The
-  `PollarAdapters` umbrella type keeps its name but now indexes `PollarAdapter` instead of `EscrowAdapter`. Consumers
+- **Adapter types renamed** — `EscrowFn` → `AdapterFn` and `EscrowAdapter` → `ChettaPayAdapter` in `@chettapay/core`. The
+  `ChettaPayAdapters` umbrella type keeps its name but now indexes `ChettaPayAdapter` instead of `EscrowAdapter`. Consumers
   who imported `EscrowFn` / `EscrowAdapter` (introduced in 0.5.3) must rename their imports. The runtime contract is
   unchanged — only the type names move — so the migration is mechanical.
 
-### `@pollar/core` — new features
+### `@chettapay/core` — new features
 
 - **Pluggable `Storage` adapter.** `defaultStorage()` autodetects `localStorage` on web with in-memory fallback for SSR,
   private browsing, sandboxed iframes, and quota errors. New sub-path exports for native:
-  - `@pollar/core/adapters/expo` → `createSecureStoreAdapter()` (default
+  - `@chettapay/core/adapters/expo` → `createSecureStoreAdapter()` (default
     `keychainAccessible: WHEN_UNLOCKED_THIS_DEVICE_ONLY` so iCloud Keychain backup can't exfiltrate the key)
-  - `@pollar/core/adapters/react-native-keychain` → `createKeychainAdapter()`
+  - `@chettapay/core/adapters/react-native-keychain` → `createKeychainAdapter()`
 - **Pluggable `KeyManager`.** Per-session ECDSA P-256 keypair backing every DPoP proof.
   - `WebCryptoKeyManager` — `subtle.generateKey({extractable: false})`, `CryptoKeyPair` persisted in IndexedDB store
-    `pollar-keys`. Private key bytes never leave the browser's crypto context.
+    `chettapay-keys`. Private key bytes never leave the browser's crypto context.
   - `NobleKeyManager` — `@noble/curves` p256 + `@noble/hashes` sha256. Private scalar (32 bytes) stored through the
     injected `Storage` adapter.
   - `defaultKeyManager(storage, apiKeyHash)` — picks WebCrypto if `subtle.generateKey` exists, else Noble.
@@ -1714,83 +1714,83 @@ fails.
   the session.
 - **`DPoP-Nonce` rotation tracking.** Server-issued nonces are captured from response headers and threaded into
   subsequent proofs; `use_dpop_nonce` challenges trigger an automatic retry.
-- **`PollarClient.destroy()`** — detaches the cross-tab `storage` listener and aborts in-flight logins. Fixes a
+- **`ChettaPayClient.destroy()`** — detaches the cross-tab `storage` listener and aborts in-flight logins. Fixes a
   long-standing memory leak.
-- **`getUserProfile()`** — returns the in-memory `PollarUserProfile` (email, names, avatar, providers). `null` until
+- **`getUserProfile()`** — returns the in-memory `ChettaPayUserProfile` (email, names, avatar, providers). `null` until
   `/auth/login` completes; never written to storage.
 - **`onStorageDegrade` callback** — notified the first time `localStorage` falls back to in-memory mode, for telemetry.
-- **Server-side logout.** `PollarClient.logout({ everywhere? })` now calls `POST /v1/auth/logout` to revoke the
+- **Server-side logout.** `ChettaPayClient.logout({ everywhere? })` now calls `POST /v1/auth/logout` to revoke the
   refresh-token family on the server before clearing local storage. Server revocation is best-effort: a failed POST
   still clears local state, the orphan refresh token then sits unused until its natural expiry. Pass `everywhere: true`
   to revoke every active session for the user; the `logoutEverywhere()` shorthand wraps that case.
-- **Sessions list + revoke.** `PollarClient.listSessions()` returns `SessionInfo[]` (one entry per active refresh-token
-  family) and `PollarClient.revokeSession(familyId)` revokes a specific one. Each row carries `familyId`, `createdAt`,
+- **Sessions list + revoke.** `ChettaPayClient.listSessions()` returns `SessionInfo[]` (one entry per active refresh-token
+  family) and `ChettaPayClient.revokeSession(familyId)` revokes a specific one. Each row carries `familyId`, `createdAt`,
   `lastUsedAt`, `userAgent`, `ipHash`, `deviceLabel`, `expiresAt`, plus a `current: boolean` flag identifying the local
   session. Revoking the current family does not immediately clear local state — the next 401 will trigger an automatic
   refresh, which fails (family revoked) and clears the session.
-- **`PollarClientConfig.deviceLabel`** — optional UI-friendly label sent at `/auth/login` time and recorded on the
+- **`ChettaPayClientConfig.deviceLabel`** — optional UI-friendly label sent at `/auth/login` time and recorded on the
   server-side refresh-token row so the sessions list can show "iPhone — Safari" instead of the raw user agent.
 - **OAuth popup hardening** — `loginOAuth` severs `window.opener` after opening the popup and after each navigation;
   the popup-blocked fallback uses `noopener,noreferrer`. Cross-origin pages opened by the popup can no longer
   navigate back into the parent.
 - **Exponential backoff on the session-status SSE stream** — `streamUntilFound` doubles its retry delay on consecutive
   failures (200 ms → 5 s) and resets the floor on any successful chunk. The happy path is unchanged.
-- **Pluggable wallet-adapter resolver.** `PollarClientConfig.walletAdapter?: WalletAdapterResolver` lets consumers
+- **Pluggable wallet-adapter resolver.** `ChettaPayClientConfig.walletAdapter?: WalletAdapterResolver` lets consumers
   inject external wallet implementations (Stellar Wallets Kit, custom modules, hardware wallets) without bundling
-  them into `@pollar/core`. The resolver is invoked lazily on connect with the requested wallet id and returns a
+  them into `@chettapay/core`. The resolver is invoked lazily on connect with the requested wallet id and returns a
   `WalletAdapter` (sync or `Promise`). When omitted, only the built-in `freighter` / `albedo` adapters are reachable.
 - **New `WalletId` type.** `WalletId = WalletType | (string & {})` widens the accepted wallet identifier from the
   internal enum to any opaque string id (e.g. `'xbull'`, `'lobstr'`, `'walletconnect'`) used by external adapter
   packages, while keeping autocomplete on the enum values. `WalletAdapter.type` was widened from `WalletType` to
   `WalletId` accordingly — relevant only to consumers who implement custom adapters.
-- New exports: `Storage`, `KeyManager`, `PublicEcJwk`, `PollarPersistedSession`, `PollarUserProfile`,
+- New exports: `Storage`, `KeyManager`, `PublicEcJwk`, `ChettaPayPersistedSession`, `ChettaPayUserProfile`,
   `OnStorageDegrade`, `BuildProofArgs`, `SessionInfo`, `WalletId`, `WalletAdapterResolver`.
 
-### `@pollar/core` — fixes
+### `@chettapay/core` — fixes
 
-- **Drop `userId` from `[PollarClient] Session stored` log** — leaked user identity to console / DevTools.
-- **Cross-tab `storage` event listener** is now removed in `destroy()`. Previously leaked one closure per `PollarClient`
+- **Drop `userId` from `[ChettaPayClient] Session stored` log** — leaked user identity to console / DevTools.
+- **Cross-tab `storage` event listener** is now removed in `destroy()`. Previously leaked one closure per `ChettaPayClient`
   instance.
 - **`signAndSubmitTx` no longer reads `data.providers.wallet.address`** — that field is identical to `wallet.publicKey`
   for external wallets, and the latter is now the single source of truth.
 
-### `@pollar/react`
+### `@chettapay/react`
 
-- **`PollarClientConfig` extension threads through `PollarProvider`** — `storage`, `keyManager`, and `onStorageDegrade`
+- **`ChettaPayClientConfig` extension threads through `ChettaPayProvider`** — `storage`, `keyManager`, and `onStorageDegrade`
   can be passed via the provider's `config` prop.
-- **`sessionState` type narrowed** — context value's session is now `PollarPersistedSession | null`. Consumers reading
-  `sessionState.data.*` need to migrate to `pollarClient.getUserProfile()`.
+- **`sessionState` type narrowed** — context value's session is now `ChettaPayPersistedSession | null`. Consumers reading
+  `sessionState.data.*` need to migrate to `chettaPayClient.getUserProfile()`.
 - **`walletAddress` simplified** — for both external and embedded wallets, derived from
   `sessionState.wallet.publicKey`.
 - **New: `SessionsModal`** — drop-in active-sessions UI. Lists every refresh-token family for the current user with
   device metadata, marks the local session, and offers per-row revoke + a "Sign out everywhere" button. Available via
-  the new `openSessionsModal()` action on `usePollar()`. The pure presentational `SessionsModalTemplate` is exported
+  the new `openSessionsModal()` action on `useChettaPay()`. The pure presentational `SessionsModalTemplate` is exported
   for consumers who want to swap the chrome while keeping the wiring.
 
-### `@pollar/privy-adapter` — new package
+### `@chettapay/privy-adapter` — new package
 
 Stateless HTTP proxy that lets `sdk-api` sign Stellar transactions through a Privy server-wallet account without the
 Privy app secret leaving the integrator's infrastructure. Runs as a sidecar to `sdk-api`; Privy is treated as a remote
 signer reached over an authenticated localhost-style channel rather than a client-side dependency.
 
-- `createPollarPrivyAdapter(config)` boots a Hono server (default port `3001`) exposing
+- `createChettaPayPrivyAdapter(config)` boots a Hono server (default port `3001`) exposing
   `POST /wallets/create`, `POST /wallets/sign`, `GET /wallets/:userId/address`, and `GET /health`. Returns `{ start, stop }`
   for lifecycle control.
-- Bearer auth via `pollarApiSecret` on every `/wallets/*` route; configurable body-size cap (`maxBodyBytes`, default
+- Bearer auth via `chettaPayApiSecret` on every `/wallets/*` route; configurable body-size cap (`maxBodyBytes`, default
   64 KiB) and per-request timeout (`requestTimeoutMs`, default 10 s).
 - Per-userId wallet-address LRU cache (1 000 entries, 10 min TTL) so repeated sign calls don't hit Privy on the hot path.
-- Maps Pollar `userId` → Privy DID through `custom_auth` linked accounts so wallets are namespaced per Pollar tenant.
+- Maps ChettaPay `userId` → Privy DID through `custom_auth` linked accounts so wallets are namespaced per ChettaPay tenant.
 - Stable error envelope: discriminated `SuccessCode` / `ErrorCode` enums (`VALIDATION_ERROR`,
   `INTERNAL_SERVER_ERROR`, …), shared response middleware, optional `onError(error, ctx)` hook for upstream telemetry.
 - Dependencies: `@privy-io/node`, `@stellar/stellar-sdk@^15`, `hono`, `@hono/node-server`, `lru-cache`, `zod`. Node ≥ 20.
 
-### `@pollar/stellar-wallets-kit-adapter` — new package
+### `@chettapay/stellar-wallets-kit-adapter` — new package
 
-Plugs [Stellar Wallets Kit](https://stellarwalletskit.dev) into Pollar so additional wallet modules (xBull, Lobstr,
+Plugs [Stellar Wallets Kit](https://stellarwalletskit.dev) into ChettaPay so additional wallet modules (xBull, Lobstr,
 Rabet, Albedo, Freighter, Hana, Klever, Bitget, CactusLink, Fordefi, HotWallet, OneKey, and opt-in Ledger / Trezor /
-WalletConnect) become reachable through Pollar's `WalletAdapter` contract without bundling the kit into `@pollar/core`.
+WalletConnect) become reachable through ChettaPay's `WalletAdapter` contract without bundling the kit into `@chettapay/core`.
 
-- `stellarWalletsKit(options?): WalletAdapterResolver` — factory you hand to `PollarClientConfig.walletAdapter`.
+- `stellarWalletsKit(options?): WalletAdapterResolver` — factory you hand to `ChettaPayClientConfig.walletAdapter`.
   Options: `network` (defaults to `Networks.TESTNET`) and `modules` (defaults to the 12 zero-setup modules; pass an
   explicit list to add Ledger / Trezor / WalletConnect, which need extra wiring).
 - `StellarWalletsKitAdapter` class — direct `WalletAdapter` implementation that delegates `connect` / `signTransaction` /
@@ -1798,12 +1798,12 @@ WalletConnect) become reachable through Pollar's `WalletAdapter` contract withou
   can drive many modules.
 - One-shot lazy `init` — the kit is initialised the first time the resolver is invoked, so importing the package has
   no startup cost.
-- Peer deps: `@creit.tech/stellar-wallets-kit@^2.0.0` and `@pollar/core@*`. The kit is **not** bundled; consumers bring
+- Peer deps: `@creit.tech/stellar-wallets-kit@^2.0.0` and `@chettapay/core@*`. The kit is **not** bundled; consumers bring
   the version they want.
 
 ### Internal infra
 
-- New direct dep in `@pollar/core`: `@noble/curves@~1.9.7` (pinned to patch range; supply-chain-conscious — the
+- New direct dep in `@chettapay/core`: `@noble/curves@~1.9.7` (pinned to patch range; supply-chain-conscious — the
   package publishes npm provenance / sigstore signatures). `@noble/hashes@1.8.0` is pulled transitively through
   `@noble/curves` and used by the Noble key-manager / DPoP proof builder.
 - New optional peer deps: `expo-secure-store >=12`, `react-native-keychain >=8`. Both marked
@@ -1817,42 +1817,42 @@ WalletConnect) become reachable through Pollar's `WalletAdapter` contract withou
 
 ```ts
 // 0.6.x
-import { PollarClient } from '@pollar/core';
+import { ChettaPayClient } from '@chettapay/core';
 
-const client = new PollarClient({ apiKey });
+const client = new ChettaPayClient({ apiKey });
 
 // 0.7.x — same code; storage and keyManager autodetect on web.
-const client = new PollarClient({ apiKey });
+const client = new ChettaPayClient({ apiKey });
 ```
 
 If you read PII off the session, switch to:
 
 ```ts
 // before
-const email = pollarClient.session?.data?.mail;
+const email = chettaPayClient.session?.data?.mail;
 
 // after
-const email = pollarClient.getUserProfile()?.mail;
+const email = chettaPayClient.getUserProfile()?.mail;
 ```
 
 **React Native (Expo):**
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { createSecureStoreAdapter } from '@pollar/core/adapters/expo';
+import { ChettaPayClient } from '@chettapay/core';
+import { createSecureStoreAdapter } from '@chettapay/core/adapters/expo';
 import 'react-native-get-random-values'; // at app entry
 
 const storage = await createSecureStoreAdapter();
-const client = new PollarClient({ apiKey, storage });
+const client = new ChettaPayClient({ apiKey, storage });
 ```
 
 **React Native (`react-native-keychain`):**
 
 ```ts
-import { createKeychainAdapter } from '@pollar/core/adapters/react-native-keychain';
+import { createKeychainAdapter } from '@chettapay/core/adapters/react-native-keychain';
 
 const storage = await createKeychainAdapter();
-const client = new PollarClient({ apiKey, storage });
+const client = new ChettaPayClient({ apiKey, storage });
 ```
 
 ### Known limitations
@@ -1870,7 +1870,7 @@ const client = new PollarClient({ apiKey, storage });
 
 ## 0.6.0
 
-### `@pollar/react`
+### `@chettapay/react`
 
 #### New features
 
@@ -1891,7 +1891,7 @@ const client = new PollarClient({ apiKey, storage });
 
 #### Breaking changes — context API renames
 
-The following names exported from `usePollar()` have been renamed for consistency and clarity:
+The following names exported from `useChettaPay()` have been renamed for consistency and clarity:
 
 | Before                 | After                  |
 | ---------------------- | ---------------------- |
@@ -1916,16 +1916,16 @@ The following names exported from `usePollar()` have been renamed for consistenc
 
 ## 0.5.3
 
-### `@pollar/core`
+### `@chettapay/core`
 
-- **New:** `EscrowFn`, `EscrowAdapter`, and `PollarAdapters` types — generic adapter contract for wrapping external
+- **New:** `EscrowFn`, `EscrowAdapter`, and `ChettaPayAdapters` types — generic adapter contract for wrapping external
   signing functions (e.g. Trustless Work SDK)
 
-### `@pollar/react`
+### `@chettapay/react`
 
-- **New:** `adapters` prop on `PollarProvider` — accepts any named set of adapters; adapter functions receive params,
-  return an unsigned XDR, and Pollar handles signing and submission automatically
-- **New:** `createPollarAdapterHook(key)` — factory that generates a fully-typed hook (e.g. `usePollarEscrow`) mirroring
+- **New:** `adapters` prop on `ChettaPayProvider` — accepts any named set of adapters; adapter functions receive params,
+  return an unsigned XDR, and ChettaPay handles signing and submission automatically
+- **New:** `createChettaPayAdapterHook(key)` — factory that generates a fully-typed hook (e.g. `useChettaPayEscrow`) mirroring
   the adapter's API with automatic XDR signing built in
 - **New:** Explorer link on each row in `TxHistoryModal` — opens the transaction on `stellar.expert` with the correct
   network (testnet/mainnet)
@@ -1936,13 +1936,13 @@ The following names exported from `usePollar()` have been renamed for consistenc
 
 ## 0.5.2
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **Refactor:** `client.ts` — internal improvements and minor API adjustments
 - **New:** Additional type exports in `types.ts`
 - **Fix:** `schema.d.ts` updated to reflect latest API spec
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - **Refactor:** `WalletButton` split into logic and template layers — `WalletButton.tsx` handles state and behavior,
   `WalletButtonTemplate.tsx` handles rendering only
@@ -1953,33 +1953,33 @@ The following names exported from `usePollar()` have been renamed for consistenc
   replaced unsupported `jsx` option with `esbuildOptions`
 - **Fix:** `tsconfig.json` — added `resolveJsonModule: true`
 - **Refactor:** `context.tsx` and `index.ts` updated to export new template components and types
-- **New:** `WalletBalanceModalTemplate`, `WalletButtonTemplate` exported from `@pollar/react`
+- **New:** `WalletBalanceModalTemplate`, `WalletButtonTemplate` exported from `@chettapay/react`
 
 ### Docs
 
-- **New:** `docs/1 Pollar react.md` — full API reference for `@pollar/react`: `PollarProvider`, `usePollar()`, all modal
+- **New:** `docs/1 ChettaPay react.md` — full API reference for `@chettapay/react`: `ChettaPayProvider`, `useChettaPay()`, all modal
   entry points, components, and template components
-- **New:** `docs/2 Pollar core.md` — full API reference for `@pollar/core`: `PollarClient` constructor, auth flows,
+- **New:** `docs/2 ChettaPay core.md` — full API reference for `@chettapay/core`: `ChettaPayClient` constructor, auth flows,
   transactions, wallet balance, tx history, KYC, ramps, and all exported types
 
 ## 0.5.1
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **New:** External wallet support (Freighter, Albedo, etc.) — users can now sign and submit transactions directly from
-  their own wallet without Pollar holding the keys
+  their own wallet without ChettaPay holding the keys
 - **Refactor:** `signAndSubmitTx()` now handles both embedded (social/email login) and external wallet flows —
   `signAndSubmitExternalTx()` removed
 - **Fix:** Connecting with an external wallet no longer triggers embedded wallet creation on the backend
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - **Refactor:** `TransactionModal` UI updates — design improvements to the modal layout and styles
 - **Refactor:** `signAndSubmitExternalTx` removed from context; consumers use `signAndSubmitTx` for all flows
 
 ## 0.5.0
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **New:** `getKycProviders(country)` — fetches available KYC providers for a given country _(not yet implemented on
   backend)_
@@ -1995,11 +1995,11 @@ The following names exported from `usePollar()` have been renamed for consistenc
 - **New:** `getBalance()` — fetches Stellar account balances via `StellarClient`
 - **New:** Types: `KycProvider`, `KycStatus`, `KycStartResponse`, `RampDirection`, `RampQuote`, `PaymentInstructions`,
   `RampsOnrampBody`, `TxHistoryRecord`, `TxHistoryState`, `WalletBalanceRecord`, `WalletBalanceContent`
-- **Refactor:** `transaction` and `txHistory` state now managed inside `PollarClient` and exposed via `onStateChange` —
+- **Refactor:** `transaction` and `txHistory` state now managed inside `ChettaPayClient` and exposed via `onStateChange` —
   consumers no longer need to track these externally
 - **Refactor:** `helpers.ts` removed; logic inlined into `client.ts`
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - **New:** `KycModal` — full identity verification flow: provider selection, iframe/form verification, status polling,
   and result display with `KycStatus` badge _(UI only — backend not yet implemented, uses mock data)_
@@ -2007,27 +2007,27 @@ The following names exported from `usePollar()` have been renamed for consistenc
   and payment instructions display _(UI only — backend not yet implemented, uses mock data)_
 - **New:** `TxHistoryModal` — paginated transaction history with refresh and prev/next pagination
 - **New:** `WalletBalanceModal` — displays Stellar account balances with refresh support
-- **New:** `shared.css` — single source of truth for shared modal styles: `@keyframes`, `.pollar-overlay`, header
+- **New:** `shared.css` — single source of truth for shared modal styles: `@keyframes`, `.chettapay-overlay`, header
   layout, close button, refresh button, primary/secondary buttons, spinner, empty/error states, footer, and status
   banner — eliminates duplicate CSS across all modals
 - **Refactor:** `context.tsx` exposes `txHistory`, `transaction`, `getBalance`, and `walletAddress` directly from the
   provider — no more redundant state in consuming components
 - **Refactor:** All modal CSS files cleaned up to remove duplicates; each modal only defines styles unique to it
-- **Fix:** `PollarModalFooter` and `ModalStatusBanner` now reliably styled in any modal, independent of whether
+- **Fix:** `ChettaPayModalFooter` and `ModalStatusBanner` now reliably styled in any modal, independent of whether
   `LoginModal` CSS is loaded
 
 ## 0.4.5
 
-### `@pollar/core`
+### `@chettapay/core`
 
 - **Refactor:** Auth flow functions extracted from `client.ts` into `src/client/auth/` folder (`authenticate.ts`,
   `emailFlow.ts`, `oauthFlow.ts`, `walletFlow.ts`, `deps.ts`)
-- **New:** `AUTH_ERROR_CODES` constant and `AuthErrorCode` type exported from `@pollar/core` — covers
+- **New:** `AUTH_ERROR_CODES` constant and `AuthErrorCode` type exported from `@chettapay/core` — covers
   `SESSION_CREATE_FAILED`, `EMAIL_SEND_FAILED`, `EMAIL_VERIFY_FAILED`, `EMAIL_CODE_EXPIRED`, `EMAIL_CODE_INVALID`,
   `AUTH_FAILED`, `WALLET_CONNECT_FAILED`, `WALLET_AUTH_FAILED`, `UNEXPECTED_ERROR`
 - **New:** `AuthState` error step now includes `errorCode: AuthErrorCode` and optional `clientSessionId`/`email` for
   retryable email code errors
-- **New:** `login(options: PollarLoginOptions)` unified entry point on `PollarClient` — routes to email, OAuth, or
+- **New:** `login(options: ChettaPayLoginOptions)` unified entry point on `ChettaPayClient` — routes to email, OAuth, or
   wallet flow
 - **Fix:** `cancelLogin()` now always resets auth state to `idle`, making back navigation reliable from any step
 - **Fix:** `verifyEmailCode()` now works from `error` state when `errorCode` is `EMAIL_CODE_INVALID` or
@@ -2037,7 +2037,7 @@ The following names exported from `usePollar()` have been renamed for consistenc
 - **New:** `initOAuthSession()` split from `loginOAuth()` — session creation is now a separate callable step (mirrors
   `initEmailSession`)
 
-### `@pollar/react`
+### `@chettapay/react`
 
 - **Change:** `beginEmailLogin()` no longer called on modal open — session is created on email submit instead, reducing
   unnecessary API calls
@@ -2055,14 +2055,14 @@ The following names exported from `usePollar()` have been renamed for consistenc
 ## 0.4.3
 
 - Authentication via Google, GitHub, Email OTP, Stellar wallets
-- PollarClient with transaction building and submission
+- ChettaPayClient with transaction building and submission
 - StellarClient for Horizon queries
 - React provider, hook, and WalletButton component
 - Typed event system for state management
 
 ## 0.3.x
 
-- Initial SDK structure and Pollar API integration
+- Initial SDK structure and ChettaPay API integration
 - Basic authentication flows
 
 ## 0.2.x

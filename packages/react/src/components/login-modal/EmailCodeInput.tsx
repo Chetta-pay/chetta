@@ -37,9 +37,9 @@ export function EmailCodeInput({ email, onSubmit }: EmailCodeInputProps) {
   }
 
   return (
-    <div className="pollar-code-section">
-      <p className="pollar-code-label">Enter the 6-digit code sent to {email ? <strong>{email}</strong> : 'your email'}</p>
-      <div className="pollar-code-inputs">
+    <div className="chettapay-code-section">
+      <p className="chettapay-code-label">Enter the 6-digit code sent to {email ? <strong>{email}</strong> : 'your email'}</p>
+      <div className="chettapay-code-inputs">
         {digits.map((digit, i) => (
           <input
             key={i}
@@ -50,7 +50,7 @@ export function EmailCodeInput({ email, onSubmit }: EmailCodeInputProps) {
             inputMode="numeric"
             maxLength={2}
             value={digit}
-            className="pollar-code-input"
+            className="chettapay-code-input"
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             onPaste={handlePaste}

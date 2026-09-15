@@ -1,8 +1,8 @@
 'use client';
 
-import { WalletChain } from '@pollar/core';
+import { WalletChain } from '@chettapay/core';
 import { useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
 import { addressForChain } from '../ChainSelect';
 import '../shared.css';
@@ -15,7 +15,7 @@ interface ReceiveModalProps {
 }
 
 export function ReceiveModal({ onClose }: ReceiveModalProps) {
-  const { wallets, styles } = usePollar();
+  const { wallets, styles } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
   const [copied, setCopied] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,7 +50,7 @@ export function ReceiveModal({ onClose }: ReceiveModalProps) {
   }
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <ReceiveModalTemplate
         theme={theme}
         accentColor={accentColor}

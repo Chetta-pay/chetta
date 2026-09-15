@@ -1,4 +1,4 @@
-import type { PollarLogger } from '../../lib/logger';
+import type { ChettaPayLogger } from '../../lib/logger';
 import { redactBody, redactDeep } from '../../lib/logging';
 
 /**
@@ -11,13 +11,13 @@ import { redactBody, redactDeep } from '../../lib/logging';
  * body (when present) and the underlying `data`/`error` payload.
  */
 export function logApiError(
-  logger: PollarLogger,
+  logger: ChettaPayLogger,
   route: string,
   detail: { body?: unknown; error?: unknown; data?: unknown } = {},
   level: 'warn' | 'error' = 'error',
 ): void {
   const { body, error, data } = detail;
-  logger[level](`[PollarClient:auth] ${route} failed`, {
+  logger[level](`[ChettaPayClient:auth] ${route} failed`, {
     route,
     ...(body !== undefined ? { body: redactBody(body) } : {}),
     // The cause is a server `data`/`error` envelope that can carry nested token

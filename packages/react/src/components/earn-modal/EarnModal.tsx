@@ -1,9 +1,9 @@
 'use client';
 
-import { EarnOpportunity, EarnPosition, EarnProviderId } from '@pollar/core';
+import { EarnOpportunity, EarnPosition, EarnProviderId } from '@chettapay/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
-import { PollarModalFooter } from '../commons';
+import { useChettaPay } from '../../context';
+import { ChettaPayModalFooter } from '../commons';
 import { buildModalCssVars, modalChrome } from '../modal-theme';
 import { TxStatusView } from '../transaction-modal/TxStatusView';
 import '../shared.css';
@@ -54,7 +54,7 @@ export function EarnModal({ onClose }: EarnModalProps) {
     setTrustline,
     network,
     styles,
-  } = usePollar();
+  } = useChettaPay();
 
   const walletType = wallet?.custody === 'external' ? wallet.provider : null;
   const smartUnsupported = wallet?.custody === 'smart';
@@ -327,35 +327,35 @@ export function EarnModal({ onClose }: EarnModalProps) {
   const title = step === 'form' ? 'Earn' : txTitle;
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={!isInProgress ? onClose : undefined}>
       <div
-        className="pollar-modal-card pollar-send-modal"
+        className="chettapay-modal-card chettapay-send-modal"
         data-theme={theme}
         style={cssVars}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="pollar-modal-header">
-          <div className="pollar-send-header-left">
+        <div className="chettapay-modal-header">
+          <div className="chettapay-send-header-left">
             {showBack && (
-              <button type="button" className="pollar-modal-close" onClick={handleBack} aria-label="Back">
+              <button type="button" className="chettapay-modal-close" onClick={handleBack} aria-label="Back">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                   <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             )}
-            <h2 className="pollar-modal-title">{title}</h2>
+            <h2 className="chettapay-modal-title">{title}</h2>
           </div>
-          <div className="pollar-modal-header-actions">
+          <div className="chettapay-modal-header-actions">
             {step === 'form' && !earnUnavailable && !smartUnsupported && (
               <button
                 type="button"
-                className="pollar-modal-close"
+                className="chettapay-modal-close"
                 onClick={() => void handleRefresh()}
                 disabled={refreshing || providersLoading}
                 aria-label="Refresh"
               >
                 <svg
-                  className={refreshing ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+                  className={refreshing ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
                   width="16"
                   height="16"
                   viewBox="0 0 16 16"
@@ -373,7 +373,7 @@ export function EarnModal({ onClose }: EarnModalProps) {
               </button>
             )}
             {!isInProgress && (
-              <button type="button" className="pollar-modal-close" onClick={onClose} aria-label="Close">
+              <button type="button" className="chettapay-modal-close" onClick={onClose} aria-label="Close">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                   <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
@@ -382,19 +382,19 @@ export function EarnModal({ onClose }: EarnModalProps) {
           </div>
         </div>
 
-        {step === 'form' && earnUnavailable && <div className="pollar-modal-error">Earn is not available for this app.</div>}
+        {step === 'form' && earnUnavailable && <div className="chettapay-modal-error">Earn is not available for this app.</div>}
 
         {step === 'form' && !earnUnavailable && (
           <>
             {smartUnsupported && (
-              <div className="pollar-modal-error">Earn is not yet available for smart (passkey) wallets.</div>
+              <div className="chettapay-modal-error">Earn is not yet available for smart (passkey) wallets.</div>
             )}
 
             {/* Deposit / Withdraw tabs */}
-            <div className="pollar-tabs">
+            <div className="chettapay-tabs">
               <button
                 type="button"
-                className="pollar-tab"
+                className="chettapay-tab"
                 data-active={tab === 'deposit'}
                 onClick={() => {
                   setTab('deposit');
@@ -405,7 +405,7 @@ export function EarnModal({ onClose }: EarnModalProps) {
               </button>
               <button
                 type="button"
-                className="pollar-tab"
+                className="chettapay-tab"
                 data-active={tab === 'withdraw'}
                 onClick={() => {
                   setTab('withdraw');
@@ -418,10 +418,10 @@ export function EarnModal({ onClose }: EarnModalProps) {
 
             {/* Provider */}
             {providers && providers.length > 1 && (
-              <div className="pollar-send-field">
-                <label className="pollar-send-label">Provider</label>
+              <div className="chettapay-send-field">
+                <label className="chettapay-send-label">Provider</label>
                 <select
-                  className="pollar-input pollar-send-select"
+                  className="chettapay-input chettapay-send-select"
                   value={provider ?? ''}
                   onChange={(e) => setProvider(e.target.value as EarnProviderId)}
                 >
@@ -435,16 +435,16 @@ export function EarnModal({ onClose }: EarnModalProps) {
             )}
 
             {/* Opportunity */}
-            <div className="pollar-send-field">
-              <label className="pollar-send-label">{provider === 'defindex' ? 'Vault' : 'Pool'}</label>
+            <div className="chettapay-send-field">
+              <label className="chettapay-send-label">{provider === 'defindex' ? 'Vault' : 'Pool'}</label>
               {loadingOpps || providersLoading ? (
-                <div className="pollar-input pollar-select-loading">
-                  <span className="pollar-spinner pollar-spinner-sm" />
+                <div className="chettapay-input chettapay-select-loading">
+                  <span className="chettapay-spinner chettapay-spinner-sm" />
                   <span>Loading options…</span>
                 </div>
               ) : (
                 <select
-                  className="pollar-input pollar-send-select"
+                  className="chettapay-input chettapay-send-select"
                   value={opportunityId}
                   disabled={opportunities.length === 0}
                   onChange={(e) => setOpportunityId(e.target.value)}
@@ -464,67 +464,71 @@ export function EarnModal({ onClose }: EarnModalProps) {
 
             {/* Live position panel */}
             {selectedOpportunity && (
-              <div className="pollar-swap-quote">
+              <div className="chettapay-swap-quote">
                 {tab === 'deposit' && (
-                  <div className="pollar-swap-quote-row">
-                    <span className="pollar-send-hint">In your wallet</span>
+                  <div className="chettapay-swap-quote-row">
+                    <span className="chettapay-send-hint">In your wallet</span>
                     <span>
                       {walletAvailable != null ? formatAmount(walletAvailable) : '…'} {assetCode}
                     </span>
                   </div>
                 )}
-                <div className="pollar-swap-quote-row">
-                  <span className="pollar-send-hint">Your position</span>
+                <div className="chettapay-swap-quote-row">
+                  <span className="chettapay-send-hint">Your position</span>
                   <span>
                     {position ? formatAmount(position.balance) : '…'} {assetCode}
                   </span>
                 </div>
-                <div className="pollar-swap-quote-row">
-                  <span className="pollar-send-hint">APY</span>
-                  <span className="pollar-earn-live">{selectedOpportunity.apy.toFixed(2)}%</span>
+                <div className="chettapay-swap-quote-row">
+                  <span className="chettapay-send-hint">APY</span>
+                  <span className="chettapay-earn-live">{selectedOpportunity.apy.toFixed(2)}%</span>
                 </div>
               </div>
             )}
 
             {/* Amount */}
-            <div className="pollar-send-field">
-              <div className="pollar-send-label-row">
-                <label className="pollar-send-label">{tab === 'deposit' ? 'Amount' : 'Withdraw amount'}</label>
+            <div className="chettapay-send-field">
+              <div className="chettapay-send-label-row">
+                <label className="chettapay-send-label">{tab === 'deposit' ? 'Amount' : 'Withdraw amount'}</label>
                 {tab === 'deposit' && walletAvailable != null && (
-                  <button type="button" className="pollar-swap-custom-toggle" onClick={() => setAmount(walletAvailable)}>
+                  <button type="button" className="chettapay-swap-custom-toggle" onClick={() => setAmount(walletAvailable)}>
                     Max: {formatAmount(walletAvailable)} {amountUnitLabel}
                   </button>
                 )}
                 {tab === 'withdraw' && position && (
-                  <button type="button" className="pollar-swap-custom-toggle" onClick={() => setAmount(position.withdrawable)}>
+                  <button
+                    type="button"
+                    className="chettapay-swap-custom-toggle"
+                    onClick={() => setAmount(position.withdrawable)}
+                  >
                     Max: {formatAmount(position.withdrawable)} {amountUnitLabel}
                   </button>
                 )}
               </div>
-              <div className="pollar-earn-amount">
+              <div className="chettapay-earn-amount">
                 <input
-                  className="pollar-input"
+                  className="chettapay-input"
                   type="text"
                   inputMode="decimal"
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
-                {amountUnitLabel && <span className="pollar-earn-amount-unit">{amountUnitLabel}</span>}
+                {amountUnitLabel && <span className="chettapay-earn-amount-unit">{amountUnitLabel}</span>}
               </div>
             </div>
 
-            {formError && <div className="pollar-modal-error">{formError}</div>}
+            {formError && <div className="chettapay-modal-error">{formError}</div>}
 
             {depositNeedsTrustline && selectedOpportunity && (
-              <div className="pollar-swap-trustline-notice">
+              <div className="chettapay-swap-trustline-notice">
                 To deposit {assetCode} your wallet needs a trustline. This will create it first (~0.5 XLM reserve, refundable if
                 you later remove it), then deposit — two signatures.
               </div>
             )}
 
-            <div className="pollar-modal-actions">
-              <button className="pollar-btn-primary" onClick={() => void handleSubmit()} disabled={!canSubmit}>
+            <div className="chettapay-modal-actions">
+              <button className="chettapay-btn-primary" onClick={() => void handleSubmit()} disabled={!canSubmit}>
                 {tab === 'deposit' ? (depositNeedsTrustline ? 'Enable trustline & deposit' : 'Deposit') : 'Withdraw'}
               </button>
             </div>
@@ -546,7 +550,7 @@ export function EarnModal({ onClose }: EarnModalProps) {
           />
         )}
 
-        <PollarModalFooter />
+        <ChettaPayModalFooter />
       </div>
     </div>
   );

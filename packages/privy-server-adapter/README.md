@@ -1,15 +1,15 @@
-# @pollar/privy-server-adapter
+# @chettapay/privy-server-adapter
 
-> **Server-side only.** This package starts an HTTP server with `@hono/node-server` and reads `PRIVY_APP_SECRET` / `POLLAR_API_SECRET` from the host environment. Importing it in a browser, React Native, or any other client-side bundle will leak credentials. The bundler will also blow up on `node:crypto` / `@hono/node-server`. If you need a browser-side Privy integration, use `@pollar/privy-adapter` (the client-side adapter) or the Privy client SDK directly, not this package.
+> **Server-side only.** This package starts an HTTP server with `@hono/node-server` and reads `PRIVY_APP_SECRET` / `CHETTAPAY_API_SECRET` from the host environment. Importing it in a browser, React Native, or any other client-side bundle will leak credentials. The bundler will also blow up on `node:crypto` / `@hono/node-server`. If you need a browser-side Privy integration, use `@chettapay/privy-adapter` (the client-side adapter) or the Privy client SDK directly, not this package.
 
-Stateless HTTP proxy that lets Pollar sign Stellar transactions through your Privy account, without your Privy `APP_SECRET` ever leaving your infrastructure.
+Stateless HTTP proxy that lets ChettaPay sign Stellar transactions through your Privy account, without your Privy `APP_SECRET` ever leaving your infrastructure.
 
-You install this package in **your own backend**, point Pollar at your adapter's URL, and it brokers each call to Privy on demand. The adapter holds no state, has no database, and exposes a small set of HTTP endpoints authenticated with a single Bearer token issued by Pollar.
+You install this package in **your own backend**, point ChettaPay at your adapter's URL, and it brokers each call to Privy on demand. The adapter holds no state, has no database, and exposes a small set of HTTP endpoints authenticated with a single Bearer token issued by ChettaPay.
 
 ## Install
 
 ```bash
-npm install @pollar/privy-server-adapter
+npm install @chettapay/privy-server-adapter
 ```
 
 Requires Node 20+.
@@ -17,14 +17,14 @@ Requires Node 20+.
 ## Quick start
 
 ```ts
-import { createPollarPrivyAdapter } from '@pollar/privy-server-adapter';
+import { createChettaPayPrivyAdapter } from '@chettapay/privy-server-adapter';
 
-const adapter = createPollarPrivyAdapter({
+const adapter = createChettaPayPrivyAdapter({
   getCredentials: async () => ({
     appId: process.env.PRIVY_APP_ID!,
     appSecret: process.env.PRIVY_APP_SECRET!,
   }),
-  pollarApiSecret: process.env.POLLAR_API_SECRET!,
+  chettaPayApiSecret: process.env.CHETTAPAY_API_SECRET!,
   network: 'mainnet',
   port: 3001,
 });
@@ -40,16 +40,16 @@ The secret must be stored as JSON `{"appId": "...", "appSecret": "..."}` — the
 
 ```ts
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
-import { createPollarPrivyAdapter } from '@pollar/privy-server-adapter';
+import { createChettaPayPrivyAdapter } from '@chettapay/privy-server-adapter';
 
 const sm = new SecretsManagerClient({ region: 'us-east-1' });
 
-const adapter = createPollarPrivyAdapter({
+const adapter = createChettaPayPrivyAdapter({
   getCredentials: async () => {
     const result = await sm.send(new GetSecretValueCommand({ SecretId: 'privy/credentials' }));
     return JSON.parse(result.SecretString!);
   },
-  pollarApiSecret: process.env.POLLAR_API_SECRET!,
+  chettaPayApiSecret: process.env.CHETTAPAY_API_SECRET!,
   network: 'mainnet',
 });
 
@@ -61,7 +61,7 @@ The credentials are cached for 5 minutes by default. If `getCredentials` returns
 ## Graceful shutdown
 
 ```ts
-const adapter = createPollarPrivyAdapter({
+const adapter = createChettaPayPrivyAdapter({
   /* ... */
 });
 await adapter.start();
@@ -78,15 +78,15 @@ process.on('SIGINT', shutdown);
 ## Configuration
 
 ```ts
-interface PollarPrivyAdapterConfig {
+interface ChettaPayPrivyAdapterConfig {
   // ── Required ───────────────────────────────────────────────────────────
 
   // Async credential resolver. Called on first request and when the cache expires.
   getCredentials: () => Promise<{ appId: string; appSecret: string }>;
 
-  // Bearer token Pollar uses to authenticate calls. Generate it once, set it
-  // here, and register it in your Pollar dashboard.
-  pollarApiSecret: string;
+  // Bearer token ChettaPay uses to authenticate calls. Generate it once, set it
+  // here, and register it in your ChettaPay dashboard.
+  chettaPayApiSecret: string;
 
   // Stellar network used to compute transaction hashes.
   network: 'mainnet' | 'testnet';
@@ -126,10 +126,10 @@ interface PollarPrivyAdapterConfig {
 
 ### Restricting signable operations
 
-By default the adapter signs any non-fee-bump transaction. To lock it down to trustline management — the common case for a Pollar deployment — use `restrictToTrustlines`:
+By default the adapter signs any non-fee-bump transaction. To lock it down to trustline management — the common case for a ChettaPay deployment — use `restrictToTrustlines`:
 
 ```ts
-const adapter = createPollarPrivyAdapter({
+const adapter = createChettaPayPrivyAdapter({
   // ...credentials, network, etc.
   restrictToTrustlines: true,
 });
@@ -147,9 +147,9 @@ allowedOperations: ['changeTrust', 'payment'];
 
 ## Endpoints
 
-All endpoints except `/health` require `Authorization: Bearer <pollarApiSecret>`.
+All endpoints except `/health` require `Authorization: Bearer <chettaPayApiSecret>`.
 
-Responses share the Pollar envelope:
+Responses share the ChettaPay envelope:
 
 ```jsonc
 // success
@@ -192,7 +192,7 @@ Responses share the Pollar envelope:
 
 ## Security notes
 
-- The adapter is the sole holder of `PRIVY_APP_SECRET` in the request path. Pollar only ever sees the Bearer token you issue it.
+- The adapter is the sole holder of `PRIVY_APP_SECRET` in the request path. ChettaPay only ever sees the Bearer token you issue it.
 - Bearer comparison uses `crypto.timingSafeEqual` (constant time).
 - The adapter holds no persistent state. An in-memory LRU caches `walletAddress → walletId` (10 min TTL, max 1000 entries) to avoid extra Privy round-trips on hot paths; nothing else is retained.
 - Logs are off by default. Pipe `onError` to your own logger.

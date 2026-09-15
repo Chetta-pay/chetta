@@ -1,0 +1,10 @@
+{
+  "title": "Smart Wallets",
+  "description": "Passkey smart wallets (Soroban C-addresses) on Stellar — onboarding, how they differ from classic G-addresses, and how the lifecycle works.",
+  "pages": [
+    "overview",
+    "quickstart-c-address",
+    "migration-g-to-c",
+    "c-address-lifecycle"
+  ]
+}

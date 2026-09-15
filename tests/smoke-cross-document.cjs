@@ -1,4 +1,4 @@
-// @pollar smoke test — cross-document session semantics + persist-queue races.
+// @chettapay smoke test — cross-document session semantics + persist-queue races.
 //
 // Run with `node tests/smoke-cross-document.cjs` after `npm run build`. Ports
 // the scratchpad harnesses that found (and then verified the fixes for) the
@@ -154,7 +154,7 @@ async function openDocument(docId) {
   // Bind this client to its own document: the SDK installs its `storage`
   // listener from `globalThis.window` inside _initialize().
   globalThis.window = makeWindow(docId);
-  const client = new sdk.PollarClient({
+  const client = new sdk.ChettaPayClient({
     apiKey: API_KEY,
     storage: docStorage(docId),
     keyManager: fakeKeyManager(docId),
@@ -189,7 +189,7 @@ async function sessionKeyOf() {
   const hash = Array.from(new Uint8Array(digest).slice(0, 16))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-  return `pollar:${hash}:session`;
+  return `chettapay:${hash}:session`;
 }
 
 (async () => {
@@ -254,7 +254,7 @@ async function sessionKeyOf() {
     makeWindow('unrelated-app');
     await A._storeSession(loginContent('cs_A', 'alice'));
     await sleep(20);
-    foreignClear('unrelated-app'); // localStorage.clear() by code that never heard of Pollar
+    foreignClear('unrelated-app'); // localStorage.clear() by code that never heard of ChettaPay
     await sleep(30);
     check('a foreign localStorage.clear() (key === null) is not a logout', A.getAuthState().step === 'authenticated');
 
