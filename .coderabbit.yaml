@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 #
-# CodeRabbit config for the @pollar monorepo (publishable libraries: @pollar/*).
+# CodeRabbit config for the @chettapay monorepo (publishable libraries: @chettapay/*).
 # Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
 
 language: 'en-US'
@@ -8,7 +8,7 @@ language: 'en-US'
 # Default tone. These libraries are consumed by external developers, so the
 # review is biased toward API stability, semver and breaking changes.
 tone_instructions: >-
-  You are reviewing a published TypeScript SDK (@pollar/*) consumed by external
+  You are reviewing a published TypeScript SDK (@chettapay/*) consumed by external
   developers. Prioritize public API stability, backward compatibility and semver
   correctness. Flag any change to an exported symbol's signature, removed exports
   or changed runtime behavior as a potential breaking change. Be concise and

@@ -6,7 +6,7 @@ wallet's `custody` (`internal`, `smart`, `external`), and the SDK hides most of 
 ## The transaction pipeline
 
 ```ts
-client.buildTx(operation, params, options?); // unsigned XDR from the Pollar API
+client.buildTx(operation, params, options?); // unsigned XDR from the ChettaPay API
 client.signTx(unsignedXdr, options?); // embedded: server signs; external: adapter signs
 client.submitTx(signedXdr); // broadcast
 ```
@@ -137,7 +137,7 @@ single function that branches on its optional fields in a fixed order.
 
 Identity verification outside a ramp run has its own methods on the client: `getKycProviders(country)`,
 `startKyc(body)`, `getKycStatus(providerId?)`, `pollKycStatus(providerId)`, `resolveKyc(providerId, level?)`,
-plus `openKycModal()` in `@pollar/react`.
+plus `openKycModal()` in `@chettapay/react`.
 
 ## Ownership proofs (SEP-53 and SEP-10)
 

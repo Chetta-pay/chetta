@@ -1,7 +1,7 @@
-// @pollar smoke test — session-lifecycle race safety (Tier-1 hardening).
+// @chettapay smoke test — session-lifecycle race safety (Tier-1 hardening).
 //
 // Run with `node tests/smoke-session-races.cjs` after `npm run build`. Mocks
-// `fetch`/`localStorage`/`window` so PollarClient runs as if in a browser and
+// `fetch`/`localStorage`/`window` so ChettaPayClient runs as if in a browser and
 // no network is required. Each block exercises one of the concurrency fixes:
 //
 //   A. destroy() during an in-flight refresh discards the rotated token
@@ -262,9 +262,9 @@ globalThis.fetch = async (req) => {
 async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSec = 600, waitResume = true } = {}) {
   const storage = sdk.createMemoryAdapter();
   const hash = await apiKeyHashOf(apiKey);
-  const sessionKey = `pollar:${hash}:session`;
+  const sessionKey = `chettapay:${hash}:session`;
   if (seed) await storage.set(sessionKey, freshSession(accessToken, expiresInSec));
-  const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+  const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
   await client.ready();
   if (seed && waitResume) {
     await waitFor(() => mock.calls.some((c) => c.url.includes('/auth/session/resume')));
@@ -350,8 +350,8 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const states = [];
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf('pk_race_D');
-    await storage.set(`pollar:${hash}:session`, freshSession());
-    const client = new sdk.PollarClient({ apiKey: 'pk_race_D', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    await storage.set(`chettapay:${hash}:session`, freshSession());
+    const client = new sdk.ChettaPayClient({ apiKey: 'pk_race_D', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     client.onAuthStateChange((s) => states.push(s.step + (s.step === 'authenticated' ? `:${s.verified}` : '')));
     await client.ready();
     await waitFor(() => mock.calls.some((c) => c.url.includes('/auth/session/resume')));
@@ -452,9 +452,9 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     // Seed a session ONLY under the pre-0.10 (8-hex) key — i.e. a user who was
     // logged in on an older SDK. The widened namespace must NOT pick it up: the
     // upgrade intentionally forces a one-time re-login (no migration).
-    await storage.set(`pollar:${legacyHash}:session`, freshSession('LEGACY_AT'));
+    await storage.set(`chettapay:${legacyHash}:session`, freshSession('LEGACY_AT'));
 
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
 
     check(
@@ -462,7 +462,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       client.getAuthState().step === 'idle',
       client.getAuthState().step,
     );
-    check('  no session written under the new namespace yet', (await storage.get(`pollar:${newHash}:session`)) === null);
+    check('  no session written under the new namespace yet', (await storage.get(`chettapay:${newHash}:session`)) === null);
     client.destroy();
   }
 
@@ -496,7 +496,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const apiKey = 'pk_race_J';
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
-    const sessionKey = `pollar:${hash}:session`;
+    const sessionKey = `chettapay:${hash}:session`;
     // Session with userId === null (valid: isValidSession allows it).
     const nullUserSession = (at) =>
       JSON.stringify({
@@ -508,7 +508,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: null },
       });
     await storage.set(sessionKey, nullUserSession('AT'));
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     await waitFor(() => client.getAuthState().verified === true);
 
@@ -575,8 +575,8 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     mock.resumeStatus = 403; // session revoked from another device, AT still valid
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf('pk_race_M');
-    await storage.set(`pollar:${hash}:session`, freshSession());
-    const client = new sdk.PollarClient({ apiKey: 'pk_race_M', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    await storage.set(`chettapay:${hash}:session`, freshSession());
+    const client = new sdk.ChettaPayClient({ apiKey: 'pk_race_M', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     await waitFor(() => mock.calls.some((c) => c.url.includes('/auth/session/resume')));
     await waitFor(() => client.getAuthState().step === 'idle');
@@ -592,8 +592,8 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     mock.resumeStatus = 503; // transient server error — must NOT log out
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf('pk_race_N');
-    await storage.set(`pollar:${hash}:session`, freshSession());
-    const client = new sdk.PollarClient({ apiKey: 'pk_race_N', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    await storage.set(`chettapay:${hash}:session`, freshSession());
+    const client = new sdk.ChettaPayClient({ apiKey: 'pk_race_N', storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     await waitFor(() => mock.calls.some((c) => c.url.includes('/auth/session/resume')));
     await new Promise((r) => setTimeout(r, 40));
@@ -664,18 +664,18 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     client.destroy();
   }
 
-  // ── R. a duplicate PollarClient for the same apiKey warns (N4) ─────────────
+  // ── R. a duplicate ChettaPayClient for the same apiKey warns (N4) ─────────────
   console.log('\n── R. duplicate client for same apiKey warns (N4) ────────────');
   {
     const warns = [];
     const logger = { error() {}, warn: (...a) => warns.push(a.join(' ')), info() {}, debug() {} };
-    const c1 = new sdk.PollarClient({
+    const c1 = new sdk.ChettaPayClient({
       apiKey: 'pk_dup',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
       logger,
     });
-    const c2 = new sdk.PollarClient({
+    const c2 = new sdk.ChettaPayClient({
       apiKey: 'pk_dup',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -684,7 +684,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     await Promise.all([c1.ready(), c2.ready()]);
     check(
       'a second client for the same apiKey logged a warning',
-      warns.some((w) => w.includes('Another PollarClient is already active')),
+      warns.some((w) => w.includes('Another ChettaPayClient is already active')),
     );
     c1.destroy();
     c2.destroy();
@@ -699,7 +699,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const hash = await apiKeyHashOf(apiKey);
     // A SMART session + a stale walletType row, as if a prior external login left one.
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -709,7 +709,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'smart', address: 'Csmart' },
       }),
     );
-    await storage.set(`pollar:${hash}:walletType`, 'freighter');
+    await storage.set(`chettapay:${hash}:walletType`, 'freighter');
     const fakeFreighter = {
       type: 'freighter',
       meta: { label: 'Freighter' },
@@ -718,7 +718,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -743,8 +743,8 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const apiKey = 'pk_race_T';
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
-    await storage.set(`pollar:${hash}:session`, freshSession());
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
+    await storage.set(`chettapay:${hash}:session`, freshSession());
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger });
     await client.ready();
     await waitFor(() => mock.calls.some((c) => c.url.includes('/auth/session/resume')));
     logs.length = 0;
@@ -811,7 +811,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -821,7 +821,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' }, // buildTx requires an address
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
 
     mock.buildMarker = 'TX_A';
@@ -853,7 +853,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -863,7 +863,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' }, // refreshBalance needs an address
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     await client.refreshBalance();
     check(
@@ -889,7 +889,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const hash = await apiKeyHashOf(apiKey);
     // External session + walletType row → _restoreSession resolves the adapter.
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -899,7 +899,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'external', address: 'Gtest' },
       }),
     );
-    await storage.set(`pollar:${hash}:walletType`, 'fake');
+    await storage.set(`chettapay:${hash}:walletType`, 'fake');
     const captured = [];
     const fakeAdapter = {
       type: 'fake',
@@ -912,7 +912,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         return { signedAuthEntry: 'sig' };
       },
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -995,7 +995,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1005,7 +1005,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'smart', address: 'Csmart' },
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     const outcome = await client.signAuthEntry('ENTRY_XDR', { validUntilLedger: 1000 });
     check('smart signAuthEntry returned status:error', outcome?.status === 'error', JSON.stringify(outcome));
@@ -1034,7 +1034,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1044,7 +1044,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' },
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     const outcome = await client.submitTx('SIGNED_XDR');
     check(
@@ -1067,7 +1067,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     // rejected first — the ONLY thing left to reject is the asset code itself.
     const validAccount = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF';
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1077,7 +1077,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: validAccount },
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     check(
       'precondition: restored authenticated session',
@@ -1108,7 +1108,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -1135,7 +1135,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1146,7 +1146,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: null },
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     // Capture EVERY emission, not just the final state — a transient
     // `authenticated` carrying the dead `EXPIRED_AT` would leak before refresh.
     const authEmissions = [];
@@ -1183,7 +1183,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1193,7 +1193,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' },
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     const txStates = [];
     client.onTransactionStateChange((s) => txStates.push(s.step));
@@ -1249,7 +1249,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1259,8 +1259,8 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'external', address: 'Gtest' },
       }),
     );
-    await storage.set(`pollar:${hash}:walletType`, 'fake'); // adapter intentionally NOT registered
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    await storage.set(`chettapay:${hash}:walletType`, 'fake'); // adapter intentionally NOT registered
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
     const outcome = await client.signTx('UNSIGNED_XDR');
     check(
@@ -1295,7 +1295,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey: 'pk_race_II',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -1324,7 +1324,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1334,7 +1334,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' },
       }),
     );
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -1352,7 +1352,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     }
     const elapsed = Date.now() - t0;
     check('refresh() rejected (did not hang)', !!caught, caught);
-    check('  rejected with SDK_NETWORK_TIMEOUT', sdk.isPollarNetworkError(caught), caught && caught.code);
+    check('  rejected with SDK_NETWORK_TIMEOUT', sdk.isChettaPayNetworkError(caught), caught && caught.code);
     check('  settled fast (~timeout, not the 3s stall)', elapsed < 1500, `${elapsed}ms`);
     const st = client.getAuthState();
     check('  session preserved — NOT logged out on a timeout', st.step === 'authenticated', st.step);
@@ -1375,7 +1375,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1385,7 +1385,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' },
       }),
     );
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -1401,7 +1401,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     } catch (e) {
       err = e;
     }
-    check('stalled refresh rejects with SDK_NETWORK_TIMEOUT', sdk.isPollarNetworkError(err), err && err.code);
+    check('stalled refresh rejects with SDK_NETWORK_TIMEOUT', sdk.isChettaPayNetworkError(err), err && err.code);
     const refreshCalls = mock.calls.filter((c) => c.url.includes('/auth/refresh')).length;
     check(
       '  POST /auth/refresh attempted EXACTLY once (not retried; DPoP jti-replay safety)',
@@ -1425,7 +1425,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1436,7 +1436,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       }),
     );
     // A stale row from a PRIOR external login that was switched away from without a logout.
-    await storage.set(`pollar:${hash}:walletType`, 'fake');
+    await storage.set(`chettapay:${hash}:walletType`, 'fake');
     const fakeAdapter = {
       type: 'fake',
       meta: { label: 'Fake' },
@@ -1445,7 +1445,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -1481,7 +1481,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       verifyEmailCode: async () => {},
       loginWithOAuth: async () => {},
     };
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey: 'pk_race_MM',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -1507,7 +1507,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
       const storage = sdk.createMemoryAdapter();
       const hash = await apiKeyHashOf(apiKey);
       await storage.set(
-        `pollar:${hash}:session`,
+        `chettapay:${hash}:session`,
         JSON.stringify({
           clientSessionId: 'cs',
           userId: 'u',
@@ -1517,7 +1517,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
           wallet,
         }),
       );
-      const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+      const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
       await client.ready();
       return client;
     };
@@ -1548,7 +1548,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1558,7 +1558,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gint' }, // custodial → server signs
       }),
     );
-    const client = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
+    const client = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logLevel: 'silent' });
     await client.ready();
 
     const txStates = [];
@@ -1609,7 +1609,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
     const storage = sdk.createMemoryAdapter();
     const hash = await apiKeyHashOf(apiKey);
     await storage.set(
-      `pollar:${hash}:session`,
+      `chettapay:${hash}:session`,
       JSON.stringify({
         clientSessionId: 'cs',
         userId: 'u',
@@ -1619,7 +1619,7 @@ async function makeClient(apiKey, { seed = true, accessToken = 'AT', expiresInSe
         wallet: { type: 'internal', address: 'Gtest' },
       }),
     );
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',

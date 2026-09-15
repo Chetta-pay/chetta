@@ -5,11 +5,11 @@ import {
   AuthState,
   InteractiveAuthAdapter,
   isInteractiveAuthAdapter,
-  PollarLoginOptions,
+  ChettaPayLoginOptions,
   WalletId,
-} from '@pollar/core';
+} from '@chettapay/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { modalChrome } from '../modal-theme';
 import { LoginModalStatus, LoginModalTemplate } from './LoginModalTemplate';
 import { PrivyLoginSubmodal } from './PrivyLoginSubmodal';
@@ -24,7 +24,7 @@ interface LoginModalProps {
 
 export function LoginModal({ onClose }: LoginModalProps) {
   const [email, setEmail] = useState('');
-  const { getClient, styles, appConfig: config, configStatus, retryConfig } = usePollar();
+  const { getClient, styles, appConfig: config, configStatus, retryConfig } = useChettaPay();
   const [authState, setAuthState] = useState<AuthState>(() => getClient().getAuthState());
   // Registered wallet adapters (built-ins + config) -> one login button each.
   const walletAdapters = useMemo(() => getClient().listWalletAdapters(), [getClient]);
@@ -77,7 +77,7 @@ export function LoginModal({ onClose }: LoginModalProps) {
   const smartWalletEnabled = smartWallet ?? false;
   // The heading is the app's name unless Branding set a custom one. Blank counts
   // as unset, which is what the dashboard sends when the field is cleared.
-  const modalTitle = styles.modalTitle?.trim() || config.application?.name || 'Pollar';
+  const modalTitle = styles.modalTitle?.trim() || config.application?.name || 'ChettaPay';
 
   function handleClose() {
     setEmail('');
@@ -105,7 +105,7 @@ export function LoginModal({ onClose }: LoginModalProps) {
     }
     // Any other registered wallet adapter (freighter/albedo/swk...). The adapter
     // opens its own connect/auth UI; the SDK wraps the generic SEP-10 flow.
-    getClient().login({ provider: type } as PollarLoginOptions);
+    getClient().login({ provider: type } as ChettaPayLoginOptions);
   }
 
   function handleLoginSmartWallet() {
@@ -138,12 +138,12 @@ export function LoginModal({ onClose }: LoginModalProps) {
     if (provider) {
       // Provider login (Privy) is done; run the normal flow so connect() + SEP-10
       // execute against the now-authenticated wallet.
-      getClient().login({ provider } as PollarLoginOptions);
+      getClient().login({ provider } as ChettaPayLoginOptions);
     }
   }
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={handleClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={handleClose}>
       {configStatus !== 'ready' ? (
         <LoginModalStatus
           status={configStatus === 'error' ? 'error' : 'loading'}

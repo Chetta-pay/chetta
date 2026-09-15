@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, TouchableWithoutFeedback } from 'react-native';
+import { CHETTA } from '../../theme';
 
 interface WalletButtonTemplateProps {
     walletAddress: string | null;
@@ -63,7 +64,7 @@ export function WalletButtonTemplate({
                                         <Text style={[styles.headerAddress, { color: itemColor }]}>{truncateAddress(walletAddress)}</Text>
                                     </View>
                                     <TouchableOpacity onPress={onCopy} style={styles.copyBtn}>
-                                        <Text style={{ color: '#9ca3af', fontSize: 12 }}>{copied ? '✅' : '📋 Copy'}</Text>
+                                        <Text style={{ color: CHETTA.dune, fontSize: 12 }}>{copied ? '✅' : '📋 Copy'}</Text>
                                     </TouchableOpacity>
                                 </View>
 

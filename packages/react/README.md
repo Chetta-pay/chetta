@@ -1,26 +1,26 @@
-# @pollar/react
+# @chettapay/react
 
-React bindings for [Pollar](https://pollar.xyz) — drop-in authentication UI, transaction modals, and hooks for
+React bindings for [ChettaPay](https://chettapay.vercel.app) — drop-in authentication UI, transaction modals, and hooks for
 Stellar and Solana applications.
 
-> **0.11.3** requires `@pollar/core@^0.11.3`. Non-breaking. A **pre-built `PollarClient`
-> passed to `PollarProvider` no longer loses passkey support**: the provider installs the
+> **0.11.3** requires `@chettapay/core@^0.11.3`. Non-breaking. A **pre-built `ChettaPayClient`
+> passed to `ChettaPayProvider` no longer loses passkey support**: the provider installs the
 > browser passkey ceremony on every path (via core's new `setPasskeyDefaults()`), and an
 > explicit `passkey: undefined` no longer wipes the default. `browserPasskeyCeremony` and
 > `browserPasskeySigner` are now exported for consumers who build their own client or want
-> to wrap the ceremony. Also, **StrictMode no longer leaves an orphaned `PollarClient`
+> to wrap the ceremony. Also, **StrictMode no longer leaves an orphaned `ChettaPayClient`
 > running**: the provider keys the client it builds on the config object, so StrictMode's
 > second render pass reuses the first pass's instance instead of constructing a second
 > client whose refresh loop could clear the session the real login just wrote (dev only,
-> no API change). Packaging: **`@pollar/core` moved from `dependencies` to
+> no API change). Packaging: **`@chettapay/core` moved from `dependencies` to
 > `peerDependencies`**, so npm no longer installs a package-local duplicate of core (the
 > configuration that broke `instanceof` and split the live-client registry); the provider
-> now discriminates with core's new `isPollarClient()` guard, which works across copies.
+> now discriminates with core's new `isChettaPayClient()` guard, which works across copies.
 > npm 7+ installs peers automatically; on npm 6, Yarn 1 or `--legacy-peer-deps`, add
-> `@pollar/core` to your own dependencies. If you pin exact versions, keep both packages
+> `@chettapay/core` to your own dependencies. If you pin exact versions, keep both packages
 > on the same version.
 >
-> Earlier: **0.11.2** required `@pollar/core@^0.11.2`. The **Transaction History modal
+> Earlier: **0.11.2** required `@chettapay/core@^0.11.2`. The **Transaction History modal
 > goes multichain**: the same network picker and address chip as the Balance /
 > Send modals, a server-side chain filter (pagination is server-side, so
 > switching networks refetches and resets to page 1), per-chain explorer links
@@ -40,33 +40,33 @@ Stellar and Solana applications.
 ## Installation
 
 ```bash
-npm install @pollar/react @pollar/core
+npm install @chettapay/react @chettapay/core
 # or
-pnpm add @pollar/react @pollar/core
+pnpm add @chettapay/react @chettapay/core
 # or
-yarn add @pollar/react @pollar/core
+yarn add @chettapay/react @chettapay/core
 ```
 
 **Peer dependencies:** `react >= 18`, `react-dom >= 18`. Node ≥ 20 in toolchains.
 
 ## Quick Start
 
-Wrap your application with `PollarProvider` and use the `usePollar` hook anywhere in the tree.
+Wrap your application with `ChettaPayProvider` and use the `useChettaPay` hook anywhere in the tree.
 
 ```tsx
-import { PollarProvider } from '@pollar/react';
-import '@pollar/react/styles.css';
+import { ChettaPayProvider } from '@chettapay/react';
+import '@chettapay/react/styles.css';
 
 export default function App({ children }: { children: React.ReactNode }) {
-  return <PollarProvider client={{ apiKey: 'your-api-key' }}>{children}</PollarProvider>;
+  return <ChettaPayProvider client={{ apiKey: 'your-api-key' }}>{children}</ChettaPayProvider>;
 }
 ```
 
 ```tsx
-import { usePollar } from '@pollar/react';
+import { useChettaPay } from '@chettapay/react';
 
 export function Profile() {
-  const { isAuthenticated, wallet, login, logout, getClient } = usePollar();
+  const { isAuthenticated, wallet, login, logout, getClient } = useChettaPay();
 
   if (!isAuthenticated) {
     return <button onClick={() => login({ provider: 'google' })}>Sign in with Google</button>;
@@ -87,15 +87,15 @@ export function Profile() {
 
 ## API Reference
 
-### `<PollarProvider>`
+### `<ChettaPayProvider>`
 
-Context provider that initialises the Pollar client and makes it available to child components.
+Context provider that initialises the ChettaPay client and makes it available to child components.
 
 ```tsx
-<PollarProvider
+<ChettaPayProvider
   client={{
     apiKey: 'your-api-key',
-    baseUrl: 'https://sdk.api.pollar.xyz', // optional, origin only — the SDK appends /v2
+    baseUrl: 'https://chettapay-api.vercel.app', // optional, origin only — the SDK appends /v2
     stellarNetwork: 'testnet', // optional, default: 'testnet'
     storage, // optional, RN apps inject this
     keyManager, // optional, autodetects on web
@@ -117,20 +117,20 @@ Context provider that initialises the Pollar client and makes it available to ch
   }
 >
   {children}
-</PollarProvider>
+</ChettaPayProvider>
 ```
 
 | Prop        | Type                                 | Required | Description                                                                                                                                                                                                                                                                                                                                   |
 | ----------- | ------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `client`    | `PollarClient \| PollarClientConfig` | Yes      | Either a pre-built `PollarClient` (testing, reuse outside React) or a `PollarClientConfig` the provider will construct one from. **Locked at first render** — swapping after mount is ignored                                                                                                                                                 |
-| `appConfig` | `PollarConfig`                       | No       | Local override of `/applications/config`. **Presence is the opt-out switch**: pass it (even `{}`) and the remote fetch is skipped. Omit it to keep the existing remote-fetch-on-mount behaviour. Unlike `client`, it can be added or swapped after mount — the context re-applies it (compared by value, so an inline object literal is fine) |
-| `adapters`  | `PollarAdapters`                     | No       | Named set of `PollarAdapter` objects (e.g. Trustless Work). See below                                                                                                                                                                                                                                                                         |
+| `client`    | `ChettaPayClient \| ChettaPayClientConfig` | Yes      | Either a pre-built `ChettaPayClient` (testing, reuse outside React) or a `ChettaPayClientConfig` the provider will construct one from. **Locked at first render** — swapping after mount is ignored                                                                                                                                                 |
+| `appConfig` | `ChettaPayConfig`                       | No       | Local override of `/applications/config`. **Presence is the opt-out switch**: pass it (even `{}`) and the remote fetch is skipped. Omit it to keep the existing remote-fetch-on-mount behaviour. Unlike `client`, it can be added or swapped after mount — the context re-applies it (compared by value, so an inline object literal is fine) |
+| `adapters`  | `ChettaPayAdapters`                     | No       | Named set of `ChettaPayAdapter` objects (e.g. Trustless Work). See below                                                                                                                                                                                                                                                                         |
 
 ---
 
-### `usePollar()`
+### `useChettaPay()`
 
-Returns the full Pollar context. Every modal opener returned here renders an already-wired modal — no extra mounting
+Returns the full ChettaPay context. Every modal opener returned here renders an already-wired modal — no extra mounting
 needed.
 
 ```ts
@@ -148,10 +148,10 @@ const {
   retryConfig, // () => void - re-runs the fetch after an error
 
   // Client escape hatch
-  getClient, // () => PollarClient - for getUserProfile(), listSessions(), …
+  getClient, // () => ChettaPayClient - for getUserProfile(), listSessions(), …
 
   // Auth
-  login, // (options: PollarLoginOptions) => void
+  login, // (options: ChettaPayLoginOptions) => void
   logout, // () => void  (fire-and-forget; await getClient().logout() if you need the promise)
   openLoginModal, // () => void
 
@@ -217,13 +217,13 @@ const {
   // Ramp (SEP-24 on/off-ramps, wired through core)
   openRampModal, // () => void
 
-  // App config / styles served by the Pollar API
-  appConfig, // PollarConfig
-  styles, // PollarStyles
+  // App config / styles served by the ChettaPay API
+  appConfig, // ChettaPayConfig
+  styles, // ChettaPayStyles
 
-  // Adapters (from PollarProvider props)
-  adapters, // PollarAdapters | undefined
-} = usePollar();
+  // Adapters (from ChettaPayProvider props)
+  adapters, // ChettaPayAdapters | undefined
+} = useChettaPay();
 ```
 
 Custody is derived from `wallet`, not a separate field - e.g.
@@ -240,7 +240,7 @@ login({ provider: 'github' });
 login({ provider: 'email', email: 'user@example.com' });
 
 // Built-in Stellar wallet adapters (the adapter's `type` IS the provider)
-import { WalletType } from '@pollar/core';
+import { WalletType } from '@chettapay/core';
 login({ provider: WalletType.FREIGHTER }); // 'freighter-native'
 login({ provider: WalletType.ALBEDO }); // 'albedo-native'
 
@@ -253,8 +253,8 @@ login({ provider: 'lobstr' });
 
 The login modal is gated on the remote app-config fetch. While it runs the modal shows a spinner; if it fails, it shows
 "Could not load sign-in options. Check your connection and try again." plus a **Try again** button wired to
-`retryConfig()`. Both states are readable from `usePollar().configStatus` (`'loading' | 'ready' | 'error'`) if you are
-driving `<LoginModalTemplate>` yourself. Passing `appConfig` to `<PollarProvider>` opts out of the fetch entirely, so
+`retryConfig()`. Both states are readable from `useChettaPay().configStatus` (`'loading' | 'ready' | 'error'`) if you are
+driving `<LoginModalTemplate>` yourself. Passing `appConfig` to `<ChettaPayProvider>` opts out of the fetch entirely, so
 neither state can occur.
 
 #### Self-driving interactive adapters (Privy, …)
@@ -271,7 +271,7 @@ provider:
 - If the provider authenticates outside the sub-modal - after an OAuth redirect
   that reloaded the page, or a persisted provider session on load - the
   provider's `onProviderAuthChange` subscription fires `login({ provider })`
-  automatically when Pollar has no session yet.
+  automatically when ChettaPay has no session yet.
 
 ---
 
@@ -284,7 +284,7 @@ own wallet button or picker instead of calling `chainsOf(wallets)` yourself —
 `chainsOf` alone cannot know the app's configured order.
 
 ```ts
-import { useChains } from '@pollar/react';
+import { useChains } from '@chettapay/react';
 
 const { chains, primaryChain, primaryAddress, ready } = useChains();
 ```
@@ -306,7 +306,7 @@ session still carries it.
 ### Components
 
 Every modal mounts itself when its `openXModal()` action is called. You don't need to render these directly — they're
-already wired inside `<PollarProvider>` — and most are exported in case you want to mount them yourself.
+already wired inside `<ChettaPayProvider>` — and most are exported in case you want to mount them yourself.
 
 > Two wrappers are **not** exported: `<TxHistoryModal>` and `<TransactionModal>`. Only their templates
 > (`TxHistoryModalTemplate` / `TransactionModalTemplate`) are public. Mount those instead if you need to drive them
@@ -328,7 +328,7 @@ already wired inside `<PollarProvider>` — and most are exported in case you wa
 | `<RampWidget>`             | Buy/sell crypto via SEP-24 - direction tabs, route comparison, payment instructions (wired to `client.createOnRamp` / `client.createOffRamp`)                                                                                                                                                                                                                                            |
 
 ```tsx
-import { WalletButton } from '@pollar/react';
+import { WalletButton } from '@chettapay/react';
 
 export function Header() {
   return <WalletButton />;
@@ -340,7 +340,7 @@ export function Header() {
 ### Template components
 
 Almost every modal ships a pure presentational "template" companion — same name with a `Template` suffix. Use these when
-you want to swap the chrome but keep the data wiring from `usePollar()`. (`<EarnModal>` is the exception: it has no
+you want to swap the chrome but keep the data wiring from `useChettaPay()`. (`<EarnModal>` is the exception: it has no
 template yet.)
 
 > The wallet-balance, enabled-assets, send and receive templates each require `chains`, `selectedChain` and
@@ -374,30 +374,30 @@ template yet.)
 
 ### Custom adapters
 
-The `adapters` prop on `<PollarProvider>` accepts any named set of `PollarAdapter` objects. Each adapter function
-receives params, returns an unsigned XDR, and Pollar handles signing and submission automatically.
+The `adapters` prop on `<ChettaPayProvider>` accepts any named set of `ChettaPayAdapter` objects. Each adapter function
+receives params, returns an unsigned XDR, and ChettaPay handles signing and submission automatically.
 
 ```tsx
-import type { PollarAdapter } from '@pollar/core';
+import type { ChettaPayAdapter } from '@chettapay/core';
 
-const trustlessWork: PollarAdapter = {
+const trustlessWork: ChettaPayAdapter = {
   initialize: async (params) => ({ unsignedTransaction: '…' }),
   release: async (params) => ({ unsignedTransaction: '…' }),
 };
 
-<PollarProvider client={{ apiKey }} adapters={{ trustlessWork }}>
+<ChettaPayProvider client={{ apiKey }} adapters={{ trustlessWork }}>
   …
-</PollarProvider>;
+</ChettaPayProvider>;
 ```
 
-#### `createPollarAdapterHook(key)`
+#### `createChettaPayAdapterHook(key)`
 
 Factory that generates a fully-typed hook mirroring an adapter's API with automatic XDR signing built in:
 
 ```ts
-import { createPollarAdapterHook } from '@pollar/react';
+import { createChettaPayAdapterHook } from '@chettapay/react';
 
-const useTrustlessWork = createPollarAdapterHook<typeof trustlessWork>('trustlessWork');
+const useTrustlessWork = createChettaPayAdapterHook<typeof trustlessWork>('trustlessWork');
 
 function MyComponent() {
   const tw = useTrustlessWork();
@@ -411,17 +411,17 @@ function MyComponent() {
 
 ### External wallet stacks (Stellar Wallets Kit, …)
 
-Register adapters for wallets that live outside `@pollar/core` by passing a
+Register adapters for wallets that live outside `@chettapay/core` by passing a
 `walletAdapters: WalletAdapter[]` array. `LoginModal` auto-renders one button per
 registered adapter, and each is reachable via `login({ provider: adapter.type })`.
 `stellarWalletsKitAdapters()` returns that array (one adapter per kit module):
 
 ```tsx
-import { PollarProvider } from '@pollar/react';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayProvider } from '@chettapay/react';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-<PollarProvider
+<ChettaPayProvider
   client={{
     apiKey: 'your-api-key',
     walletAdapters: stellarWalletsKitAdapters({
@@ -431,7 +431,7 @@ import { Networks } from '@creit.tech/stellar-wallets-kit';
   }}
 >
   {children}
-</PollarProvider>;
+</ChettaPayProvider>;
 ```
 
 Each adapter's `meta.group` controls placement: adapters sharing a group label
@@ -446,26 +446,26 @@ root view. Pass `picker.groupLabel` to give the kit wallets a distinct gateway.
 Import the bundled stylesheet once in your application entry point:
 
 ```ts
-import '@pollar/react/styles.css';
+import '@chettapay/react/styles.css';
 ```
 
-All class names are prefixed with `pollar-` to avoid conflicts.
+All class names are prefixed with `chettapay-` to avoid conflicts.
 
 ---
 
 ## TypeScript
 
-`@pollar/react` ships full type declarations. Key exported types:
+`@chettapay/react` ships full type declarations. Key exported types:
 
 ```ts
 import type {
   LoginButtonProps,
   AuthModalProps,
-  PollarConfig,
-  PollarStyles,
+  ChettaPayConfig,
+  ChettaPayStyles,
 
-  // Custom-provider contracts (re-exported from @pollar/core)
-  PollarAuthProvider,
+  // Custom-provider contracts (re-exported from @chettapay/core)
+  ChettaPayAuthProvider,
   AuthProviderContext,
 
   // Network picker
@@ -488,11 +488,11 @@ import type {
   // Step unions
   KycStep,
   RampStep,
-} from '@pollar/react';
+} from '@chettapay/react';
 ```
 
 The state types (`TransactionState`, `TxHistoryState`, `WalletBalanceState`, `NetworkState`, `AuthState`,
-`PollarPersistedSession`, `PollarUserProfile`, `SessionInfo`, …) are re-exported from `@pollar/core`.
+`ChettaPayPersistedSession`, `ChettaPayUserProfile`, `SessionInfo`, …) are re-exported from `@chettapay/core`.
 
 ---
 

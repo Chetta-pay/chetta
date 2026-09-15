@@ -3,11 +3,11 @@
 // `KeyManager` factory, exporting `NobleKeyManager`) live in those entry
 // modules so bundlers can tree-shake unused code paths.
 
-export { PollarClient, isPollarClient } from './client/client';
-export { POLLAR_CORE_VERSION } from './version';
+export { ChettaPayClient, isChettaPayClient } from './client/client';
+export { CHETTAPAY_CORE_VERSION } from './version';
 export { createLogger } from './lib/logger';
 export { toBaseUnits, fromBaseUnits } from './lib/units';
-export type { LogLevel, PollarLogger } from './lib/logger';
+export type { LogLevel, ChettaPayLogger } from './lib/logger';
 
 // --- Storage ------------------------------------------------------------------
 export type { Storage, OnStorageDegrade, StorageDegradeReason } from './storage/types';
@@ -43,9 +43,15 @@ export type {
   ProviderAuthState,
 } from './wallets';
 export type * from './types';
-export { AUTH_ERROR_CODES, PollarNetworkError, isPollarNetworkError, PollarApiError, isPollarApiError } from './types';
-export { PollarApiClient } from './api/client';
-export type { paths as pollarPaths } from './api/schema';
+export {
+  AUTH_ERROR_CODES,
+  ChettaPayNetworkError,
+  isChettaPayNetworkError,
+  ChettaPayApiError,
+  isChettaPayApiError,
+} from './types';
+export { ChettaPayApiClient } from './api/client';
+export type { paths as chettaPayPaths } from './api/schema';
 export { isValidSession } from './client/session';
 export { StellarClient } from './stellar/StellarClient';
 export type { StellarNetwork, StellarClientConfig, StellarBalance } from './stellar/StellarClient';

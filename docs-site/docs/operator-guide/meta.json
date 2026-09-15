@@ -1,0 +1,14 @@
+{
+  "title": "Operator Guide",
+  "description": "Configure and monitor your app from the ChettaPay Dashboard: Build, Users, Treasury, Integrations, and Monitor.",
+  "pages": [
+    "dashboard-overview",
+    "overview",
+    "build",
+    "users",
+    "treasury",
+    "integrations",
+    "monitor",
+    "danger-zone"
+  ]
+}

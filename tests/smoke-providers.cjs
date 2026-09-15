@@ -1,7 +1,7 @@
-// @pollar smoke test — built-in auth providers + wallet-adapter dispatch.
+// @chettapay smoke test — built-in auth providers + wallet-adapter dispatch.
 //
 // Run with `node tests/smoke-providers.cjs` after `pnpm build`. Mocks `fetch`,
-// `localStorage` and `window` so PollarClient runs as if in a browser.
+// `localStorage` and `window` so ChettaPayClient runs as if in a browser.
 //
 // NOTE: `config.providers` (registering arbitrary custom auth providers) was
 // REMOVED when wallet integrations were unified into `config.walletAdapters`.
@@ -116,7 +116,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   };
 
   console.log('── 1. Construction with wallet adapters ──────────────────────');
-  const client = new sdk.PollarClient({
+  const client = new sdk.ChettaPayClient({
     apiKey,
     storage: sdk.createMemoryAdapter(),
     baseUrl: 'https://x.test',
@@ -164,7 +164,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   check('  error state carries clientSessionId so it can retry', !!client.getAuthState().clientSessionId);
   let verifyThrew = false;
   try {
-    client.verifyEmailCode('111111'); // retryable now — no synchronous PollarFlowError
+    client.verifyEmailCode('111111'); // retryable now — no synchronous ChettaPayFlowError
   } catch {
     verifyThrew = true;
   }
@@ -177,7 +177,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   } catch (e) {
     actionThrew = e && e.code === 'INVALID_FLOW';
   }
-  check('unknown action throws PollarFlowError(INVALID_FLOW)', actionThrew);
+  check('unknown action throws ChettaPayFlowError(INVALID_FLOW)', actionThrew);
 
   console.log('\n── 6. cancel during a wallet flow maps to idle, not error ────');
   client.login({ provider: 'gated' }); // parks at adapter.isAvailable()
@@ -236,7 +236,7 @@ async function waitFor(cond, timeoutMs = 1000) {
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     });
-    const c = new sdk.PollarClient({
+    const c = new sdk.ChettaPayClient({
       apiKey: 'pk_safe_meta',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -259,7 +259,7 @@ async function waitFor(cond, timeoutMs = 1000) {
 
   console.log('\n── 10. typed email methods throw from the wrong step ─────────');
   {
-    const gc = new sdk.PollarClient({
+    const gc = new sdk.ChettaPayClient({
       apiKey: 'pk_guards',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -272,14 +272,14 @@ async function waitFor(cond, timeoutMs = 1000) {
     } catch (e) {
       sendThrew = e && e.code === 'INVALID_FLOW';
     }
-    check("sendEmailCode() from a non-'entering_email' step throws PollarFlowError", sendThrew, gc.getAuthState().step);
+    check("sendEmailCode() from a non-'entering_email' step throws ChettaPayFlowError", sendThrew, gc.getAuthState().step);
     let verThrew = false;
     try {
       gc.verifyEmailCode('000000');
     } catch (e) {
       verThrew = e && e.code === 'INVALID_FLOW';
     }
-    check("  verifyEmailCode() from a non-'entering_code' step throws PollarFlowError", verThrew, gc.getAuthState().step);
+    check("  verifyEmailCode() from a non-'entering_code' step throws ChettaPayFlowError", verThrew, gc.getAuthState().step);
     gc.destroy();
   }
 
@@ -323,7 +323,7 @@ async function waitFor(cond, timeoutMs = 1000) {
       signTransaction: async () => ({ signedTxXdr: 'x' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const c = new sdk.PollarClient({
+    const c = new sdk.ChettaPayClient({
       apiKey: 'pk_redact',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -366,7 +366,7 @@ async function waitFor(cond, timeoutMs = 1000) {
       signTransaction: async () => ({ signedTxXdr: 'SIGNED' }),
       signAuthEntry: async () => ({ signedAuthEntry: 'x' }),
     };
-    const c = new sdk.PollarClient({
+    const c = new sdk.ChettaPayClient({
       apiKey: 'pk_sep10',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',
@@ -403,7 +403,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   {
     const logs = [];
     const spyLogger = { error: (...a) => logs.push(a), warn() {}, info() {}, debug() {} };
-    const c = new sdk.PollarClient({
+    const c = new sdk.ChettaPayClient({
       apiKey: 'pk_reqmask',
       storage: sdk.createMemoryAdapter(),
       baseUrl: 'https://x.test',

@@ -64,7 +64,7 @@ async function loadKeychain(): Promise<KeychainApi> {
     return mod as unknown as KeychainApi;
   } catch (error) {
     const message =
-      `[PollarClient:storage] Failed to load 'react-native-keychain'. ` +
+      `[ChettaPayClient:storage] Failed to load 'react-native-keychain'. ` +
       `Install it in your React Native app: \`npm i react-native-keychain\` ` +
       `(plus iOS pod install). Original error: ${error instanceof Error ? error.message : String(error)}`;
     throw new Error(message, { cause: error });
@@ -114,7 +114,7 @@ export async function createKeychainAdapter(options: KeychainAdapterOptions = {}
       const size = utf8ByteLength(value);
       if (size > KEYCHAIN_MAX_VALUE_BYTES) {
         throw new Error(
-          `[PollarClient:storage] Value for "${key}" is ${size} bytes, exceeds Keychain limit ${KEYCHAIN_MAX_VALUE_BYTES}`,
+          `[ChettaPayClient:storage] Value for "${key}" is ${size} bytes, exceeds Keychain limit ${KEYCHAIN_MAX_VALUE_BYTES}`,
         );
       }
       // Use the storage key as both the username and the service so a

@@ -27,7 +27,7 @@ import type { KeyManager, PublicEcJwk } from './types';
 
 // Prefix of the storage key; the value stored under it is the base64url-encoded
 // private scalar (32 bytes -> ~43 chars).
-const STORAGE_KEY_PREFIX = 'pollar:dpop-key:';
+const STORAGE_KEY_PREFIX = 'chettapay:dpop-key:';
 
 export class NobleKeyManager implements KeyManager {
   private readonly storage: Storage;
@@ -46,7 +46,7 @@ export class NobleKeyManager implements KeyManager {
 
   private get storageKey(): string {
     if (!this.apiKeyHash) {
-      throw new Error('[PollarClient:keys] init() must be called before storage access');
+      throw new Error('[ChettaPayClient:keys] init() must be called before storage access');
     }
     return `${STORAGE_KEY_PREFIX}${this.apiKeyHash}`;
   }
@@ -64,7 +64,7 @@ export class NobleKeyManager implements KeyManager {
     if (!this._initPromise) {
       this._initPromise = this._doInit().catch((err) => {
         // Clear the promise so the next call retries. The error propagates to
-        // the caller - `PollarClient` logs it through its configured logger, so
+        // the caller - `ChettaPayClient` logs it through its configured logger, so
         // we don't double-log (raw, ungated) here.
         this._initPromise = null;
         throw err;
@@ -103,7 +103,7 @@ export class NobleKeyManager implements KeyManager {
     // Uncompressed public key: 65 bytes, 0x04 || X(32) || Y(32).
     const pub = p256.getPublicKey(priv, false);
     if (pub.length !== 65 || pub[0] !== 0x04) {
-      throw new Error('[PollarClient:keys] Unexpected public key format from @noble/curves');
+      throw new Error('[ChettaPayClient:keys] Unexpected public key format from @noble/curves');
     }
 
     this.publicJwk = {
@@ -160,7 +160,7 @@ export class NobleKeyManager implements KeyManager {
   async getPublicJwk(): Promise<PublicEcJwk> {
     if (!this.publicJwk) await this.init();
     if (!this.publicJwk) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; getPublicJwk unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; getPublicJwk unavailable');
     }
     return { kty: this.publicJwk.kty, crv: this.publicJwk.crv, x: this.publicJwk.x, y: this.publicJwk.y };
   }
@@ -168,7 +168,7 @@ export class NobleKeyManager implements KeyManager {
   async getThumbprint(): Promise<string> {
     if (!this.thumbprint) await this.init();
     if (!this.thumbprint) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; getThumbprint unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; getThumbprint unavailable');
     }
     return this.thumbprint;
   }
@@ -176,7 +176,7 @@ export class NobleKeyManager implements KeyManager {
   async sign(payload: Uint8Array): Promise<Uint8Array> {
     if (!this.privateKey) await this.init();
     if (!this.privateKey) {
-      throw new Error('[PollarClient:keys] Keypair initialization failed; sign unavailable');
+      throw new Error('[ChettaPayClient:keys] Keypair initialization failed; sign unavailable');
     }
     // Two-step: hash with `@noble/hashes` SHA-256, then sign the digest with
     // `prehash: false`. `p256.sign(msg)` with default prehash uses noble's

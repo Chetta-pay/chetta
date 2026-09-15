@@ -11,13 +11,13 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  external: ['react', 'react-dom', '@pollar/core'],
+  external: ['react', 'react-dom', '@chettapay/core'],
   noExternal: ['qr.js'],
   esbuildOptions(options) {
     options.jsx = 'automatic';
   },
   define: {
-    __POLLAR_VERSION__: JSON.stringify(pkg.version),
+    __CHETTAPAY_VERSION__: JSON.stringify(pkg.version),
   },
   async onSuccess() {
     for (const file of ['dist/index.js', 'dist/index.mjs']) {

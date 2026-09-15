@@ -1,7 +1,7 @@
 {
-    "name": "@pollar/react-native",
+    "name": "@chettapay/react-native",
     "version": "0.5.3",
-    "description": "React Native components for Pollar authentication",
+    "description": "React Native components for ChettaPay authentication",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
@@ -28,12 +28,12 @@
         "clean": "rm -rf dist"
     },
     "peerDependencies": {
-        "@pollar/core": "*",
+        "@chettapay/core": "*",
         "react": ">=18",
         "react-native": "*"
     },
     "dependencies": {
-        "@pollar/core": "*"
+        "@chettapay/core": "*"
     },
     "devDependencies": {
         "@types/node": "^25.5.2",

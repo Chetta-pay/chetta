@@ -23,7 +23,7 @@ import type { PublicEcJwk } from './types';
  */
 export async function computeJwkThumbprint(jwk: PublicEcJwk): Promise<string> {
   if (jwk.kty !== 'EC' || jwk.crv !== 'P-256' || !jwk.x || !jwk.y) {
-    throw new Error('[PollarClient:thumbprint] Expected EC P-256 JWK with x and y');
+    throw new Error('[ChettaPayClient:thumbprint] Expected EC P-256 JWK with x and y');
   }
   // Build the canonical string by hand so member order is unambiguous.
   // Lex order of EC required members: 'crv' < 'kty' < 'x' < 'y'.
@@ -64,7 +64,7 @@ function toBase64url(value: string): string {
  */
 export function canonicalEcJwk(jwk: { kty?: string; crv?: string; x?: string; y?: string }): PublicEcJwk {
   if (jwk.kty !== 'EC' || jwk.crv !== 'P-256' || typeof jwk.x !== 'string' || typeof jwk.y !== 'string') {
-    throw new Error('[PollarClient:thumbprint] Source JWK is not an EC P-256 public key');
+    throw new Error('[ChettaPayClient:thumbprint] Source JWK is not an EC P-256 public key');
   }
   return { kty: 'EC', crv: 'P-256', x: toBase64url(jwk.x), y: toBase64url(jwk.y) };
 }

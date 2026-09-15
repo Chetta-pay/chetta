@@ -1,6 +1,6 @@
 # React Native and Expo
 
-React Native is the environment where a Pollar integration most often fails for reasons that are not
+React Native is the environment where a ChettaPay integration most often fails for reasons that are not
 the SDK's fault. Three things have to be right: runtime polyfills, a storage adapter, and an API key
 that accepts origin-less requests.
 
@@ -8,11 +8,11 @@ that accepts origin-less requests.
 
 The SDK builds a DPoP proof (RFC 9449) for **every** authenticated request. That path uses three Web
 primitives Hermes does not all ship. Register them at the very top of the entry file, **before any
-`@pollar/core` import**. If one is missing, proof construction fails and no authenticated request
+`@chettapay/core` import**. If one is missing, proof construction fails and no authenticated request
 works at all.
 
 ```ts
-// index.js / App entry, before importing @pollar/core
+// index.js / App entry, before importing @chettapay/core
 import 'react-native-get-random-values'; // crypto.getRandomValues
 import 'react-native-polyfill-globals/auto'; // TextEncoder / TextDecoder + URL
 ```
@@ -45,13 +45,13 @@ npm i react-native-polyfill-globals
 ```
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { createSecureStoreAdapter } from '@pollar/core/adapters/expo';
+import { ChettaPayClient } from '@chettapay/core';
+import { createSecureStoreAdapter } from '@chettapay/core/adapters/expo';
 
 const storage = await createSecureStoreAdapter();
 // default keychain accessibility: WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 // which keeps iCloud Keychain from carrying the key to another device
-const client = new PollarClient({ apiKey: 'pub_testnet_...', storage });
+const client = new ChettaPayClient({ apiKey: 'pub_testnet_...', storage });
 ```
 
 **Bare React Native:**
@@ -61,10 +61,10 @@ npm i react-native-keychain react-native-get-random-values react-native-polyfill
 ```
 
 ```ts
-import { createKeychainAdapter } from '@pollar/core/adapters/react-native-keychain';
+import { createKeychainAdapter } from '@chettapay/core/adapters/react-native-keychain';
 
 const storage = await createKeychainAdapter();
-const client = new PollarClient({ apiKey: 'pub_testnet_...', storage });
+const client = new ChettaPayClient({ apiKey: 'pub_testnet_...', storage });
 ```
 
 The key manager autodetects: `NobleKeyManager` on RN, `WebCryptoKeyManager` when `crypto.subtle` exists.
@@ -85,14 +85,14 @@ these injected:
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `openAuthUrl`        | Web defaults to a popup. RN must open the hosted OAuth URL itself, typically via `expo-web-browser`                                   |
 | `oauthRedirectUri`   | Web defaults to `window.location.origin`. RN must pass its deep link                                                                  |
-| `visibilityProvider` | Drives the silent-refresh scheduler. Ships as `createAppStateVisibilityProvider()` from `@pollar/core/adapters/react-native-appstate` |
+| `visibilityProvider` | Drives the silent-refresh scheduler. Ships as `createAppStateVisibilityProvider()` from `@chettapay/core/adapters/react-native-appstate` |
 | `walletAdapters`     | Freighter and Albedo are browser extensions and do not apply                                                                          |
 
 ```ts
 import * as WebBrowser from 'expo-web-browser';
-import { createAppStateVisibilityProvider } from '@pollar/core/adapters/react-native-appstate';
+import { createAppStateVisibilityProvider } from '@chettapay/core/adapters/react-native-appstate';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: 'pub_testnet_...',
   storage,
   visibilityProvider: await createAppStateVisibilityProvider(),
@@ -107,8 +107,8 @@ Email OTP needs none of this, which makes it the simplest first flow to get work
 
 ## 5. React binding
 
-Identical to web: `useSyncExternalStore` over `onAuthStateChange` plus `getAuthState`, or `usePollar()`
-from `@pollar/react`. See [react.md](react.md). Keep the client a singleton, and note that the storage
+Identical to web: `useSyncExternalStore` over `onAuthStateChange` plus `getAuthState`, or `useChettaPay()`
+from `@chettapay/react`. See [react.md](react.md). Keep the client a singleton, and note that the storage
 adapter is created with `await`, so build the client in an async bootstrap and render a splash until
 `client.ready()` resolves.
 
@@ -116,7 +116,7 @@ adapter is created with `await`, so build the client in an async bootstrap and r
 
 Work down this list in order, because each step masks the ones after it:
 
-1. Are the polyfills imported before `@pollar/core`, in the entry file, not in a screen?
+1. Are the polyfills imported before `@chettapay/core`, in the entry file, not in a screen?
 2. Is a storage adapter passed to the constructor?
 3. Does the API key have native clients enabled?
 4. For OAuth: are `openAuthUrl` and `oauthRedirectUri` both set, and does the deep link scheme match

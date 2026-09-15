@@ -1,26 +1,26 @@
-/* Segmented tabs live in shared.css (.pollar-tabs / .pollar-tab). */
+/* Segmented tabs live in shared.css (.chettapay-tabs / .chettapay-tab). */
 
-.pollar-earn-amount {
+.chettapay-earn-amount {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.pollar-earn-amount .pollar-input {
+.chettapay-earn-amount .chettapay-input {
   width: 100%;
   padding-right: 64px;
 }
 
-.pollar-earn-amount-unit {
+.chettapay-earn-amount-unit {
   position: absolute;
   right: 12px;
-  color: var(--pollar-muted);
+  color: var(--chettapay-muted);
   font-size: 13px;
   font-weight: 600;
   pointer-events: none;
 }
 
-.pollar-earn-live {
-  color: var(--pollar-accent);
+.chettapay-earn-live {
+  color: var(--chettapay-accent);
   font-weight: 600;
 }

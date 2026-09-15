@@ -1,0 +1,10 @@
+{
+  "title": "Getting Started",
+  "description": "Install ChettaPay, get your API keys, and send your first payment.",
+  "pages": [
+    "overview",
+    "api-keys",
+    "quickstart",
+    "example-app"
+  ]
+}

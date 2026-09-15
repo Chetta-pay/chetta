@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, ActivityIndicator } from 'react-native';
-import { ModalStatusBanner, PollarModalFooter } from '../commons';
+import { ModalStatusBanner, ChettaPayModalFooter } from '../commons';
+import { CHETTA, defaultAccent } from '../../theme';
 
 export type RampStep = 'idle' | 'in-progress' | 'completed';
 
@@ -10,17 +11,17 @@ export interface RampWidgetTemplateProps {
     onClose: () => void;
 }
 
-export function RampWidgetTemplate({ theme = 'light', accentColor = '#005DB4', onClose }: RampWidgetTemplateProps) {
+export function RampWidgetTemplate({ theme = 'light', accentColor = defaultAccent(theme), onClose }: RampWidgetTemplateProps) {
     const isDark = theme === 'dark';
     const [step, setStep] = useState<RampStep>('idle');
     const [amount, setAmount] = useState('');
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        inputBg: isDark ? '#374151' : '#f9fafb',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        inputBg: isDark ? CHETTA.soot : CHETTA.sand,
     };
 
     const handleDeposit = () => {
@@ -80,7 +81,7 @@ export function RampWidgetTemplate({ theme = 'light', accentColor = '#005DB4', o
                 )}
             </View>
 
-            <PollarModalFooter />
+            <ChettaPayModalFooter />
         </View>
     );
 }

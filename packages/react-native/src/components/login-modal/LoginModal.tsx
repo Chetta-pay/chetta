@@ -1,8 +1,9 @@
-import { AUTH_ERROR_CODES, AuthState, WalletType } from '@pollar/core';
+import { AUTH_ERROR_CODES, AuthState, WalletType } from '@chettapay/core';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { LoginModalTemplate } from './LoginModalUI'; // Bypassing cache
+import { defaultAccent } from '../../theme';
 
 
 interface LoginModalProps {
@@ -11,7 +12,7 @@ interface LoginModalProps {
 
 export function LoginModal({ onClose }: LoginModalProps) {
     const [email, setEmail] = useState('');
-    const { getClient, styles, config } = usePollar();
+    const { getClient, styles, config } = useChettaPay();
     const [authState, setAuthState] = useState<AuthState>(() => getClient().getAuthState());
     const [codeInputKey, setCodeInputKey] = useState(0);
     const pendingEmail = useRef<string | null>(null);
@@ -32,7 +33,7 @@ export function LoginModal({ onClose }: LoginModalProps) {
         });
     }, []);
 
-    const { theme = 'light', accentColor = '#005DB4', logoUrl, emailEnabled, embeddedWallets, providers } = styles;
+    const { theme = 'light', accentColor = defaultAccent(theme), logoUrl, emailEnabled, embeddedWallets, providers } = styles;
 
     function handleClose() {
         setEmail('');
@@ -88,7 +89,7 @@ export function LoginModal({ onClose }: LoginModalProps) {
                                 github: !!providers?.github,
                                 apple: !!providers?.apple,
                             }}
-                            appName={config.application?.name ?? 'Pollar'}
+                            appName={config.application?.name ?? 'ChettaPay'}
                             email={email}
                             onEmailChange={setEmail}
                             onEmailSubmit={handleEmailSubmit}

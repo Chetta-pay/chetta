@@ -23,7 +23,7 @@ export function randomUUID(): string {
     return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`;
   }
   throw new Error(
-    '[PollarClient] No secure random source available (crypto.randomUUID / crypto.getRandomValues). ' +
+    '[ChettaPayClient] No secure random source available (crypto.randomUUID / crypto.getRandomValues). ' +
       'DPoP requires a secure context (HTTPS) or, in React Native, the `react-native-get-random-values` polyfill.',
   );
 }

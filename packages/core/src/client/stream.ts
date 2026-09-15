@@ -1,6 +1,6 @@
-import { PollarApiClient } from '../api/client';
+import { ChettaPayApiClient } from '../api/client';
 import { abortError, throwIfAborted } from '../lib/abort';
-import type { PollarLogger } from '../lib/logger';
+import type { ChettaPayLogger } from '../lib/logger';
 
 /** Terminal session-status conditions, surfaced identically by the SSE stream
  *  (as `error` events) and the poll endpoint (as 404 / 410). When either occurs
@@ -18,7 +18,7 @@ export const LOGIN_FLOW_TIMEOUT_MS = 5 * 60 * 1000;
 
 export class SessionStatusError extends Error {
   constructor(readonly code: SessionStatusErrorCode) {
-    super(`[PollarClient] Session status terminal: ${code}`);
+    super(`[ChettaPayClient] Session status terminal: ${code}`);
     this.name = 'SessionStatusError';
   }
 }
@@ -54,12 +54,12 @@ const MAX_BACKOFF_MS = 5_000;
  * received chunk resets it to the floor. The happy path is unchanged.
  */
 export async function streamUntilFound(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   clientSessionId: string,
   check: (data: Record<string, unknown>) => boolean,
   retryDelayMs = 200,
   signal?: AbortSignal,
-  logger: PollarLogger = console,
+  logger: ChettaPayLogger = console,
 ): Promise<Record<string, unknown>> {
   let backoff = retryDelayMs;
   const sleep = async (ms: number): Promise<void> => {
@@ -80,7 +80,7 @@ export async function streamUntilFound(
       }));
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') throw e;
-      logger.debug('[PollarClient:stream] session-status request failed; will retry', e);
+      logger.debug('[ChettaPayClient:stream] session-status request failed; will retry', e);
     }
 
     if (error || !data) {
@@ -122,7 +122,7 @@ export async function streamUntilFound(
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') throw e;
       if (e instanceof SessionStatusError) throw e;
-      logger.debug('[PollarClient:stream] session-status stream read failed; will retry', e);
+      logger.debug('[ChettaPayClient:stream] session-status stream read failed; will retry', e);
     } finally {
       reader.releaseLock();
     }
@@ -167,7 +167,7 @@ export async function pollUntilFound(
   check: (data: Record<string, unknown>) => boolean,
   intervalMs = 500,
   signal?: AbortSignal,
-  logger: PollarLogger = console,
+  logger: ChettaPayLogger = console,
 ): Promise<Record<string, unknown>> {
   const url = `${baseUrl}/auth/session/status/${encodeURIComponent(clientSessionId)}/poll`;
   let backoff = intervalMs;
@@ -188,7 +188,7 @@ export async function pollUntilFound(
       envelope = (await response.json().catch(() => null)) as StatusPollEnvelope | null;
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') throw e;
-      logger.debug('[PollarClient:stream] session-status poll failed; will retry', e);
+      logger.debug('[ChettaPayClient:stream] session-status poll failed; will retry', e);
     }
 
     // Terminal: the session is gone (404 / INVALID) or expired (410 / EXPIRED).
@@ -220,14 +220,14 @@ export async function pollUntilFound(
  * `content` payload; the calling auth flow does not care which transport ran.
  */
 export function waitForSessionReady(args: {
-  api: PollarApiClient;
+  api: ChettaPayApiClient;
   baseUrl: string;
   clientSessionId: string;
   check: (data: Record<string, unknown>) => boolean;
   useStreaming: boolean;
   retryDelayMs?: number;
   signal?: AbortSignal;
-  logger?: PollarLogger;
+  logger?: ChettaPayLogger;
   timeoutMs?: number;
 }): Promise<Record<string, unknown>> {
   const { api, baseUrl, clientSessionId, check, useStreaming, retryDelayMs, signal, logger = console } = args;

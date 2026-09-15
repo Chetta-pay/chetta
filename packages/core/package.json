@@ -1,13 +1,13 @@
 {
-  "name": "@pollar/core",
+  "name": "@chettapay/core",
   "version": "0.11.3",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pollar-xyz/pollar.git",
+    "url": "git+https://github.com/Chetta-pay/chetta.git",
     "directory": "packages/core"
   },
-  "description": "Core SDK for Pollar: authentication and transaction utilities for Stellar and Solana applications",
+  "description": "Core SDK for ChettaPay: authentication and transaction utilities for Stellar and Solana applications",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

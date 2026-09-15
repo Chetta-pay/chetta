@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { WalletBalanceModalTemplate } from './WalletBalanceModalUI'; // Bypassing cache
+import { defaultAccent } from '../../theme';
 
 export interface WalletBalanceModalProps {
     onClose: () => void;
 }
 
 export function WalletBalanceModal({ onClose }: WalletBalanceModalProps) {
-    const { styles, walletBalance, refreshBalance, config } = usePollar();
-    const { theme = 'light', accentColor = '#005DB4' } = styles;
+    const { styles, walletBalance, refreshBalance, config } = useChettaPay();
+    const { theme = 'light', accentColor = defaultAccent(theme) } = styles;
 
     useEffect(() => {
         refreshBalance();
@@ -28,7 +29,7 @@ export function WalletBalanceModal({ onClose }: WalletBalanceModalProps) {
                             theme={theme}
                             accentColor={accentColor}
                             walletBalance={walletBalance}
-                            appName={config.application?.name ?? 'Pollar'}
+                            appName={config.application?.name ?? 'ChettaPay'}
                             onClose={onClose}
                             onRefresh={() => refreshBalance()}
                         />

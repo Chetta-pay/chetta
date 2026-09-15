@@ -1,7 +1,7 @@
 name: Skills changed
 
-# Recordatorio, no automatizacion. pollar-web espeja skills/ hacia
-# pollar.xyz/.well-known/agent-skills/ con un cron diario, asi que un cambio
+# Recordatorio, no automatizacion. chettapay-web espeja skills/ hacia
+# chettapay.vercel.app/.well-known/agent-skills/ con un cron diario, asi que un cambio
 # aqui tarda hasta un dia en publicarse. Este job avisa en el momento para
 # poder adelantarlo a mano si el cambio es urgente.
 #
@@ -34,7 +34,7 @@ jobs:
 
       - name: Announce what changed and how to publish it
         env:
-          RUN_SYNC: https://github.com/pollar-xyz/pollar-web/actions/workflows/sync-llms.yml
+          RUN_SYNC: https://github.com/Chetta-pay/chetta-web/actions/workflows/sync-llms.yml
         run: |
           changed="$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- skills/ || true)"
           {
@@ -46,11 +46,11 @@ jobs:
             echo "${changed:-(could not diff, see the commit)}"
             echo '```'
             echo
-            echo "pollar.xyz mirrors them on a daily cron, so this reaches"
-            echo "<https://pollar.xyz/.well-known/agent-skills/index.json> within 24h."
+            echo "chettapay.vercel.app mirrors them on a daily cron, so this reaches"
+            echo "<https://chettapay.vercel.app/.well-known/agent-skills/index.json> within 24h."
             echo
-            echo "To publish now, run **Sync mirrored content** in pollar-web:"
+            echo "To publish now, run **Sync mirrored content** in chettapay-web:"
             echo "$RUN_SYNC"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "::notice title=Skills changed::Mirrored to pollar.xyz within 24h. To publish now, run 'Sync mirrored content' in pollar-web: $RUN_SYNC"
+          echo "::notice title=Skills changed::Mirrored to chettapay.vercel.app within 24h. To publish now, run 'Sync mirrored content' in chettapay-web: $RUN_SYNC"

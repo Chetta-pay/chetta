@@ -1,4 +1,4 @@
-import { createApiClient, fetchWithTimeout, PollarApiClient } from '../api/client';
+import { createApiClient, fetchWithTimeout, ChettaPayApiClient } from '../api/client';
 import { claimDistributionRule, listDistributionRules } from '../api/endpoints/distribution';
 import { getSwapConfig, getSwapTokens, quoteSwap } from '../api/endpoints/swap';
 import { buildEarnTx, getEarnOpportunities, getEarnPosition, getEarnProviders } from '../api/endpoints/earn';
@@ -20,7 +20,7 @@ import { buildProof } from '../dpop';
 import { defaultKeyManager } from '../keys/factory';
 import type { KeyManager } from '../keys/types';
 import { hashApiKey } from '../lib/api-key-hash';
-import { createLogger, type PollarLogger } from '../lib/logger';
+import { createLogger, type ChettaPayLogger } from '../lib/logger';
 import { redactBody, redactDeep } from '../lib/logging';
 import { randomUUID } from '../lib/random-uuid';
 import { StellarNetwork } from '../stellar/StellarClient';
@@ -54,15 +54,15 @@ import {
   NetworkState,
   PasskeyCeremony,
   PasskeySigner,
-  PollarApplicationConfigContent,
-  PollarAuthProvider,
-  PollarClientConfig,
-  PollarFlowError,
-  PollarLoginOptions,
-  PollarPersistedSession,
-  PollarPersistedWallet,
-  isPollarNetworkError,
-  PollarUserProfile,
+  ChettaPayApplicationConfigContent,
+  ChettaPayAuthProvider,
+  ChettaPayClientConfig,
+  ChettaPayFlowError,
+  ChettaPayLoginOptions,
+  ChettaPayPersistedSession,
+  ChettaPayPersistedWallet,
+  isChettaPayNetworkError,
+  ChettaPayUserProfile,
   RampsOfframpBody,
   RampsOfframpResponse,
   RampsOnrampBody,
@@ -103,7 +103,7 @@ import {
   WalletChain,
   WalletInfo,
 } from '../types';
-import { POLLAR_CORE_VERSION } from '../version';
+import { CHETTAPAY_CORE_VERSION } from '../version';
 import { defaultVisibilityProvider } from '../visibility/autodetect';
 import type { VisibilityProvider } from '../visibility/types';
 import { AlbedoAdapter, FreighterAdapter, WalletAdapter, WalletAdapterMeta, WalletId } from '../wallets';
@@ -140,11 +140,11 @@ const isClientRuntime = isBrowser || isReactNative;
 
 /**
  * Live client count per API key, so we can warn on the duplicate-instance
- * footgun: two `PollarClient`s for the same key share one persisted session +
+ * footgun: two `ChettaPayClient`s for the same key share one persisted session +
  * DPoP key and run independent refresh loops; the single-use refresh-token
  * rotation then trips server-side reuse-detection and logs all of them out.
  */
-const liveClientsByApiKey = new Map<string, Map<PollarClient, () => void>>();
+const liveClientsByApiKey = new Map<string, Map<ChettaPayClient, () => void>>();
 
 /**
  * Tell every OTHER live client in this document that `origin` dropped the
@@ -156,7 +156,7 @@ const liveClientsByApiKey = new Map<string, Map<PollarClient, () => void>>();
  * one-hop: the recipients' own clears find the row already gone, so
  * `_persistSession` reports no removal and they do not notify back.
  */
-function notifySiblingClients(origin: PollarClient, apiKey: string, log: PollarLogger): void {
+function notifySiblingClients(origin: ChettaPayClient, apiKey: string, log: ChettaPayLogger): void {
   const siblings = liveClientsByApiKey.get(apiKey);
   if (!siblings) return;
   for (const [client, notify] of siblings) {
@@ -170,7 +170,7 @@ function notifySiblingClients(origin: PollarClient, apiKey: string, log: PollarL
     try {
       notify();
     } catch (err) {
-      log.error('[PollarClient] A sibling client failed to handle the session clear', err);
+      log.error('[ChettaPayClient] A sibling client failed to handle the session clear', err);
     }
   }
 }
@@ -179,27 +179,27 @@ function notifySiblingClients(origin: PollarClient, apiKey: string, log: PollarL
 const REFRESH_SKEW_SECONDS = 60;
 
 /**
- * Cross-copy brand for `PollarClient`, stamped on every instance.
+ * Cross-copy brand for `ChettaPayClient`, stamped on every instance.
  *
  * `instanceof` compares against one specific class object, so it answers `false`
  * for an instance built by a DIFFERENT copy of this module - and a second copy
- * is easy to end up with: a package listing `@pollar/core` in `dependencies`
+ * is easy to end up with: a package listing `@chettapay/core` in `dependencies`
  * rather than only as a peer, an exact pin that disagrees with another
- * package's, a bundler that does not dedupe. `PollarProvider` used that check to
+ * package's, a bundler that does not dedupe. `ChettaPayProvider` used that check to
  * decide whether it was handed a ready client or a config, and answering
  * `false` for a real client made it spread that instance into
- * `new PollarClient({...})` - a failure that points nowhere near the dependency
+ * `new ChettaPayClient({...})` - a failure that points nowhere near the dependency
  * tree that caused it.
  *
  * `Symbol.for` resolves through the runtime-wide symbol registry, so every copy
  * of this module gets the SAME symbol and recognises the others' instances.
  */
-const POLLAR_CLIENT_BRAND = Symbol.for('@pollar/core.PollarClient');
+const CHETTAPAY_CLIENT_BRAND = Symbol.for('@chettapay/core.ChettaPayClient');
 
 /**
- * Is this a `PollarClient`, including one built by another copy of the module?
+ * Is this a `ChettaPayClient`, including one built by another copy of the module?
  *
- * Prefer this over `instanceof PollarClient` anywhere the value may have crossed
+ * Prefer this over `instanceof ChettaPayClient` anywhere the value may have crossed
  * a package boundary. The brand is what does the work here: inside a single copy
  * the two checks always agree, because this constructor stamps every instance it
  * builds; across copies - a duplicated install, an iframe, a module swapped by
@@ -210,26 +210,26 @@ const POLLAR_CLIENT_BRAND = Symbol.for('@pollar/core.PollarClient');
  * test and keeps this guard's answer identical to the bare `instanceof` it
  * replaced at every call site.
  */
-export function isPollarClient(value: unknown): value is PollarClient {
-  if (value instanceof PollarClient) return true;
-  return typeof value === 'object' && value !== null && (value as Record<symbol, unknown>)[POLLAR_CLIENT_BRAND] === true;
+export function isChettaPayClient(value: unknown): value is ChettaPayClient {
+  if (value instanceof ChettaPayClient) return true;
+  return typeof value === 'object' && value !== null && (value as Record<symbol, unknown>)[CHETTAPAY_CLIENT_BRAND] === true;
 }
 
 function warnServerSide(method: string): void {
   // Module-level (no client instance / logger yet) - and a misuse warning the
   // developer should always see, so it stays on the raw console.
   console.warn(
-    `[PollarClient] ${method}() called server-side — browser APIs unavailable. Use PollarClient only in Client Components.`,
+    `[ChettaPayClient] ${method}() called server-side — browser APIs unavailable. Use ChettaPayClient only in Client Components.`,
   );
 }
 
-export class PollarClient {
+export class ChettaPayClient {
   readonly apiKey: string;
   readonly id: string;
   readonly basePath: string;
 
-  private readonly _api: PollarApiClient;
-  private readonly _log: PollarLogger;
+  private readonly _api: ChettaPayApiClient;
+  private readonly _log: ChettaPayLogger;
   private readonly _storage: Storage;
   private readonly _keyManager: KeyManager;
   /** Resolves once `keyManager.init()` and the initial session restore complete. */
@@ -248,13 +248,13 @@ export class PollarClient {
    */
   get apiKeyHash(): string {
     if (this._apiKeyHash === null) {
-      throw new Error('[PollarClient] apiKeyHash is not available until client.ready() resolves');
+      throw new Error('[ChettaPayClient] apiKeyHash is not available until client.ready() resolves');
     }
     return this._apiKeyHash;
   }
 
-  private _session: PollarPersistedSession | null = null;
-  private _profile: PollarUserProfile | null = null;
+  private _session: ChettaPayPersistedSession | null = null;
+  private _profile: ChettaPayUserProfile | null = null;
   /** Last `DPoP-Nonce` we saw from a server response. Carried into the next proof. */
   private _dpopNonce: string | null = null;
   /**
@@ -305,7 +305,7 @@ export class PollarClient {
   private _destroyed = false;
   private _storageEventHandler: ((e: StorageEvent) => void) | null = null;
   /** Optional UI label sent to the server at /auth/login so the sessions UI
-   *  can show a recognizable device name. Set via PollarClientConfig.deviceLabel. */
+   *  can show a recognizable device name. Set via ChettaPayClientConfig.deviceLabel. */
   private readonly _deviceLabel: string | undefined;
   private readonly _visibilityProvider: VisibilityProvider;
   private readonly _maxIdleMs: number | undefined;
@@ -313,7 +313,7 @@ export class PollarClient {
    *  that bypasses openapi-fetch's configured fetch. */
   private readonly _requestTimeoutMs: number;
   /** Longer per-request timeout for the submit-family tx calls (see
-   *  PollarClientConfig.submitTimeoutMs). Sent as an `x-pollar-timeout-ms`
+   *  ChettaPayClientConfig.submitTimeoutMs). Sent as an `x-chettapay-timeout-ms`
    *  header the request middleware reads to bound just those calls. */
   private readonly _submitTimeoutMs: number;
   /** Updated by the request middleware. Read by the silent-refresh scheduler
@@ -399,22 +399,22 @@ export class PollarClient {
    * Registry of the built-in auth providers, keyed by provider id (`google`,
    * `github`, `email`). Custom integrations now register as
    * `config.walletAdapters`, not here. `providerAction()` reaches these
-   * providers' actions (e.g. email's resend/verify). See {@link PollarAuthProvider}.
+   * providers' actions (e.g. email's resend/verify). See {@link ChettaPayAuthProvider}.
    */
-  private readonly _providers = new Map<string, PollarAuthProvider>();
+  private readonly _providers = new Map<string, ChettaPayAuthProvider>();
 
-  constructor(config: PollarClientConfig) {
+  constructor(config: ChettaPayClientConfig) {
     // Stamp the cross-copy brand FIRST, before any early return below, so even a
     // server-side instance is recognisable. Non-enumerable and symbol-keyed, so
-    // it never appears in `Object.keys` or a spread. See `isPollarClient`.
-    Object.defineProperty(this, POLLAR_CLIENT_BRAND, { value: true, enumerable: false });
+    // it never appears in `Object.keys` or a spread. See `isChettaPayClient`.
+    Object.defineProperty(this, CHETTAPAY_CLIENT_BRAND, { value: true, enumerable: false });
     this.apiKey = config.apiKey;
     this.id = randomUUID();
     // v2 is the multichain SDK surface. It is a superset of v1 - every v1 route is
     // re-exposed unchanged, with a `chain` discriminator added where a feature went
     // multichain (today: wallet balance/tokens/transfer). So the whole client rides
     // /v2 and only the shapes that actually changed are handled specially.
-    this.basePath = `${config.baseUrl || 'https://sdk.api.pollar.xyz'}/v2`;
+    this.basePath = `${config.baseUrl || 'https://chettapay-api.vercel.app'}/v2`;
     this._log = createLogger(config.logLevel ?? 'info', config.logger);
 
     this._storage =
@@ -427,7 +427,7 @@ export class PollarClient {
           // than letting sessions silently vanish on every cold start.
           if (isReactNative && reason === 'unavailable') {
             this._log.warn(
-              '[PollarClient] No persistent storage on React Native — sessions and the DPoP key ' +
+              '[ChettaPayClient] No persistent storage on React Native — sessions and the DPoP key ' +
                 'live in memory only and are lost on cold start (the user is logged out each launch). ' +
                 'Pass a Keychain/SecureStore adapter via `config.storage`.',
             );
@@ -471,11 +471,11 @@ export class PollarClient {
       // on both so a config mistake isn't invisible.
       if (this._providers.has(adapter.type)) {
         this._log.warn(
-          `[PollarClient] Wallet adapter type '${adapter.type}' shadows the built-in '${adapter.type}' auth provider; login({ provider: '${adapter.type}' }) will run the wallet flow, not the provider.`,
+          `[ChettaPayClient] Wallet adapter type '${adapter.type}' shadows the built-in '${adapter.type}' auth provider; login({ provider: '${adapter.type}' }) will run the wallet flow, not the provider.`,
         );
       } else if (this._walletAdapters.has(adapter.type)) {
         this._log.warn(
-          `[PollarClient] Wallet adapter type '${adapter.type}' overrides an already-registered adapter of the same type.`,
+          `[ChettaPayClient] Wallet adapter type '${adapter.type}' overrides an already-registered adapter of the same type.`,
         );
       }
       this._walletAdapters.set(adapter.type, adapter);
@@ -507,7 +507,7 @@ export class PollarClient {
     }
 
     this._log.info(
-      `[PollarClient] Initialized v${POLLAR_CORE_VERSION} — endpoint: ${this.basePath}, network: ${this._networkState.network}`,
+      `[ChettaPayClient] Initialized v${CHETTAPAY_CORE_VERSION} — endpoint: ${this.basePath}, network: ${this._networkState.network}`,
     );
 
     // Warn (don't throw - that would break StrictMode double-mounts / HMR)
@@ -524,7 +524,7 @@ export class PollarClient {
     if (isClientRuntime) {
       let liveSet = liveClientsByApiKey.get(this.apiKey);
       if (!liveSet) {
-        liveSet = new Map<PollarClient, () => void>();
+        liveSet = new Map<ChettaPayClient, () => void>();
         liveClientsByApiKey.set(this.apiKey, liveSet);
       }
       // Register a closure rather than the instance method so the handler stays
@@ -532,7 +532,7 @@ export class PollarClient {
       liveSet.set(this, () => this._onSiblingSessionCleared());
       if (liveSet.size > 1) {
         this._log.warn(
-          '[PollarClient] Another PollarClient is already active for this API key. Multiple ' +
+          '[ChettaPayClient] Another ChettaPayClient is already active for this API key. Multiple ' +
             'instances share one persisted session + DPoP key and run independent refresh loops; ' +
             'the single-use refresh-token rotation will trip server-side reuse-detection and log ' +
             'all of them out. Create one client per API key and reuse it (e.g. a module singleton).',
@@ -545,7 +545,7 @@ export class PollarClient {
     // returns to the foreground (the OS suspended the timer in the background).
     if (!isBrowser && !config.visibilityProvider) {
       this._log.warn(
-        '[PollarClient] No visibilityProvider configured on a non-browser runtime. Proactive ' +
+        '[ChettaPayClient] No visibilityProvider configured on a non-browser runtime. Proactive ' +
           'token refresh will not resume on foreground (only reactive 401-refresh will). Pass a ' +
           'visibilityProvider (e.g. the React Native AppState adapter) to keep the session fresh.',
       );
@@ -594,7 +594,7 @@ export class PollarClient {
         // must propagate removes the session key itself (see below) or calls
         // `logout()`.
         if (e.key === null) {
-          this._log.debug('[PollarClient] Ignoring a foreign storage clear()');
+          this._log.debug('[ChettaPayClient] Ignoring a foreign storage clear()');
           return;
         }
         if (e.key !== sessionKey) return;
@@ -609,7 +609,7 @@ export class PollarClient {
           // (`authenticating`) holds no session to tear down, and clearing
           // under it would flap the state of a login this event predates.
           if (this._session) {
-            void this._clearSession().catch((err) => this._log.error('[PollarClient] Cross-tab logout failed', err));
+            void this._clearSession().catch((err) => this._log.error('[ChettaPayClient] Cross-tab logout failed', err));
           }
           return;
         }
@@ -617,7 +617,7 @@ export class PollarClient {
         // Cross-tab LOGIN / token rotation: re-sync from storage (this also
         // keeps a verified session verified on a pure rotation - see
         // _restoreSession's same-session fast path).
-        this._restoreSession().catch((err) => this._log.error('[PollarClient] Cross-tab restore failed', err));
+        this._restoreSession().catch((err) => this._log.error('[ChettaPayClient] Cross-tab restore failed', err));
       };
       window.addEventListener('storage', handler);
       this._storageEventHandler = handler;
@@ -631,13 +631,13 @@ export class PollarClient {
       const storedNonce = await this._storage.get(dpopNonceStorageKey(this._apiKeyHash));
       if (storedNonce && storedNonce.length <= MAX_DPOP_NONCE) this._dpopNonce = storedNonce;
     } catch (err) {
-      this._log.debug('[PollarClient] Could not read the stored DPoP nonce', err);
+      this._log.debug('[ChettaPayClient] Could not read the stored DPoP nonce', err);
     }
 
     try {
       await this._keyManager.init();
     } catch (err) {
-      this._log.warn('[PollarClient] KeyManager init failed; DPoP unavailable for this session', err);
+      this._log.warn('[ChettaPayClient] KeyManager init failed; DPoP unavailable for this session', err);
     }
     await this._restoreSession();
 
@@ -706,7 +706,7 @@ export class PollarClient {
     const self = this;
     this._api.use({
       onRequest: async ({ request }: { request: Request }) => {
-        request.headers.set('x-pollar-api-key', self.apiKey);
+        request.headers.set('x-chettapay-api-key', self.apiKey);
         self._lastRequestAt = Date.now();
         // Every request waits until the client is initialized - EXCEPT a
         // /auth/refresh: the expired-AT restore issues one from WITHIN
@@ -736,7 +736,7 @@ export class PollarClient {
             const snapshot = await request.clone().arrayBuffer();
             if (snapshot.byteLength > 0) self._requestBodyCache.set(request, snapshot);
           } catch (err) {
-            this._log.warn('[PollarClient] Could not snapshot request body for retry', err);
+            this._log.warn('[ChettaPayClient] Could not snapshot request body for retry', err);
           }
         }
         // The refresh endpoint must not wait on its own in-flight refresh -
@@ -863,7 +863,7 @@ export class PollarClient {
    */
   private _logHttp(request: Request, response: Response): Response {
     const path = this._httpPath(request.url);
-    const label = `[PollarClient:http] ${request.method.toUpperCase()} ${path} ${response.status}`;
+    const label = `[ChettaPayClient:http] ${request.method.toUpperCase()} ${path} ${response.status}`;
     if (response.ok) {
       this._log.debug(label);
     } else {
@@ -922,7 +922,7 @@ export class PollarClient {
     try {
       await this._storage.set(dpopNonceStorageKey(this._apiKeyHash), nonce);
     } catch (err) {
-      this._log.debug('[PollarClient] Could not persist the DPoP nonce', err);
+      this._log.debug('[ChettaPayClient] Could not persist the DPoP nonce', err);
     }
   }
 
@@ -940,7 +940,7 @@ export class PollarClient {
         this._keyManager,
       );
     } catch (err) {
-      this._log.warn('[PollarClient] DPoP proof build failed', err);
+      this._log.warn('[ChettaPayClient] DPoP proof build failed', err);
       return null;
     }
   }
@@ -1064,7 +1064,7 @@ export class PollarClient {
     // timeout/retry wrapper openapi-fetch is configured with, so without this a
     // stalled nonce-retry would hang forever just like the original bug. The
     // submit-family endpoints get the longer submit budget (the per-request
-    // `x-pollar-timeout-ms` header was already stripped upstream, so key off the
+    // `x-chettapay-timeout-ms` header was already stripped upstream, so key off the
     // URL here); otherwise a first-submit-after-login nonce retry would fall
     // back to the 10s default and could cut a submit that is actually working.
     const isSubmit = /\/tx\/(submit|sign-and-send|build-sign-submit)(\?|$)/.test(originalRequest.url);
@@ -1104,7 +1104,7 @@ export class PollarClient {
     const gen = this._sessionGeneration;
     const refreshToken = this._session?.token?.refreshToken;
     if (!refreshToken) {
-      this._log.warn('[PollarClient] Refresh skipped: no refresh token in session');
+      this._log.warn('[ChettaPayClient] Refresh skipped: no refresh token in session');
       // Only tear down if we actually hold a session. `refresh()` is public and
       // reachable with no session at all (a consumer calling it on a cold
       // client); tearing down then would remove the shared row of a session
@@ -1127,25 +1127,25 @@ export class PollarClient {
       // error; the caller can fall back to the cached token, and the next
       // request (or proactive timer) will refresh once connectivity returns.
       // Genuine refresh failures (4xx/5xx, malformed) still clear, below.
-      if (isPollarNetworkError(err)) {
-        this._log.warn('[PollarClient] /auth/refresh timed out; keeping session for retry', err);
+      if (isChettaPayNetworkError(err)) {
+        this._log.warn('[ChettaPayClient] /auth/refresh timed out; keeping session for retry', err);
         throw err;
       }
-      this._log.error('[PollarClient] /auth/refresh request threw', err);
+      this._log.error('[ChettaPayClient] /auth/refresh request threw', err);
       await this._clearIfCurrent(gen);
       throw err;
     }
 
     if (error || !data) {
-      this._log.error('[PollarClient] /auth/refresh returned error', { error: redactDeep(error) });
+      this._log.error('[ChettaPayClient] /auth/refresh returned error', { error: redactDeep(error) });
       await this._clearIfCurrent(gen);
       throw new Error('Refresh failed');
     }
-    const successData = data as { success?: boolean; content?: { token?: PollarPersistedSession['token'] } };
+    const successData = data as { success?: boolean; content?: { token?: ChettaPayPersistedSession['token'] } };
     if (!successData.success || !successData.content?.token) {
       // Don't log `successData` - its `content.token` would write access/refresh
       // tokens to the console. Log only the non-sensitive shape.
-      this._log.error('[PollarClient] /auth/refresh response malformed', {
+      this._log.error('[ChettaPayClient] /auth/refresh response malformed', {
         success: successData.success,
         hasToken: !!successData.content?.token,
       });
@@ -1164,7 +1164,7 @@ export class PollarClient {
     ) {
       // Log the field TYPES, never the token values themselves (`expiresAt` is a
       // timestamp, not a secret, so its value is safe to log).
-      this._log.error('[PollarClient] /auth/refresh token shape invalid', {
+      this._log.error('[ChettaPayClient] /auth/refresh token shape invalid', {
         accessToken: typeof newToken.accessToken,
         refreshToken: typeof newToken.refreshToken,
         expiresAt: newToken.expiresAt,
@@ -1177,7 +1177,7 @@ export class PollarClient {
     // disable proactive refresh - the scheduler clamps the huge delay - so the
     // token would only ever be refreshed reactively on a 401. Surface it.
     if (newToken.expiresAt > Math.floor(Date.now() / 1000) + 400 * 24 * 60 * 60) {
-      this._log.warn('[PollarClient] /auth/refresh expiresAt is implausibly far ahead (seconds vs ms?)', {
+      this._log.warn('[ChettaPayClient] /auth/refresh expiresAt is implausibly far ahead (seconds vs ms?)', {
         expiresAt: newToken.expiresAt,
       });
     }
@@ -1186,16 +1186,16 @@ export class PollarClient {
     // login), or the client was destroyed, while the request was in flight -
     // writing it back would undo a logout or re-arm a timer post-teardown.
     if (this._destroyed || this._sessionGeneration !== gen || !this._session) {
-      this._log.info('[PollarClient] Refresh result discarded: session changed during refresh');
+      this._log.info('[ChettaPayClient] Refresh result discarded: session changed during refresh');
       return;
     }
 
     this._session = { ...this._session, token: newToken };
     try {
       await this._persistSession(gen, this._session);
-      this._log.info('[PollarClient] Tokens refreshed');
+      this._log.info('[ChettaPayClient] Tokens refreshed');
     } catch (err) {
-      this._log.error('[PollarClient] Failed to persist refreshed session', err);
+      this._log.error('[ChettaPayClient] Failed to persist refreshed session', err);
       // In-memory state is still updated; the session works for this
       // process but won't survive reload. Don't clear - that'd surprise
       // the user with a logout for what's essentially a storage hiccup.
@@ -1278,7 +1278,7 @@ export class PollarClient {
     try {
       await this.refresh();
     } catch (err) {
-      this._log.warn('[PollarClient] Proactive refresh failed', err);
+      this._log.warn('[ChettaPayClient] Proactive refresh failed', err);
     }
   }
 
@@ -1353,19 +1353,19 @@ export class PollarClient {
       try {
         cb(reason, error);
       } catch (err) {
-        this._log.error('[PollarClient] onStorageDegrade listener threw', err);
+        this._log.error('[ChettaPayClient] onStorageDegrade listener threw', err);
       }
     }
   }
 
   /** PII (email, names, avatar, providers). Held in memory only - never persisted. */
-  getUserProfile(): PollarUserProfile | null {
+  getUserProfile(): ChettaPayUserProfile | null {
     return this._profile;
   }
 
   // --- Login (unified entry point) -----------------------------------------
 
-  login(options: PollarLoginOptions): void {
+  login(options: ChettaPayLoginOptions): void {
     if (!isClientRuntime) {
       warnServerSide('login');
       return;
@@ -1418,7 +1418,7 @@ export class PollarClient {
     }
     const fn = this._providers.get(provider)?.actions?.[action];
     if (!fn) {
-      throw new PollarFlowError(`Auth provider '${provider}' has no action '${action}'`);
+      throw new ChettaPayFlowError(`Auth provider '${provider}' has no action '${action}'`);
     }
     const signal = this._activeLoginSignal();
     // See login() - guard against a custom action throwing synchronously.
@@ -1444,7 +1444,7 @@ export class PollarClient {
       return;
     }
     if (this._authState.step !== 'entering_email') {
-      throw new PollarFlowError(`sendEmailCode() requires step 'entering_email', current step is '${this._authState.step}'`);
+      throw new ChettaPayFlowError(`sendEmailCode() requires step 'entering_email', current step is '${this._authState.step}'`);
     }
     const { clientSessionId } = this._authState;
     // Reuse the active login controller if present, else mint one - matching the
@@ -1469,7 +1469,9 @@ export class PollarClient {
         this._authState.errorCode === AUTH_ERROR_CODES.EMAIL_VERIFY_FAILED);
 
     if (this._authState.step !== 'entering_code' && !isRetryableError) {
-      throw new PollarFlowError(`verifyEmailCode() requires step 'entering_code', current step is '${this._authState.step}'`);
+      throw new ChettaPayFlowError(
+        `verifyEmailCode() requires step 'entering_code', current step is '${this._authState.step}'`,
+      );
     }
     const state = this._authState;
     const clientSessionId =
@@ -1486,7 +1488,7 @@ export class PollarClient {
    * "Smart Wallet" login: runs the passkey (WebAuthn) `get()` ceremony for a
    * returning user and signs them in. Use {@link createSmartWallet} for a new
    * user. Requires the `passkey` ceremony to be configured (e.g. via
-   * `@pollar/react`).
+   * `@chettapay/react`).
    */
   loginSmartWallet(): void {
     if (!isClientRuntime) {
@@ -1501,7 +1503,7 @@ export class PollarClient {
    * "Smart Wallet" registration: runs the passkey (WebAuthn) `create()` ceremony
    * for a new user and deploys a sponsored smart-account C-address. Use
    * {@link loginSmartWallet} for a returning user. Requires the `passkey`
-   * ceremony to be configured (e.g. via `@pollar/react`).
+   * ceremony to be configured (e.g. via `@chettapay/react`).
    */
   createSmartWallet(): void {
     if (!isClientRuntime) {
@@ -1517,7 +1519,7 @@ export class PollarClient {
   /**
    * Fills in the passkey ceremony/signer when they were not configured at
    * construction. Called by the UI layer that knows the platform ceremony
-   * (`@pollar/react` on web); core stays platform-agnostic and ships no
+   * (`@chettapay/react` on web); core stays platform-agnostic and ships no
    * WebAuthn implementation of its own, so React Native can keep injecting its
    * native provider through the constructor.
    *
@@ -1560,7 +1562,7 @@ export class PollarClient {
       warnServerSide('logout');
       return;
     }
-    this._log.info('[PollarClient] Logout requested', { everywhere: !!options.everywhere });
+    this._log.info('[ChettaPayClient] Logout requested', { everywhere: !!options.everywhere });
 
     // Abort any login still in flight FIRST. Without this, a /auth/login
     // response landing after the logout re-ran `_storeSession` and resurrected
@@ -1573,7 +1575,7 @@ export class PollarClient {
     this._loginController = null;
     // Snapshot the session identity AFTER that abort: from here on the whole
     // teardown is guarded on it. `logout()` awaits a network call and an adapter
-    // disconnect, and consumers routinely do NOT await it (`@pollar/react` fires
+    // disconnect, and consumers routinely do NOT await it (`@chettapay/react` fires
     // it from the login modal and the wallet button and immediately offers the
     // login UI), so a complete new login can land inside that window - the abort
     // above only cancels a login that was already running. Without the guard the
@@ -1588,7 +1590,7 @@ export class PollarClient {
           body: options.everywhere ? { everywhere: true } : {},
         });
       } catch (err) {
-        this._log.warn('[PollarClient] Server logout failed (continuing with local clear)', err);
+        this._log.warn('[ChettaPayClient] Server logout failed (continuing with local clear)', err);
       }
     }
 
@@ -1604,14 +1606,14 @@ export class PollarClient {
     // break external signing. When superseded, the old provider session is
     // left alone: it is either in use by the new login or benign to keep.
     if (this._destroyed || this._sessionGeneration !== gen) {
-      this._log.info('[PollarClient] Logout superseded by a newer session; leaving it in place');
+      this._log.info('[ChettaPayClient] Logout superseded by a newer session; leaving it in place');
       return;
     }
 
     // Tear down the active wallet adapter's own provider session (e.g. Privy)
     // on an explicit logout. `_clearSession()` only drops the in-memory adapter
     // reference; without this, the provider session persists across a reload and
-    // the auto-login effect in `@pollar/react` (which subscribes to
+    // the auto-login effect in `@chettapay/react` (which subscribes to
     // `onProviderAuthChange`) silently re-authenticates the user. Only done here,
     // in the user-initiated logout path - not inside `_clearSession()`, which
     // also runs on transient refresh/resume failures where the provider session
@@ -1621,13 +1623,13 @@ export class PollarClient {
       try {
         await adapter.disconnect();
       } catch (err) {
-        this._log.warn('[PollarClient] Wallet adapter disconnect during logout failed', err);
+        this._log.warn('[ChettaPayClient] Wallet adapter disconnect during logout failed', err);
       }
       // Re-check after the disconnect await too: a login that completed during
       // it owns the state from here on (its own storeSession already replaced
       // the row), so the clear + key rotation below are no longer ours to run.
       if (this._destroyed || this._sessionGeneration !== gen) {
-        this._log.info('[PollarClient] Logout superseded during adapter disconnect; leaving the new session in place');
+        this._log.info('[ChettaPayClient] Logout superseded during adapter disconnect; leaving the new session in place');
         return;
       }
     }
@@ -1636,7 +1638,7 @@ export class PollarClient {
     try {
       droppedOwnRow = await this._clearSession();
     } catch (err) {
-      this._log.warn('[PollarClient] Local logout cleanup failed', err);
+      this._log.warn('[ChettaPayClient] Local logout cleanup failed', err);
     }
 
     // Rotate the DPoP keypair ONLY here, on the user-initiated logout - not in
@@ -1646,7 +1648,7 @@ export class PollarClient {
     // user is done with this identity, so fresh key hygiene wins.
     //
     // Gated on actually having dropped our own row, for the same reason that
-    // removal is: the keypair record (`pollar-keys/<apiKeyHash>`) is shared by
+    // removal is: the keypair record (`chettapay-keys/<apiKeyHash>`) is shared by
     // every document on the origin, and it is MORE shared than the session row,
     // not less. A client whose session was already superseded must not destroy
     // the key the current session is bound to - that session would survive in
@@ -1656,7 +1658,7 @@ export class PollarClient {
     try {
       await this._keyManager.reset();
     } catch (err) {
-      this._log.warn('[PollarClient] KeyManager reset failed during logout', err);
+      this._log.warn('[ChettaPayClient] KeyManager reset failed during logout', err);
     }
   }
 
@@ -1676,11 +1678,11 @@ export class PollarClient {
       return [];
     }
     if (!this._session?.token?.accessToken) {
-      throw new Error('[PollarClient] listSessions requires an authenticated session');
+      throw new Error('[ChettaPayClient] listSessions requires an authenticated session');
     }
     const { data, error } = await this._api.GET('/auth/sessions');
     if (error || !data?.success) {
-      throw new Error('[PollarClient] Failed to list sessions');
+      throw new Error('[ChettaPayClient] Failed to list sessions');
     }
     return data.content.sessions;
   }
@@ -1725,13 +1727,13 @@ export class PollarClient {
       return;
     }
     if (!this._session?.token?.accessToken) {
-      throw new Error('[PollarClient] revokeSession requires an authenticated session');
+      throw new Error('[ChettaPayClient] revokeSession requires an authenticated session');
     }
     const { error } = await this._api.DELETE('/auth/sessions/{familyId}', {
       params: { path: { familyId } },
     });
     if (error) {
-      throw new Error('[PollarClient] Failed to revoke session');
+      throw new Error('[ChettaPayClient] Failed to revoke session');
     }
   }
 
@@ -1747,10 +1749,10 @@ export class PollarClient {
 
   /**
    * The client's level-gated logger (built from `logLevel` / `logger`). Exposed
-   * so the runtime layer (`@pollar/react`) can route its own logs through the
+   * so the runtime layer (`@chettapay/react`) can route its own logs through the
    * same level and sink instead of calling `console` directly.
    */
-  getLogger(): PollarLogger {
+  getLogger(): ChettaPayLogger {
     return this._log;
   }
 
@@ -1965,7 +1967,7 @@ export class PollarClient {
       params: { path: { publicKey }, query: { network: network ?? this.getNetwork() } },
     });
     if (error || !data?.success || !data.content) {
-      throw new Error('[PollarClient] Failed to load wallet balance');
+      throw new Error('[ChettaPayClient] Failed to load wallet balance');
     }
     return data.content;
   }
@@ -2211,7 +2213,7 @@ export class PollarClient {
       this._setTransactionState({ step: 'error', phase: 'building', ...(details && { details }) });
       return { status: 'error', ...(details && { details }) };
     } catch (err) {
-      this._log.error('[PollarClient] buildTx failed', err);
+      this._log.error('[ChettaPayClient] buildTx failed', err);
       this._setTransactionState({ step: 'error', phase: 'building' });
       return { status: 'error' };
     }
@@ -2251,7 +2253,7 @@ export class PollarClient {
     const ok = /^https:\/\//i.test(meta.iconUrl) || /^data:image\//i.test(meta.iconUrl);
     if (ok) return meta;
     this._log.warn(
-      `[PollarClient] Dropped wallet adapter '${meta.label}' iconUrl with a disallowed scheme (use https: or data:image/).`,
+      `[ChettaPayClient] Dropped wallet adapter '${meta.label}' iconUrl with a disallowed scheme (use https: or data:image/).`,
     );
     // Omit iconUrl entirely (exactOptionalPropertyTypes forbids `iconUrl: undefined`).
     const { iconUrl: _dropped, ...safe } = meta;
@@ -2297,7 +2299,7 @@ export class PollarClient {
    * `getWallet` and `getWallets` so the two can never disagree about how a
    * given custody is presented.
    */
-  private _toWalletInfo(w: PollarPersistedWallet | undefined, opts: { includeChain: boolean }): WalletInfo | null {
+  private _toWalletInfo(w: ChettaPayPersistedWallet | undefined, opts: { includeChain: boolean }): WalletInfo | null {
     if (!w || !w.address) return null;
     // Wallet-status extras carried on every custody (see WalletInfo).
     const extra = {
@@ -2374,7 +2376,7 @@ export class PollarClient {
       // Stellar XDR signing. A non-Stellar adapter never reaches the /tx pipeline
       // (Solana uses the atomic transfer), so a missing method is a bug, not flow.
       if (!this._walletAdapter.signTransaction) {
-        throw new Error(`[PollarClient] wallet adapter "${this._walletAdapter.type}" cannot sign a Stellar transaction`);
+        throw new Error(`[ChettaPayClient] wallet adapter "${this._walletAdapter.type}" cannot sign a Stellar transaction`);
       }
       try {
         const { signedTxXdr } = await this._walletAdapter.signTransaction(unsignedXdr, signOpts);
@@ -2467,7 +2469,7 @@ export class PollarClient {
       // Soroban auth-entry signing is Stellar-only; a non-Stellar adapter never
       // reaches this path.
       if (!this._walletAdapter.signAuthEntry) {
-        throw new Error(`[PollarClient] wallet adapter "${this._walletAdapter.type}" cannot sign a Soroban auth entry`);
+        throw new Error(`[ChettaPayClient] wallet adapter "${this._walletAdapter.type}" cannot sign a Soroban auth entry`);
       }
       try {
         const { signedAuthEntry } = await this._walletAdapter.signAuthEntry(entryXdr, {
@@ -2697,7 +2699,7 @@ export class PollarClient {
       // A logout / new login landed mid-poll; this tx belongs to the old
       // session. Stop touching state and report the last known status.
       if (this._sessionGeneration !== gen) return { status: 'pending', hash, ...outcomeExtra };
-      let status: Awaited<ReturnType<PollarClient['getTxStatus']>>;
+      let status: Awaited<ReturnType<ChettaPayClient['getTxStatus']>>;
       try {
         status = await this.getTxStatus(hash);
       } catch {
@@ -2767,7 +2769,7 @@ export class PollarClient {
         },
         // Embedded submit does server-side work (wallet-service sign + network
         // submit) that can exceed the 10s default; give it the longer budget.
-        headers: { 'x-pollar-timeout-ms': String(this._submitTimeoutMs) },
+        headers: { 'x-chettapay-timeout-ms': String(this._submitTimeoutMs) },
       });
       if (!error && data?.success && data.content) {
         const { hash, status: backendStatus, resultCode } = data.content;
@@ -2883,7 +2885,7 @@ export class PollarClient {
     try {
       const { data, error } = await this._api.POST('/tx/sign-and-send', {
         body,
-        headers: { 'x-pollar-timeout-ms': String(this._submitTimeoutMs) },
+        headers: { 'x-chettapay-timeout-ms': String(this._submitTimeoutMs) },
       });
       if (!error && data?.success && data.content?.hash) {
         const {
@@ -3005,7 +3007,7 @@ export class PollarClient {
         } as TxBuildBody & { idempotencyKey?: string; waitForConfirmation?: boolean },
         // Atomic build + sign + submit is the slowest tx call; give it the
         // longer submit budget so a real success isn't cut at the 10s default.
-        headers: { 'x-pollar-timeout-ms': String(this._submitTimeoutMs) },
+        headers: { 'x-chettapay-timeout-ms': String(this._submitTimeoutMs) },
       });
       if (!error && data?.success && data.content) {
         // This endpoint is multichain now, so its 200 is a union and only the
@@ -3096,7 +3098,7 @@ export class PollarClient {
           waitForConfirmation: false,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the generated body type is a union; this branch is the Solana member
         } as any,
-        headers: { 'x-pollar-timeout-ms': String(this._submitTimeoutMs) },
+        headers: { 'x-chettapay-timeout-ms': String(this._submitTimeoutMs) },
       });
 
       if (!error && data?.success && data.content) {
@@ -3229,7 +3231,7 @@ export class PollarClient {
           address,
           smart: { entryXdr: smart.entryXdr, funcXdr: smart.funcXdr, assertion },
         },
-        headers: { 'x-pollar-timeout-ms': String(this._submitTimeoutMs) },
+        headers: { 'x-chettapay-timeout-ms': String(this._submitTimeoutMs) },
       });
       if (!error && data?.success && data.content) {
         const { hash, status: backendStatus, resultCode } = data.content;
@@ -3657,7 +3659,7 @@ export class PollarClient {
       setAuthState: (state: AuthState) => {
         if (!signal.aborted) this._setAuthState(state);
       },
-      storeSession: (session: PollarApplicationConfigContent, boundDpopJkt?: string) =>
+      storeSession: (session: ChettaPayApplicationConfigContent, boundDpopJkt?: string) =>
         signal.aborted ? Promise.resolve() : this._storeSession(session, boundDpopJkt),
       clearSession: async () => {
         if (!signal.aborted) await this._clearSession();
@@ -3676,13 +3678,13 @@ export class PollarClient {
           // `undefined` (method not implemented) intentionally does not warn.
           if ((await this._keyManager.ensurePersisted?.()) === false) {
             this._log.warn(
-              '[PollarClient] The DPoP keypair could not be persisted (IndexedDB/secure storage ' +
+              '[ChettaPayClient] The DPoP keypair could not be persisted (IndexedDB/secure storage ' +
                 'unavailable?). Login will work, but the session will NOT survive a reload — the ' +
                 'user will be logged out on the next page load.',
             );
           }
         } catch (err) {
-          this._log.warn('[PollarClient] DPoP keypair persistence check failed', err);
+          this._log.warn('[ChettaPayClient] DPoP keypair persistence check failed', err);
         }
         return jwk;
       },
@@ -3699,7 +3701,7 @@ export class PollarClient {
           // The adapter is set in memory and works for this session; persistence
           // is best-effort (the wallet just won't auto-restore on next cold
           // start). Never let a storage failure break the login.
-          this._log.warn('[PollarClient] Could not persist wallet type', err);
+          this._log.warn('[ChettaPayClient] Could not persist wallet type', err);
         }
       },
       ...(this._passkey ? { passkey: this._passkey } : {}),
@@ -3713,12 +3715,12 @@ export class PollarClient {
     // login). cancelLogin already set the right state.
     if (signal?.aborted) return;
     if (error instanceof Error && error.name === 'AbortError') {
-      this._log.debug('[PollarClient] Login cancelled');
+      this._log.debug('[ChettaPayClient] Login cancelled');
       this._setAuthState({ step: 'idle' });
       return;
     }
     if (error instanceof Error && (error as { code?: string }).code === AUTH_ERROR_CODES.WALLET_RESOLVER_TIMEOUT) {
-      this._log.error('[PollarClient] Wallet resolver timeout', error.message);
+      this._log.error('[ChettaPayClient] Wallet resolver timeout', error.message);
       this._setAuthState({
         step: 'error',
         previousStep: this._authState.step,
@@ -3727,7 +3729,7 @@ export class PollarClient {
       });
       return;
     }
-    this._log.error('[PollarClient] Unexpected error in auth flow', error);
+    this._log.error('[ChettaPayClient] Unexpected error in auth flow', error);
     this._setAuthState({
       step: 'error',
       previousStep: this._authState.step,
@@ -3786,7 +3788,7 @@ export class PollarClient {
         }
         if (currentJkt !== null && currentJkt !== this._session.dpopJkt) {
           this._log.error(
-            '[PollarClient] Stored session is bound to a DPoP key that no longer exists locally ' +
+            '[ChettaPayClient] Stored session is bound to a DPoP key that no longer exists locally ' +
               '(key persistence failed or the key was reset). The session cannot be resumed or ' +
               'refreshed — clearing it. The user must log in again.',
             { expectedJkt: this._session.dpopJkt, currentJkt },
@@ -3810,7 +3812,7 @@ export class PollarClient {
         // valid; signing stays unavailable until the user reconnects the wallet.
         const restored = this._walletAdapters.get(storedType);
         if (restored) this._walletAdapter = restored;
-        else this._log.warn('[PollarClient] No registered wallet adapter for stored id', { id: storedType });
+        else this._log.warn('[ChettaPayClient] No registered wallet adapter for stored id', { id: storedType });
       }
 
       // Cross-tab token rotation of the SAME already-verified session: another
@@ -3831,7 +3833,7 @@ export class PollarClient {
         !!prevSession.clientSessionId &&
         prevSession.clientSessionId === this._session.clientSessionId;
       if (isSameVerifiedSession) {
-        this._log.info('[PollarClient] Session token rotated (cross-tab); keeping verified');
+        this._log.info('[ChettaPayClient] Session token rotated (cross-tab); keeping verified');
         this._setAuthState({ step: 'authenticated', session: this._session, verified: true });
         this._scheduleNextRefresh();
         return;
@@ -3845,7 +3847,7 @@ export class PollarClient {
       // `_doRefresh` already re-armed the proactive timer and, on failure, cleared
       // the session (so we just return).
       if (this._session.token.expiresAt * 1000 < Date.now()) {
-        this._log.info('[PollarClient] Restored session has an expired access token; refreshing before surfacing it');
+        this._log.info('[ChettaPayClient] Restored session has an expired access token; refreshing before surfacing it');
         try {
           await this.refresh();
         } catch {
@@ -3857,11 +3859,11 @@ export class PollarClient {
         return;
       }
 
-      this._log.info('[PollarClient] Session restored from storage');
+      this._log.info('[ChettaPayClient] Session restored from storage');
       // Emit through the setter so listeners that subscribe after
       // _initialize() resolves still get notified. A direct assignment to
       // _authState would race past any onAuthStateChange subscription that
-      // hasn't run yet (e.g. PollarProvider's useEffect).
+      // hasn't run yet (e.g. ChettaPayProvider's useEffect).
       // Optimistic: storage is trusted enough to show `authenticated`, but the
       // server hasn't confirmed the session is still alive (it may have been
       // revoked elsewhere), so `verified: false`.
@@ -3872,7 +3874,7 @@ export class PollarClient {
       // UI never blocks on a network round-trip at startup.
       void this._resume();
     } else {
-      this._log.info('[PollarClient] No session in storage');
+      this._log.info('[ChettaPayClient] No session in storage');
       // Another tab (or this one) wiped the session key. If we were
       // authenticated, propagate the logout: tear down in-memory state, the
       // refresh timer, and emit `idle` (the DPoP keypair survives - see
@@ -3956,7 +3958,7 @@ export class PollarClient {
         return;
       }
 
-      const content = (data as { content?: PollarUserProfile }).content;
+      const content = (data as { content?: ChettaPayUserProfile }).content;
       if (!content) return;
       this._profile = { ...content };
       this._resetResumeBackoff();
@@ -3967,14 +3969,14 @@ export class PollarClient {
       // and retry (with backoff) when the app next becomes visible or on the
       // next authed request.
       this._noteResumeFailure();
-      this._log.warn('[PollarClient] resume failed (network); will retry', err);
+      this._log.warn('[ChettaPayClient] resume failed (network); will retry', err);
     } finally {
       if (this._resumeController === controller) this._resumeController = null;
     }
   }
 
-  private async _storeSession(session: PollarApplicationConfigContent, boundDpopJkt?: string): Promise<void> {
-    this._log.info('[PollarClient] Session stored');
+  private async _storeSession(session: ChettaPayApplicationConfigContent, boundDpopJkt?: string): Promise<void> {
+    this._log.info('[ChettaPayClient] Session stored');
 
     // The wire response still carries the legacy `publicKey` alias (kept for
     // older SDKs); the persisted session standardizes on `address` only.
@@ -3984,7 +3986,7 @@ export class PollarClient {
     // Applied identically to `wallet` and to every entry of `wallets[]` so the
     // back-compat field and the array can't end up describing the same wallet
     // differently.
-    const toPersistedWallet = (w: PollarApplicationConfigContent['wallet']): PollarPersistedWallet => ({
+    const toPersistedWallet = (w: ChettaPayApplicationConfigContent['wallet']): ChettaPayPersistedWallet => ({
       type: w.type,
       // `provider` (the login method) was added to the wire after the generated
       // OpenAPI types were last cut, so read it defensively until they're regen'd.
@@ -4014,7 +4016,7 @@ export class PollarClient {
     // fallback), omit the field and the restore-time check is skipped.
     const dpopJkt = boundDpopJkt ?? (await this._keyManager.getThumbprint().catch(() => null));
 
-    const persisted: PollarPersistedSession = {
+    const persisted: ChettaPayPersistedSession = {
       clientSessionId: session.clientSessionId,
       userId: session.userId ?? null,
       status: session.status,
@@ -4083,7 +4085,7 @@ export class PollarClient {
    * row is not entitled to destroy the key either.
    */
   private async _clearSession(): Promise<boolean> {
-    this._log.info('[PollarClient] Session cleared');
+    this._log.info('[ChettaPayClient] Session cleared');
     // Identify the session being torn down BEFORE dropping it: the persisted
     // row is shared by every document (and every client instance) on this
     // origin using this API key, so it may only be removed by the client that
@@ -4129,7 +4131,7 @@ export class PollarClient {
     // the shared row. They never see the `storage` event that removal emits -
     // browsers fire it at OTHER documents only - so a second instance in this
     // document would otherwise keep its session and re-persist the row a moment
-    // later. (`PollarProvider` reuses one client per config under StrictMode,
+    // later. (`ChettaPayProvider` reuses one client per config under StrictMode,
     // but a consumer can still hold two clients, and non-React callers always
     // could.) This mirrors the cross-document handler.
     //
@@ -4149,8 +4151,8 @@ export class PollarClient {
    */
   private _onSiblingSessionCleared(): void {
     if (this._destroyed || !this._session) return;
-    this._log.info('[PollarClient] Session cleared by another client in this document');
-    void this._clearSession().catch((err) => this._log.error('[PollarClient] Same-document logout failed', err));
+    this._log.info('[ChettaPayClient] Session cleared by another client in this document');
+    void this._clearSession().catch((err) => this._log.error('[ChettaPayClient] Same-document logout failed', err));
   }
 
   /** Record a session this instance held; bounded so a long-lived SPA cannot grow it unboundedly. */
@@ -4164,7 +4166,7 @@ export class PollarClient {
   }
 
   /**
-   * Single writer for the shared `pollar:<apiKeyHash>:session` row.
+   * Single writer for the shared `chettapay:<apiKeyHash>:session` row.
    *
    * Every document on the origin - and every client instance inside one
    * document - writes that same row, and each mutation is preceded by an await
@@ -4195,14 +4197,14 @@ export class PollarClient {
    */
   private async _persistSession(
     gen: number,
-    session: PollarPersistedSession | null,
+    session: ChettaPayPersistedSession | null,
     ownedId: string | null = null,
   ): Promise<boolean> {
     const run = this._persistQueue.then(async (): Promise<boolean> => {
       // `destroy()` does not bump the generation, so check it explicitly: a
       // write still queued when the client is torn down must not land.
       if (this._destroyed || this._sessionGeneration !== gen) {
-        this._log.debug('[PollarClient] Session write dropped: superseded before it reached storage');
+        this._log.debug('[ChettaPayClient] Session write dropped: superseded before it reached storage');
         return false;
       }
       if (session) {
@@ -4231,7 +4233,7 @@ export class PollarClient {
         owns = true;
       }
       if (!owns) {
-        this._log.debug('[PollarClient] Session row now belongs to a newer session; leaving shared storage untouched');
+        this._log.debug('[ChettaPayClient] Session row now belongs to a newer session; leaving shared storage untouched');
         return false;
       }
       await removeStorage(this._storage, this.apiKeyHash);
@@ -4255,17 +4257,17 @@ export class PollarClient {
   private _setNetworkState(next: NetworkState): void {
     this._networkState = next;
     const label = next.step === 'connected' ? next.network : next.step;
-    this._log.debug(`[PollarClient] network:${label}`);
+    this._log.debug(`[ChettaPayClient] network:${label}`);
     for (const cb of this._networkStateListeners) cb(next);
   }
 
   private _setAuthState(next: AuthState): void {
     this._authState = next;
-    this._log.debug(`[PollarClient] auth:${next.step}`);
+    this._log.debug(`[ChettaPayClient] auth:${next.step}`);
     // Dispatch a clone: `next.session` is the live `_session` the middleware
     // signs with, so a subscriber that mutates `state.session.token` would
     // otherwise corrupt it. `getAuthState()` already clones; this makes the
-    // push path symmetric. (`@pollar/react` dedupes by value, so a fresh object
+    // push path symmetric. (`@chettapay/react` dedupes by value, so a fresh object
     // per emission is safe - verified no useSyncExternalStore / ref-dedupe.)
     const snapshot = this._cloneAuthState(next);
     for (const cb of this._authStateListeners) cb(snapshot);
@@ -4276,7 +4278,7 @@ export class PollarClient {
     // (new login) after it started - see `_txStartGen`.
     if (this._sessionGeneration !== this._txStartGen) return;
     this._transactionState = next;
-    this._log.debug(`[PollarClient] transaction:${next.step}`);
+    this._log.debug(`[ChettaPayClient] transaction:${next.step}`);
     for (const cb of this._transactionStateListeners) cb(next);
   }
 

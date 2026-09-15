@@ -1,11 +1,11 @@
-.pollar-github-button {
+.chettapay-github-button {
   -webkit-appearance: none;
   appearance: none;
-  background-color: var(--pollar-input-bg);
-  border: 1px solid var(--pollar-border);
-  border-radius: var(--pollar-buttons-border-radius, 6px);
+  background-color: var(--chettapay-input-bg);
+  border: 1px solid var(--chettapay-border);
+  border-radius: var(--chettapay-buttons-border-radius, 6px);
   box-sizing: border-box;
-  color: var(--pollar-text);
+  color: var(--chettapay-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -14,7 +14,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 1rem;
   font-weight: 500;
-  height: var(--pollar-buttons-height, 44px);
+  height: var(--chettapay-buttons-height, 44px);
   letter-spacing: normal;
   outline: none;
   overflow: hidden;
@@ -27,34 +27,34 @@
   user-select: none;
 }
 
-.pollar-github-button-icon {
+.chettapay-github-button-icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
 }
 
-.pollar-github-button-contents {
+.chettapay-github-button-contents {
   flex-grow: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pollar-github-button:not(:disabled):hover {
-  border-color: var(--pollar-accent);
-  color: var(--pollar-accent);
+.chettapay-github-button:not(:disabled):hover {
+  border-color: var(--chettapay-accent);
+  color: var(--chettapay-accent);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.pollar-github-button:not(:disabled):active {
+.chettapay-github-button:not(:disabled):active {
   transform: scale(0.99);
 }
 
-.pollar-github-button:disabled {
+.chettapay-github-button:disabled {
   cursor: default;
   opacity: 0.5;
 }
 
-.pollar-github-button:disabled .pollar-github-button-icon,
-.pollar-github-button:disabled .pollar-github-button-contents {
+.chettapay-github-button:disabled .chettapay-github-button-icon,
+.chettapay-github-button:disabled .chettapay-github-button-contents {
   opacity: 38%;
 }

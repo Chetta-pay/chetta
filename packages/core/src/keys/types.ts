@@ -59,7 +59,7 @@ export interface KeyManager {
    * (re-writing it if needed) and will therefore survive a reload/relaunch.
    * Returns `false` when persistence is unavailable (e.g. IndexedDB blocked),
    * meaning any DPoP-bound token minted against this key will stop verifying
-   * on the next cold start. `PollarClient` calls this right before binding a
+   * on the next cold start. `ChettaPayClient` calls this right before binding a
    * login to the key so it can warn loudly instead of failing silently later.
    * Optional so custom `KeyManager` implementations remain source-compatible.
    */
@@ -72,7 +72,7 @@ export interface KeyManager {
    * rotates it (logout -> fresh login), this instance's cached copy is stale
    * and would sign proofs the server rejects - and would trip the restore-time
    * `dpopJkt` binding check against the session the other tab just wrote.
-   * `PollarClient` calls this on session teardown and before concluding that
+   * `ChettaPayClient` calls this on session teardown and before concluding that
    * a binding mismatch means the key is really lost. Optional so custom
    * `KeyManager` implementations remain source-compatible.
    */

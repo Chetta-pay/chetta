@@ -1,4 +1,4 @@
-import { AUTH_ERROR_CODES, PollarAuthProvider } from '../../types';
+import { AUTH_ERROR_CODES, ChettaPayAuthProvider } from '../../types';
 import { initEmailSession, sendEmailCode, verifyAndAuthenticate } from './emailFlow';
 
 /**
@@ -6,7 +6,7 @@ import { initEmailSession, sendEmailCode, verifyAndAuthenticate } from './emailF
  * status-poll dance lives in `ctx.startHostedOAuth`, so the provider is a
  * one-liner - and any custom provider can reuse the same helper.
  */
-export function oauthProvider(provider: 'google' | 'github'): PollarAuthProvider {
+export function oauthProvider(provider: 'google' | 'github'): ChettaPayAuthProvider {
   return {
     id: provider,
     login: (ctx) => ctx.startHostedOAuth(provider),
@@ -17,10 +17,10 @@ export function oauthProvider(provider: 'google' | 'github'): PollarAuthProvider
  * Built-in email OTP provider. `login` is the one-shot entry point used by
  * `login({ provider: 'email', email })` (create session + send the first code).
  * The interactive continuation (resend / verify) is exposed both as the
- * dedicated `PollarClient` methods and here as `actions`, so a generic consumer
+ * dedicated `ChettaPayClient` methods and here as `actions`, so a generic consumer
  * can drive it through `providerAction('email', ...)` too.
  */
-export function emailProvider(): PollarAuthProvider {
+export function emailProvider(): ChettaPayAuthProvider {
   return {
     id: 'email',
     login: async (ctx, options) => {

@@ -1,0 +1,13 @@
+{
+  "title": "SDK Reference",
+  "description": "Full reference for @chettapay/react, @chettapay/core, wallet adapters, the Server API, webhooks, error codes, and the MCP Gateway.",
+  "pages": [
+    "chettapay-react",
+    "chettapay-core",
+    "wallet-adapters",
+    "server-api",
+    "webhooks",
+    "error-codes",
+    "mcp-gateway"
+  ]
+}

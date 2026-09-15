@@ -51,7 +51,7 @@ export function base64urlDecode(input: string): Uint8Array {
     const c3 = i + 2 < clean.length ? REVERSE.get(clean[i + 2] as string) : undefined;
     const c4 = i + 3 < clean.length ? REVERSE.get(clean[i + 3] as string) : undefined;
     if (c1 === undefined || c2 === undefined) {
-      throw new Error('[PollarClient] Invalid base64url input');
+      throw new Error('[ChettaPayClient] Invalid base64url input');
     }
     out[byteIdx++] = (c1 << 2) | (c2 >> 4);
     if (c3 !== undefined) {

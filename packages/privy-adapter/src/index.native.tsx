@@ -2,14 +2,14 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import { PrivyProvider, useLoginWithEmail, useLoginWithOAuth, usePrivy } from '@privy-io/expo';
 import { useCreateWallet, useSignRawHash } from '@privy-io/expo/extended-chains';
 import type { User } from '@privy-io/api-types';
-import type { InteractiveAuthAdapter } from '@pollar/core';
-import type { PollarPrivyConfig } from './config';
+import type { InteractiveAuthAdapter } from '@chettapay/core';
+import type { ChettaPayPrivyConfig } from './config';
 import type { PrivyRuntime } from './runtime';
 import { getPrivyHandle } from './factory';
 import { log } from './log';
 
 export { createPrivyAdapter } from './factory';
-export type { PollarPrivyConfig, PollarPrivyAppearance, PrivyLoginMethod } from './config';
+export type { ChettaPayPrivyConfig, ChettaPayPrivyAppearance, PrivyLoginMethod } from './config';
 export type { AuthOption, InteractiveAuthAdapter, PrivyRuntime } from './runtime';
 export { PrivyAdapterUnsupportedError } from './environment';
 
@@ -110,13 +110,13 @@ function PrivyRuntimeBridge({ adapter }: BridgeProps) {
 interface PrivyAdapterProviderProps {
   /** The adapter returned by {@link createPrivyAdapter}. */
   adapter: InteractiveAuthAdapter;
-  config?: PollarPrivyConfig;
+  config?: ChettaPayPrivyConfig;
   children: ReactNode;
 }
 
 /**
  * Mounts `@privy-io/expo`'s `PrivyProvider` and the runtime bridge around your
- * app. Place it above `<PollarProvider>`. The `config` defaults to the one passed
+ * app. Place it above `<ChettaPayProvider>`. The `config` defaults to the one passed
  * to {@link createPrivyAdapter}; pass it again only to override.
  *
  * Your Expo app must have `@privy-io/expo`'s peer deps installed (including

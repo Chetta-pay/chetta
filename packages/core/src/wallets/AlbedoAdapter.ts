@@ -22,7 +22,7 @@ const TESTNET_PASSPHRASE = 'Test SDF Network ; September 2015';
 /**
  * Resolve the Albedo network for a signing call. Prefers the per-call options
  * the SDK passes (`networkPassphrase`, then `network`) so the signature is
- * produced on the network configured on `PollarClient`; falls back to the
+ * produced on the network configured on `ChettaPayClient`; falls back to the
  * network the adapter was constructed with when options carry nothing.
  */
 function albedoNetwork(
@@ -92,7 +92,7 @@ export class AlbedoAdapter implements WalletAdapter {
   async connect(): Promise<ConnectWalletResponse> {
     const url = new URL('https://albedo.link');
     url.searchParams.set('intent', 'public-key');
-    url.searchParams.set('app_name', 'Pollar');
+    url.searchParams.set('app_name', 'ChettaPay');
     url.searchParams.set('network', this.network);
     url.searchParams.set('callback', `${window.location.origin}/albedo-callback`);
     url.searchParams.set('origin', window.location.origin);
@@ -121,7 +121,7 @@ export class AlbedoAdapter implements WalletAdapter {
     const url = new URL('https://albedo.link');
     url.searchParams.set('intent', 'tx');
     url.searchParams.set('xdr', xdr);
-    url.searchParams.set('app_name', 'Pollar');
+    url.searchParams.set('app_name', 'ChettaPay');
     url.searchParams.set('network', albedoNetwork(options, this.network));
     url.searchParams.set('callback', `${window.location.origin}/albedo-callback`);
     url.searchParams.set('origin', window.location.origin);
@@ -140,7 +140,7 @@ export class AlbedoAdapter implements WalletAdapter {
     const url = new URL('https://albedo.link');
     url.searchParams.set('intent', 'sign-auth-entry');
     url.searchParams.set('xdr', entryXdr);
-    url.searchParams.set('app_name', 'Pollar');
+    url.searchParams.set('app_name', 'ChettaPay');
     // Honor the per-call network (the SDK now passes it) so a `setNetwork()`
     // after login isn't ignored; fall back to the construction-time network.
     url.searchParams.set('network', albedoNetwork(options, this.network));

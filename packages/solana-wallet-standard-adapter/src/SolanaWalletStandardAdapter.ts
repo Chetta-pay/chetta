@@ -7,7 +7,7 @@ import type {
   WalletAdapterMeta,
   WalletChain,
   WalletId,
-} from '@pollar/core';
+} from '@chettapay/core';
 import {
   SolanaSignIn,
   SolanaSignMessage,
@@ -33,15 +33,15 @@ function isSolanaChain(chain: string): boolean {
 
 /**
  * Wraps a Wallet Standard Solana wallet (Phantom, Solflare, Backpack, ...) so it can
- * back a Pollar external-wallet login. The Wallet Standard is the headless
+ * back a ChettaPay external-wallet login. The Wallet Standard is the headless
  * substrate `@solana/wallet-adapter` is built on, so this stays framework-agnostic
- * exactly like `@pollar/stellar-wallets-kit-adapter`.
+ * exactly like `@chettapay/stellar-wallets-kit-adapter`.
  *
  * The signing surface is Solana-native, NOT the Stellar `WalletAdapter` shape:
  * login is SIWS (`signIn`, a signed MESSAGE) rather than SEP-10 (a signed
  * transaction), and transactions are serialized Solana messages, not XDR. Once
- * `@pollar/core` grows a chain-aware adapter contract (see the design doc) this
- * slots into `PollarClientConfig.walletAdapters`.
+ * `@chettapay/core` grows a chain-aware adapter contract (see the design doc) this
+ * slots into `ChettaPayClientConfig.walletAdapters`.
  */
 export class SolanaWalletStandardAdapter implements WalletAdapter {
   readonly type: WalletId;
@@ -111,7 +111,7 @@ export class SolanaWalletStandardAdapter implements WalletAdapter {
     if (!output) throw new Error(`[SolanaWalletStandardAdapter] "${this.type}" returned no SIWS output`);
     this._account = output.account;
     // The Wallet Standard hands back readonly byte views; copy into real
-    // Uint8Arrays so `@pollar/core` (which base64-encodes them for the server)
+    // Uint8Arrays so `@chettapay/core` (which base64-encodes them for the server)
     // gets mutable, standard arrays.
     return {
       account: { address: output.account.address, publicKey: Uint8Array.from(output.account.publicKey) },
@@ -133,7 +133,7 @@ export class SolanaWalletStandardAdapter implements WalletAdapter {
 
   /**
    * Sign a serialized Solana transaction. Used by phase 2 (sponsored external
-   * transfers), where Pollar builds a durable-nonce transfer whose fee payer is
+   * transfers), where ChettaPay builds a durable-nonce transfer whose fee payer is
    * the app GAS wallet and the user signs their part here.
    */
   async signSolanaTransaction(transaction: Uint8Array, chain?: string): Promise<Uint8Array> {

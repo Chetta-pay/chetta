@@ -595,7 +595,7 @@ export interface paths {
         put?: never;
         /**
          * Authenticate via a custom external provider
-         * @description For custom login providers (Privy, Magic, …) that authenticate the user client-side and surface a Stellar wallet. Control is proven with the same SEP-10 counter-signed challenge (from /auth/wallet/challenge); Pollar needs nothing of the provider itself.
+         * @description For custom login providers (Privy, Magic, …) that authenticate the user client-side and surface a Stellar wallet. Control is proven with the same SEP-10 counter-signed challenge (from /auth/wallet/challenge); ChettaPay needs nothing of the provider itself.
          */
         post: operations["postAuthExternal"];
         delete?: never;
@@ -992,7 +992,7 @@ export interface paths {
         put?: never;
         /**
          * Create a charge
-         * @description Creates a Pollar Pay point-of-sale charge for one of the application branches. Reserves a pool wallet (the address the customer pays to) and returns the payment intent.
+         * @description Creates a ChettaPay Checkout point-of-sale charge for one of the application branches. Reserves a pool wallet (the address the customer pays to) and returns the payment intent.
          */
         post: operations["postCharges"];
         delete?: never;

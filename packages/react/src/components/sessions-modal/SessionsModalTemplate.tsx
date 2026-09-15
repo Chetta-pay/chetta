@@ -1,7 +1,7 @@
 'use client';
 
-import type { SessionInfo, SessionsState } from '@pollar/core';
-import { PollarModalFooter } from '../commons';
+import type { SessionInfo, SessionsState } from '@chettapay/core';
+import { ChettaPayModalFooter } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
 export type { SessionsState };
@@ -22,7 +22,7 @@ export interface SessionsModalTemplateProps {
 
 /**
  * Heuristic device label. Prefers the explicit `deviceLabel` set via
- * `PollarClientConfig`; falls back to a stripped User-Agent.
+ * `ChettaPayClientConfig`; falls back to a stripped User-Agent.
  */
 function describeDevice(s: SessionInfo): string {
   if (s.deviceLabel) return s.deviceLabel;
@@ -99,24 +99,24 @@ export function SessionsModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-sessions-modal"
+      className="chettapay-modal-card chettapay-sessions-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pollar-modal-header">
-        <h2 className="pollar-modal-title">Active sessions</h2>
-        <div className="pollar-modal-header-actions">
+      <div className="chettapay-modal-header">
+        <h2 className="chettapay-modal-title">Active sessions</h2>
+        <div className="chettapay-modal-header-actions">
           <button
             type="button"
-            className="pollar-modal-close"
+            className="chettapay-modal-close"
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Refresh"
             title="Refresh"
           >
             <svg
-              className={isLoading ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+              className={isLoading ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -132,7 +132,7 @@ export function SessionsModalTemplate({
               />
             </svg>
           </button>
-          <button className="pollar-modal-close" onClick={onClose} aria-label="Close">
+          <button className="chettapay-modal-close" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -140,24 +140,24 @@ export function SessionsModalTemplate({
         </div>
       </div>
 
-      <div className="pollar-sessions-list">
+      <div className="chettapay-sessions-list">
         {(state.step === 'idle' || isLoading) && (
-          <div className="pollar-loading-block">
-            <div className="pollar-spinner" />
+          <div className="chettapay-loading-block">
+            <div className="chettapay-spinner" />
             <span>Loading…</span>
           </div>
         )}
-        {state.step === 'error' && <div className="pollar-modal-empty">{state.message}</div>}
-        {state.step === 'loaded' && sessions.length === 0 && <div className="pollar-modal-empty">No active sessions.</div>}
+        {state.step === 'error' && <div className="chettapay-modal-empty">{state.message}</div>}
+        {state.step === 'loaded' && sessions.length === 0 && <div className="chettapay-modal-empty">No active sessions.</div>}
         {sessions.map((s) => {
           const isRevoking = revokingFamilyId === s.familyId;
           return (
-            <div key={s.familyId} className="pollar-sessions-item" data-current={s.current || undefined}>
-              <div className="pollar-sessions-item-main">
-                <span className="pollar-sessions-item-device">{describeDevice(s)}</span>
-                {s.current && <span className="pollar-sessions-item-badge">This device</span>}
+            <div key={s.familyId} className="chettapay-sessions-item" data-current={s.current || undefined}>
+              <div className="chettapay-sessions-item-main">
+                <span className="chettapay-sessions-item-device">{describeDevice(s)}</span>
+                {s.current && <span className="chettapay-sessions-item-badge">This device</span>}
               </div>
-              <div className="pollar-sessions-item-meta">
+              <div className="chettapay-sessions-item-meta">
                 <span>Last used {formatRelative(s.lastUsedAt ?? s.createdAt)}</span>
                 {s.ipHash && (
                   <>
@@ -168,13 +168,13 @@ export function SessionsModalTemplate({
               </div>
               {!s.current && (
                 <button
-                  className="pollar-sessions-item-revoke"
+                  className="chettapay-sessions-item-revoke"
                   onClick={() => onRevoke(s.familyId)}
                   disabled={isRevoking || signingOutEverywhere}
                 >
                   {isRevoking ? (
                     <>
-                      <span className="pollar-spinner pollar-spinner-sm pollar-spinner-current" />
+                      <span className="chettapay-spinner chettapay-spinner-sm chettapay-spinner-current" />
                       Revoking…
                     </>
                   ) : (
@@ -188,16 +188,16 @@ export function SessionsModalTemplate({
       </div>
 
       {state.step === 'loaded' && sessions.length > 0 && (
-        <div className="pollar-sessions-actions">
+        <div className="chettapay-sessions-actions">
           <button
-            className="pollar-sessions-logout-all"
+            className="chettapay-sessions-logout-all"
             onClick={onLogoutEverywhere}
             disabled={signingOutEverywhere || otherCount === 0}
             title={otherCount === 0 ? 'No other devices to sign out' : undefined}
           >
             {signingOutEverywhere ? (
               <>
-                <span className="pollar-spinner pollar-spinner-sm pollar-spinner-current" />
+                <span className="chettapay-spinner chettapay-spinner-sm chettapay-spinner-current" />
                 Signing out…
               </>
             ) : (
@@ -207,7 +207,7 @@ export function SessionsModalTemplate({
         </div>
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

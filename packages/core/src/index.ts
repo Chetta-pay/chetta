@@ -1,5 +1,5 @@
 // Web/Node/Workers entry point. Registers a `WebCryptoKeyManager`-only
-// factory at module load so `PollarClient` resolves the WebCrypto-backed
+// factory at module load so `ChettaPayClient` resolves the WebCrypto-backed
 // manager without importing `NobleKeyManager` (and transitively
 // `@noble/curves`). Bundlers targeting browsers pick this entry via the
 // default `"import"` / `"require"` conditions in `package.json#exports` and

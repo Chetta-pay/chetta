@@ -1,20 +1,20 @@
-import { PollarApplicationConfigContent, PollarClientConfig, PollarLoginOptions, pollarPaths } from '@pollar/core';
+import { ChettaPayApplicationConfigContent, ChettaPayClientConfig, ChettaPayLoginOptions, chettaPayPaths } from '@chettapay/core';
 
-type ConfigResponse = pollarPaths['/applications/config']['get']['responses'][200]['content']['application/json'];
-export type PollarConfig = ConfigResponse['content'];
+type ConfigResponse = chettaPayPaths['/applications/config']['get']['responses'][200]['content']['application/json'];
+export type ChettaPayConfig = ConfigResponse['content'];
 
-export type PollarStyles = PollarConfig['styles'];
+export type ChettaPayStyles = ChettaPayConfig['styles'];
 
 export interface AuthProviderProps {
-    config: PollarClientConfig;
+    config: ChettaPayClientConfig;
     children: React.ReactNode;
 }
 
 export interface AuthContextValue {
-    session: PollarApplicationConfigContent | null;
+    session: ChettaPayApplicationConfigContent | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (options: PollarLoginOptions) => void;
+    login: (options: ChettaPayLoginOptions) => void;
     logout: () => Promise<void>;
 }
 

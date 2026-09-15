@@ -1,16 +1,17 @@
-import { TransactionState, WalletType } from '@pollar/core';
+import { TransactionState, WalletType } from '@chettapay/core';
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback, Linking } from 'react-native';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { TransactionModalTemplate } from './TransactionModalUI'; // Bypassing cache
+import { defaultAccent } from '../../theme';
 
 interface TransactionModalProps {
     onClose: () => void;
 }
 
 export function TransactionModal({ onClose }: TransactionModalProps) {
-    const { getClient, styles, transaction, network, walletType } = usePollar();
-    const { theme = 'light', accentColor = '#005DB4' } = styles;
+    const { getClient, styles, transaction, network, walletType } = useChettaPay();
+    const { theme = 'light', accentColor = defaultAccent(theme) } = styles;
 
     const [showXdr, setShowXdr] = useState(false);
     const [copied, setCopied] = useState(false);

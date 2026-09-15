@@ -1,15 +1,15 @@
-import { pollarPaths, StellarNetwork } from './index';
-import type { PollarApiClient } from './api/client';
+import { chettaPayPaths, StellarNetwork } from './index';
+import type { ChettaPayApiClient } from './api/client';
 import type { KeyManager } from './keys/types';
-import type { LogLevel, PollarLogger } from './lib/logger';
+import type { LogLevel, ChettaPayLogger } from './lib/logger';
 import type { OnStorageDegrade, Storage } from './storage/types';
 import type { VisibilityProvider } from './visibility/types';
 import { WalletAdapter, WalletId } from './wallets';
 
-export type PollarApplicationConfigResponse =
-  pollarPaths['/auth/login']['post']['responses'][200]['content']['application/json'];
+export type ChettaPayApplicationConfigResponse =
+  chettaPayPaths['/auth/login']['post']['responses'][200]['content']['application/json'];
 /** Full `/auth/login` response shape - used in transit but NOT persisted. */
-export type PollarApplicationConfigContent = PollarApplicationConfigResponse['content'];
+export type ChettaPayApplicationConfigContent = ChettaPayApplicationConfigResponse['content'];
 
 /**
  * One persisted wallet. Shared by the session's back-compat `wallet` field and
@@ -21,7 +21,7 @@ export type PollarApplicationConfigContent = PollarApplicationConfigResponse['co
  *   - 'external' -> user-connected wallet (Freighter/Albedo)
  * `address` is the on-chain address for every type.
  */
-export interface PollarPersistedWallet {
+export interface ChettaPayPersistedWallet {
   type: 'internal' | 'smart' | 'external';
   // The login method, 1:1 with `type` (fixed at account creation server-side):
   //   internal -> 'email' | 'google' | 'github' | 'oidc'
@@ -37,13 +37,13 @@ export interface PollarPersistedWallet {
   // minted before multi-chain omit it (those are always STELLAR).
   chain?: WalletChain;
   existsOnStellar?: boolean;
-  // The app's funding policy: IMMEDIATE = Pollar funds/creates the account at
+  // The app's funding policy: IMMEDIATE = ChettaPay funds/creates the account at
   // onboarding; DEFERRED = left to the app. Lets the UI decide whether to offer
   // on-chain account creation. Optional: older sessions omit it.
   fundingMode?: 'IMMEDIATE' | 'DEFERRED';
   // On-chain creation time (smart = deploy; internal = keypair creation).
   createdAt?: number;
-  // When the wallet was first linked to Pollar (our DB record), not on-chain
+  // When the wallet was first linked to ChettaPay (our DB record), not on-chain
   // creation. Used for external wallets.
   linkedAt?: number;
   network?: string;
@@ -52,9 +52,9 @@ export interface PollarPersistedWallet {
 
 /**
  * What we actually write to `Storage`. Drops the PII subtree (`data.*`)
- * which is held in memory only on `PollarClient._profile` after auth.
+ * which is held in memory only on `ChettaPayClient._profile` after auth.
  */
-export interface PollarPersistedSession {
+export interface ChettaPayPersistedSession {
   clientSessionId: string;
   userId: string | null;
   status: string;
@@ -76,7 +76,7 @@ export interface PollarPersistedSession {
    * present, always Stellar. Mirrors the entry in `wallets` with
    * `chain: 'STELLAR'` when there is one.
    */
-  wallet: PollarPersistedWallet;
+  wallet: ChettaPayPersistedWallet;
   /**
    * Every wallet the user holds, one per chain. Superset of `wallet`.
    *
@@ -84,7 +84,7 @@ export interface PollarPersistedSession {
    * against an sdk-api that predates `wallets[]`) have none - treat an absent
    * array as "only `wallet` is known", not as "the user has no wallets".
    */
-  wallets?: PollarPersistedWallet[];
+  wallets?: ChettaPayPersistedWallet[];
 }
 
 /**
@@ -92,7 +92,7 @@ export interface PollarPersistedSession {
  * Mirrors the backend `AuthProvider` enum minus passkey (-> smart) and
  * wallet/external (-> external).
  */
-export type PollarAuthMethod = 'email' | 'google' | 'github' | 'oidc';
+export type ChettaPayAuthMethod = 'email' | 'google' | 'github' | 'oidc';
 
 /**
  * The authenticated user's wallet, as a discriminated union over `custody`.
@@ -106,13 +106,13 @@ export type PollarAuthMethod = 'email' | 'google' | 'github' | 'oidc';
  *     id (`'freighter'`, `'albedo'`, ...), or `null` when no adapter is resolved
  *     (e.g. a restored session whose adapter could not be re-attached).
  *
- * Obtained via {@link PollarClient.getWallet} (the Stellar wallet) or
- * {@link PollarClient.getWallets} (every chain).
+ * Obtained via {@link ChettaPayClient.getWallet} (the Stellar wallet) or
+ * {@link ChettaPayClient.getWallets} (every chain).
  */
 export type WalletInfo =
   // `provider` widened with `(string & {})` so a custom provider id (e.g. a
   // `privy` integration) survives instead of being lost to the closed enum,
-  // while the known PollarAuthMethod values still autocomplete.
+  // while the known ChettaPayAuthMethod values still autocomplete.
   //
   // `existsOnStellar` (is the account created on-chain) and `fundingMode` (the
   // app's funding policy) are wallet-status extras carried on every custody so
@@ -126,7 +126,7 @@ export type WalletInfo =
   | {
       custody: 'internal';
       address: string;
-      provider: PollarAuthMethod | (string & {}) | null;
+      provider: ChettaPayAuthMethod | (string & {}) | null;
       chain?: WalletChain;
       existsOnStellar?: boolean;
       fundingMode?: 'IMMEDIATE' | 'DEFERRED';
@@ -148,8 +148,8 @@ export type WalletInfo =
       fundingMode?: 'IMMEDIATE' | 'DEFERRED';
     };
 
-/** In-memory user profile (kept on `PollarClient`, never persisted). */
-export interface PollarUserProfile {
+/** In-memory user profile (kept on `ChettaPayClient`, never persisted). */
+export interface ChettaPayUserProfile {
   mail: string;
   first_name: string;
   last_name: string;
@@ -162,19 +162,19 @@ export interface PollarUserProfile {
   };
 }
 
-export interface PollarClientConfig {
+export interface ChettaPayClientConfig {
   stellarNetwork?: StellarNetwork;
   baseUrl?: string;
   apiKey: string;
   /**
    * Pluggable storage. Defaults to `defaultStorage()` on web (localStorage
    * with memory fallback). On RN you must inject one of the adapters from
-   * `@pollar/core/adapters/expo` or `@pollar/core/adapters/react-native-keychain`.
+   * `@chettapay/core/adapters/expo` or `@chettapay/core/adapters/react-native-keychain`.
    */
   storage?: Storage;
   /**
    * Max time (ms) a single SDK HTTP attempt waits before aborting and rejecting
-   * with a {@link PollarNetworkError} (`code: 'SDK_NETWORK_TIMEOUT'`).
+   * with a {@link ChettaPayNetworkError} (`code: 'SDK_NETWORK_TIMEOUT'`).
    *
    * `fetch` has no timeout of its own, so without this a transient connection
    * stall (e.g. a dropped TCP SYN on a flaky mobile network at cold start) hangs
@@ -203,9 +203,9 @@ export interface PollarClientConfig {
    * Automatic retry with backoff for idempotent, transient-failure SDK HTTP
    * (token refresh + GETs), to absorb a single dropped request before surfacing
    * an error. Only transport failures retry; an HTTP response is never retried.
-   * Defaults to `{ attempts: 2, baseDelayMs: 300 }`. See {@link PollarRetryConfig}.
+   * Defaults to `{ attempts: 2, baseDelayMs: 300 }`. See {@link ChettaPayRetryConfig}.
    */
-  retry?: PollarRetryConfig;
+  retry?: ChettaPayRetryConfig;
   /**
    * Pluggable DPoP key manager. Defaults to `defaultKeyManager(storage,
    * apiKey)`: WebCrypto in browsers, `@noble/curves` in RN.
@@ -223,7 +223,7 @@ export interface PollarClientConfig {
    * own (pino, Sentry breadcrumbs, a test spy...) to route SDK logs anywhere.
    * Filtering by `logLevel` still applies on top of whatever you pass.
    */
-  logger?: PollarLogger;
+  logger?: ChettaPayLogger;
   /**
    * Notified when persistent storage silently degrades to in-memory mode
    * (Safari private browsing quota errors, sandboxed iframes, etc.). Useful
@@ -235,8 +235,8 @@ export interface PollarClientConfig {
    * button and is reachable via `login({ provider: adapter.type })`. The built-in
    * `FreighterAdapter` / `AlbedoAdapter` are auto-registered; entries here are
    * added on top and override a built-in by reusing its `type`. Import extra
-   * adapters from their own packages (`@pollar/stellar-wallets-kit-adapter`,
-   * `@pollar/privy-adapter`, ...) so their deps stay out of `@pollar/core`'s bundle.
+   * adapters from their own packages (`@chettapay/stellar-wallets-kit-adapter`,
+   * `@chettapay/privy-adapter`, ...) so their deps stay out of `@chettapay/core`'s bundle.
    */
   walletAdapters?: WalletAdapter[];
   /**
@@ -254,7 +254,7 @@ export interface PollarClientConfig {
    * browser (`visibilitychange` + BFCache + focus) and a noop elsewhere.
    * React Native consumers should inject an `AppState`-backed provider -
    * use `createAppStateVisibilityProvider` from
-   * `@pollar/core/adapters/react-native-appstate`.
+   * `@chettapay/core/adapters/react-native-appstate`.
    */
   visibilityProvider?: VisibilityProvider;
   /**
@@ -285,15 +285,15 @@ export interface PollarClientConfig {
   oauthRedirectUri?: string;
   /**
    * The passkey (WebAuthn) ceremony for "Smart Wallet" login, injected by the
-   * runtime layer (`@pollar/react` implements it with `@simplewebauthn/browser`).
-   * `@pollar/core` stays runtime-agnostic and never touches `navigator.credentials`
+   * runtime layer (`@chettapay/react` implements it with `@simplewebauthn/browser`).
+   * `@chettapay/core` stays runtime-agnostic and never touches `navigator.credentials`
    * directly. Required to use `loginSmartWallet()`. Browser-only for now;
    * React Native needs a native passkey provider.
    */
   passkey?: PasskeyCeremony;
   /**
    * Signs smart-account (C-address) transactions with the user's passkey.
-   * Required to send from a smart wallet. Injected by `@pollar/react`;
+   * Required to send from a smart wallet. Injected by `@chettapay/react`;
    * browser-only for now.
    */
   passkeySign?: PasskeySigner;
@@ -322,7 +322,7 @@ export type PasskeyCeremony = (ctx: {
  * (a WebAuthn `get()` whose challenge is the raw digest). Returns the PUBLIC
  * assertion fields (base64url) for the server to assemble into the Soroban auth
  * entry - no secret leaves the device. Injected by the runtime layer
- * (`@pollar/react`); `@pollar/core` never touches `navigator.credentials`.
+ * (`@chettapay/react`); `@chettapay/core` never touches `navigator.credentials`.
  */
 export type PasskeySigner = (ctx: {
   /** base64url WebAuthn credential id to sign with. */
@@ -358,7 +358,7 @@ export interface AuthOpenContext {
 }
 
 /**
- * One row in the active-sessions list (returned by `PollarClient.listSessions()`).
+ * One row in the active-sessions list (returned by `ChettaPayClient.listSessions()`).
  * Mirrors the sdk-api `SessionsListContent` schema.
  */
 export interface SessionInfo {
@@ -384,27 +384,29 @@ export type SessionsState =
   | { step: 'loaded'; sessions: SessionInfo[] }
   | { step: 'error'; message: string };
 
-export type TxBuildBody = NonNullable<pollarPaths['/tx/build']['post']['requestBody']>['content']['application/json'];
-export type TxBuildResponse = pollarPaths['/tx/build']['post']['responses'][200]['content']['application/json'];
+export type TxBuildBody = NonNullable<chettaPayPaths['/tx/build']['post']['requestBody']>['content']['application/json'];
+export type TxBuildResponse = chettaPayPaths['/tx/build']['post']['responses'][200]['content']['application/json'];
 
 export type TxSignAndSendBody = NonNullable<
-  pollarPaths['/tx/sign-and-send']['post']['requestBody']
+  chettaPayPaths['/tx/sign-and-send']['post']['requestBody']
 >['content']['application/json'];
-export type TxSignSendResponse = pollarPaths['/tx/sign-and-send']['post']['responses'][200]['content']['application/json'];
+export type TxSignSendResponse = chettaPayPaths['/tx/sign-and-send']['post']['responses'][200]['content']['application/json'];
 
 // --- Split flow (new in v0.7.2) -----------------------------------------------
 
-export type TxSignBody = NonNullable<pollarPaths['/tx/sign']['post']['requestBody']>['content']['application/json'];
-export type TxSignResponse = pollarPaths['/tx/sign']['post']['responses'][200]['content']['application/json'];
+export type TxSignBody = NonNullable<chettaPayPaths['/tx/sign']['post']['requestBody']>['content']['application/json'];
+export type TxSignResponse = chettaPayPaths['/tx/sign']['post']['responses'][200]['content']['application/json'];
 export type TxSignContent = TxSignResponse['content'];
 
-export type TxSubmitSignedBody = NonNullable<pollarPaths['/tx/submit']['post']['requestBody']>['content']['application/json'];
+export type TxSubmitSignedBody = NonNullable<
+  chettaPayPaths['/tx/submit']['post']['requestBody']
+>['content']['application/json'];
 
 export type TxBuildSignSubmitBody = NonNullable<
-  pollarPaths['/tx/build-sign-submit']['post']['requestBody']
+  chettaPayPaths['/tx/build-sign-submit']['post']['requestBody']
 >['content']['application/json'];
 export type TxBuildSignSubmitResponse =
-  pollarPaths['/tx/build-sign-submit']['post']['responses'][200]['content']['application/json'];
+  chettaPayPaths['/tx/build-sign-submit']['post']['responses'][200]['content']['application/json'];
 export type TxBuildSignSubmitContent = TxBuildSignSubmitResponse['content'];
 
 /**
@@ -412,7 +414,7 @@ export type TxBuildSignSubmitContent = TxBuildSignSubmitResponse['content'];
  * (`google`, `github`, `email`) are explicit members; any registered wallet
  * adapter is reached through the catch-all via `login({ provider: adapter.type })`.
  */
-export type PollarLoginOptions =
+export type ChettaPayLoginOptions =
   | { provider: 'google' }
   | { provider: 'github' }
   | { provider: 'email'; email: string }
@@ -424,10 +426,10 @@ export type PollarLoginOptions =
   | ({ provider: string & {} } & Record<string, unknown>);
 
 /**
- * Curated, stable facade handed to every {@link PollarAuthProvider}. It exposes
+ * Curated, stable facade handed to every {@link ChettaPayAuthProvider}. It exposes
  * only the primitives a login strategy needs - the shared backbone
  * (`createSession` -> drive the session READY -> `authenticate`) plus a couple of
- * ready-made legs - and deliberately keeps `PollarClient` internals (storage,
+ * ready-made legs - and deliberately keeps `ChettaPayClient` internals (storage,
  * wallet-adapter resolution, DPoP key manager) private. This is the public
  * contract a third-party provider (e.g. Privy) builds against.
  */
@@ -435,11 +437,11 @@ export interface AuthProviderContext {
   /** Aborts when the host calls `cancelLogin()` (or a new login supersedes this one). */
   readonly signal: AbortSignal;
   /** Typed `openapi-fetch` client, already wired with DPoP + refresh middleware. */
-  readonly api: PollarApiClient;
-  /** API origin + version prefix (e.g. `https://sdk.api.pollar.xyz/v2`). */
+  readonly api: ChettaPayApiClient;
+  /** API origin + version prefix (e.g. `https://chettapay-api.vercel.app/v2`). */
   readonly basePath: string;
   readonly apiKey: string;
-  readonly logger: PollarLogger;
+  readonly logger: ChettaPayLogger;
   /** Drive the SDK's auth state machine (the host's `onAuthStateChange` mirrors it). */
   setAuthState(state: AuthState): void;
   /** `POST /auth/session` -> `clientSessionId` (null on failure; error state already set). */
@@ -458,21 +460,21 @@ export interface AuthProviderContext {
 
 /**
  * A pluggable login strategy. The built-ins (`google`, `github`, `email`) are
- * seeded internally by `PollarClient`; there is currently no public config field
+ * seeded internally by `ChettaPayClient`; there is currently no public config field
  * to register additional providers (this contract is reserved for internal use).
  * Note: `wallet` is intentionally NOT a provider - it yields a persistent
  * `WalletAdapter` reused for signing, a concern orthogonal to login, so wallets
- * are registered via `PollarClientConfig.walletAdapters` and entered with
+ * are registered via `ChettaPayClientConfig.walletAdapters` and entered with
  * `login({ provider: adapter.type })`.
  *
  * - `login` handles the one-shot entry point (`client.login({ provider: id })`).
  * - `actions` exposes extra named steps for multi-step flows (e.g. email's
  *   send-code / verify-code), invoked via `client.providerAction(id, action, payload)`.
  */
-export interface PollarAuthProvider {
-  /** Matches `PollarLoginOptions.provider` and the key in `providerAction`. */
+export interface ChettaPayAuthProvider {
+  /** Matches `ChettaPayLoginOptions.provider` and the key in `providerAction`. */
   readonly id: string;
-  login?(ctx: AuthProviderContext, options: PollarLoginOptions): Promise<void>;
+  login?(ctx: AuthProviderContext, options: ChettaPayLoginOptions): Promise<void>;
   actions?: Record<string, (ctx: AuthProviderContext, payload?: unknown) => Promise<void>>;
 }
 
@@ -548,7 +550,7 @@ export type SignOutcome =
   | { status: 'error'; details?: string; code?: string; message?: string };
 
 /**
- * Result of {@link PollarClient.signAuthEntry}. `signedAuthEntry` is the base64
+ * Result of {@link ChettaPayClient.signAuthEntry}. `signedAuthEntry` is the base64
  * XDR of the signed `SorobanAuthorizationEntry`, ready to be composed into the
  * caller's transaction envelope (e.g. by a contract that sponsors the gas).
  */
@@ -642,7 +644,7 @@ export type SubmitOutcome =
     };
 
 /**
- * Result of {@link PollarClient.setTrustline}. Like {@link SubmitOutcome} but the
+ * Result of {@link ChettaPayClient.setTrustline}. Like {@link SubmitOutcome} but the
  * `hash` is optional: the sponsored, server-orchestrated path completes without
  * surfacing a transaction hash to the client, whereas the self-paid path returns
  * the underlying submit outcome (hash included).
@@ -697,7 +699,7 @@ export type AuthState =
   | { step: 'authenticating' }
   | {
       step: 'authenticated';
-      session: PollarPersistedSession;
+      session: ChettaPayPersistedSession;
       /**
        * `false` while the session is restored optimistically from storage and
        * not yet revalidated with the server; `true` after a fresh login/refresh
@@ -716,17 +718,17 @@ export type AuthState =
 
 export type NetworkState = { step: 'idle' } | { step: 'connected'; network: StellarNetwork };
 
-export class PollarFlowError extends Error {
+export class ChettaPayFlowError extends Error {
   readonly code = 'INVALID_FLOW' as const;
   constructor(message: string) {
     super(message);
-    this.name = 'PollarFlowError';
+    this.name = 'ChettaPayFlowError';
   }
 }
 
 /**
  * Thrown when an SDK HTTP request is aborted by the client-side request timeout
- * (see `PollarClientConfig.requestTimeoutMs`) before the server responded. The
+ * (see `ChettaPayClientConfig.requestTimeoutMs`) before the server responded. The
  * `code` is stable for programmatic handling (e.g. fall back to a cached token
  * on boot); `cause` carries the underlying abort error.
  *
@@ -735,12 +737,12 @@ export class PollarFlowError extends Error {
  * rejects, so callers can't recover. With it, `refresh()` (and every other SDK
  * call) settles by rejecting with this error.
  */
-export class PollarNetworkError extends Error {
+export class ChettaPayNetworkError extends Error {
   readonly code = 'SDK_NETWORK_TIMEOUT' as const;
   readonly cause?: unknown;
   constructor(message: string, cause?: unknown) {
     super(message);
-    this.name = 'PollarNetworkError';
+    this.name = 'ChettaPayNetworkError';
     this.cause = cause;
   }
 }
@@ -754,7 +756,7 @@ export class PollarNetworkError extends Error {
  * payload, for the fields a specific error adds on top (an out-of-range amount
  * carries `limit` / `limitAmount` / `limitCurrency`, say).
  */
-export class PollarApiError extends Error {
+export class ChettaPayApiError extends Error {
   readonly code: string;
   readonly details?: string;
   readonly body: Record<string, unknown>;
@@ -762,27 +764,27 @@ export class PollarApiError extends Error {
     // The message stays the code, so anything that renders `err.message` shows
     // the stable machine-readable code.
     super(code);
-    this.name = 'PollarApiError';
+    this.name = 'ChettaPayApiError';
     this.code = code;
     this.body = body;
     if (typeof body.details === 'string') this.details = body.details;
   }
 }
 
-/** Type guard for {@link PollarApiError} (instanceof is unreliable across
+/** Type guard for {@link ChettaPayApiError} (instanceof is unreliable across
  *  bundle/dual-package boundaries, so match the shape too). */
-export function isPollarApiError(err: unknown): err is PollarApiError {
+export function isChettaPayApiError(err: unknown): err is ChettaPayApiError {
   return (
-    err instanceof PollarApiError ||
-    (typeof err === 'object' && err !== null && (err as { name?: unknown }).name === 'PollarApiError')
+    err instanceof ChettaPayApiError ||
+    (typeof err === 'object' && err !== null && (err as { name?: unknown }).name === 'ChettaPayApiError')
   );
 }
 
-/** Type guard for {@link PollarNetworkError} (instanceof is unreliable across
+/** Type guard for {@link ChettaPayNetworkError} (instanceof is unreliable across
  *  bundle/dual-package boundaries, so match the stable `code` too). */
-export function isPollarNetworkError(err: unknown): err is PollarNetworkError {
+export function isChettaPayNetworkError(err: unknown): err is ChettaPayNetworkError {
   return (
-    err instanceof PollarNetworkError ||
+    err instanceof ChettaPayNetworkError ||
     (typeof err === 'object' && err !== null && (err as { code?: unknown }).code === 'SDK_NETWORK_TIMEOUT')
   );
 }
@@ -794,7 +796,7 @@ export function isPollarNetworkError(err: unknown): err is PollarNetworkError {
  * retried, so a refresh that's genuinely rejected logs out immediately rather
  * than after N pointless attempts.
  */
-export interface PollarRetryConfig {
+export interface ChettaPayRetryConfig {
   /**
    * Total attempts, including the first (so `attempts: 2` = one retry, up to two
    * tries). Each attempt is independently bounded by `requestTimeoutMs`. Set
@@ -870,7 +872,7 @@ export type WalletBalanceState =
 /**
  * One asset the app offers, tagged with the chain it lives on.
  *
- * Hand-written rather than derived from `pollarPaths['/wallet/assets']`: that
+ * Hand-written rather than derived from `chettaPayPaths['/wallet/assets']`: that
  * generated type describes v1's Stellar-only shape, while v2 answers for every
  * chain the app is provisioned on. Mirrors {@link WalletBalanceRecord}, which is
  * hand-written for the same reason.
@@ -921,11 +923,11 @@ export type EnabledAssetsState =
 // --- Tx history types ---------------------------------------------------------
 
 export type TxHistoryRecord =
-  pollarPaths['/tx/history']['get']['responses'][200]['content']['application/json']['content']['records'][number];
+  chettaPayPaths['/tx/history']['get']['responses'][200]['content']['application/json']['content']['records'][number];
 
-export type TxHistoryParams = NonNullable<pollarPaths['/tx/history']['get']['parameters']['query']>;
+export type TxHistoryParams = NonNullable<chettaPayPaths['/tx/history']['get']['parameters']['query']>;
 
-export type TxHistoryContent = pollarPaths['/tx/history']['get']['responses'][200]['content']['application/json']['content'];
+export type TxHistoryContent = chettaPayPaths['/tx/history']['get']['responses'][200]['content']['application/json']['content'];
 
 export type TxHistoryState =
   | { step: 'idle' }
@@ -940,27 +942,32 @@ export type KycStatus = 'none' | 'pending' | 'approved' | 'rejected';
 export type KycFlow = 'iframe' | 'form' | 'redirect';
 
 export type KycProvider =
-  pollarPaths['/kyc/providers']['get']['responses'][200]['content']['application/json']['content']['providers'][number];
-export type KycStartBody = NonNullable<pollarPaths['/kyc/start']['post']['requestBody']>['content']['application/json'];
-export type KycStartResponse = pollarPaths['/kyc/start']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/kyc/providers']['get']['responses'][200]['content']['application/json']['content']['providers'][number];
+export type KycStartBody = NonNullable<chettaPayPaths['/kyc/start']['post']['requestBody']>['content']['application/json'];
+export type KycStartResponse = chettaPayPaths['/kyc/start']['post']['responses'][200]['content']['application/json']['content'];
 
 // --- Ramps types --------------------------------------------------------------
 
-export type RampsQuoteQuery = NonNullable<pollarPaths['/ramps/quote']['get']['parameters']['query']>;
+export type RampsQuoteQuery = NonNullable<chettaPayPaths['/ramps/quote']['get']['parameters']['query']>;
 export type RampQuote =
-  pollarPaths['/ramps/quote']['get']['responses'][200]['content']['application/json']['content']['quotes'][number];
-export type RampsQuoteResponse = pollarPaths['/ramps/quote']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/quote']['get']['responses'][200]['content']['application/json']['content']['quotes'][number];
+export type RampsQuoteResponse =
+  chettaPayPaths['/ramps/quote']['get']['responses'][200]['content']['application/json']['content'];
 
-export type RampsOnrampBody = NonNullable<pollarPaths['/ramps/onramp']['post']['requestBody']>['content']['application/json'];
+export type RampsOnrampBody = NonNullable<
+  chettaPayPaths['/ramps/onramp']['post']['requestBody']
+>['content']['application/json'];
 export type RampsOnrampResponse =
-  pollarPaths['/ramps/onramp']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/onramp']['post']['responses'][200]['content']['application/json']['content'];
 
-export type RampsOfframpBody = NonNullable<pollarPaths['/ramps/offramp']['post']['requestBody']>['content']['application/json'];
+export type RampsOfframpBody = NonNullable<
+  chettaPayPaths['/ramps/offramp']['post']['requestBody']
+>['content']['application/json'];
 export type RampsOfframpResponse =
-  pollarPaths['/ramps/offramp']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/offramp']['post']['responses'][200]['content']['application/json']['content'];
 
 export type RampsTransactionResponse =
-  pollarPaths['/ramps/transaction/{txId}']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/transaction/{txId}']['get']['responses'][200]['content']['application/json']['content'];
 export type RampTxStatus = RampsTransactionResponse['status'];
 export type RampDirection = RampsTransactionResponse['direction'];
 
@@ -970,7 +977,7 @@ export type RampDirection = RampsTransactionResponse['direction'];
  *
  * `fields` arrive labelled and formatted: iterate and display, no per-provider
  * knowledge needed. `scannable` carries the code the user points a camera at,
- * with the image already rendered so no QR encoder is required - Pollar-made
+ * with the image already rendered so no QR encoder is required - ChettaPay-made
  * SVGs (`image.inlineSafe`) use `currentColor` and can be injected as markup to
  * follow the host's theme; a provider's own bitmap must go through
  * `<img src="data:...">`. `scannable.payload` is the raw string behind the code:
@@ -985,19 +992,19 @@ export type RampInstructionField = RampDepositInstructions['fields'][number];
 // EXTERNAL wallets get a `pendingSignature` to sign and resume.
 export type RampsPendingSignature = NonNullable<RampsOnrampResponse['pendingSignature']>;
 export type RampsSignatureBody = NonNullable<
-  pollarPaths['/ramps/transaction/{txId}/signature']['post']['requestBody']
+  chettaPayPaths['/ramps/transaction/{txId}/signature']['post']['requestBody']
 >['content']['application/json'];
 export type RampsSignatureResponse =
-  pollarPaths['/ramps/transaction/{txId}/signature']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/transaction/{txId}/signature']['post']['responses'][200]['content']['application/json']['content'];
 export type RampsCompleteResponse =
-  pollarPaths['/ramps/transaction/{txId}/complete']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/transaction/{txId}/complete']['post']['responses'][200]['content']['application/json']['content'];
 export type RampsCountriesResponse =
-  pollarPaths['/ramps/countries']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/countries']['get']['responses'][200]['content']['application/json']['content'];
 export type RampCountry = RampsCountriesResponse['countries'][number];
 
 // Provider utilities: reads that inform a ramp before or during a quote.
 export type RampsLiquidityResponse =
-  pollarPaths['/ramps/liquidity']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/liquidity']['get']['responses'][200]['content']['application/json']['content'];
 export type RampRail = RampsLiquidityResponse['rail'];
 /**
  * Where the user stands with the provider's identity checks. Polled after an
@@ -1005,24 +1012,24 @@ export type RampRail = RampsLiquidityResponse['rail'];
  * hosted KYC link, so the client waits for `hasApproved` and re-quotes.
  */
 export type RampsKycStatusResponse =
-  pollarPaths['/ramps/kyc-status']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/kyc-status']['get']['responses'][200]['content']['application/json']['content'];
 export type RampsPixDecodeResponse =
-  pollarPaths['/ramps/pix/decode']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/ramps/pix/decode']['get']['responses'][200]['content']['application/json']['content'];
 export type RampsPixDecoded = NonNullable<RampsPixDecodeResponse['decoded']>;
 
 // --- Distribution types -------------------------------------------------------
 
 export type DistributionRule =
-  pollarPaths['/distribution/rules']['get']['responses'][200]['content']['application/json']['content']['rules'][number];
+  chettaPayPaths['/distribution/rules']['get']['responses'][200]['content']['application/json']['content']['rules'][number];
 
 export type RulePeriod = DistributionRule['period'];
 
 export type DistributionClaimBody = NonNullable<
-  pollarPaths['/distribution/claim']['post']['requestBody']
+  chettaPayPaths['/distribution/claim']['post']['requestBody']
 >['content']['application/json'];
 
 export type DistributionClaimContent =
-  pollarPaths['/distribution/claim']['post']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/distribution/claim']['post']['responses'][200]['content']['application/json']['content'];
 
 export type DistributionRulesState =
   | { step: 'idle' }
@@ -1032,9 +1039,10 @@ export type DistributionRulesState =
 
 // --- Swap types (DEX/AMM) ------------------------------------------------------
 
-export type SwapQuoteBody = NonNullable<pollarPaths['/swap/quote']['post']['requestBody']>['content']['application/json'];
+export type SwapQuoteBody = NonNullable<chettaPayPaths['/swap/quote']['post']['requestBody']>['content']['application/json'];
 
-export type SwapQuoteContent = pollarPaths['/swap/quote']['post']['responses'][200]['content']['application/json']['content'];
+export type SwapQuoteContent =
+  chettaPayPaths['/swap/quote']['post']['responses'][200]['content']['application/json']['content'];
 
 /** A single priced swap route, including a ready-to-run `build` payload. */
 export type SwapQuote = SwapQuoteContent['quotes'][number];
@@ -1046,10 +1054,12 @@ export type SwapProvider = NonNullable<SwapQuoteBody['provider']>;
 export type SwapVenue = SwapQuote['provider'];
 
 /** Venues this app exposes to end-users (from GET /swap/config). Empty = disabled. */
-export type SwapConfigContent = pollarPaths['/swap/config']['get']['responses'][200]['content']['application/json']['content'];
+export type SwapConfigContent =
+  chettaPayPaths['/swap/config']['get']['responses'][200]['content']['application/json']['content'];
 
 /** Curated "buy" tokens the app opted into (from GET /swap/tokens). */
-export type SwapTokensContent = pollarPaths['/swap/tokens']['get']['responses'][200]['content']['application/json']['content'];
+export type SwapTokensContent =
+  chettaPayPaths['/swap/tokens']['get']['responses'][200]['content']['application/json']['content'];
 
 /** A single curated swap buy token. */
 export type SwapToken = SwapTokensContent['tokens'][number];
@@ -1067,26 +1077,27 @@ export type SwapQuoteParams = {
 
 /** Providers this app exposes (from GET /earn/providers). Empty = Earn disabled. */
 export type EarnProvidersContent =
-  pollarPaths['/earn/providers']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/earn/providers']['get']['responses'][200]['content']['application/json']['content'];
 
 /** A concrete Earn provider. */
 export type EarnProviderId = EarnProvidersContent['providers'][number];
 
 export type EarnOpportunitiesContent =
-  pollarPaths['/earn/opportunities']['get']['responses'][200]['content']['application/json']['content'];
+  chettaPayPaths['/earn/opportunities']['get']['responses'][200]['content']['application/json']['content'];
 
 /** A vault (DeFindex) or pool (Blend) the user can deposit into. */
 export type EarnOpportunity = EarnOpportunitiesContent['opportunities'][number];
 
 /** The user's position (balance + APY) in a vault/pool (from GET /earn/position). */
-export type EarnPosition = pollarPaths['/earn/position']['get']['responses'][200]['content']['application/json']['content'];
+export type EarnPosition = chettaPayPaths['/earn/position']['get']['responses'][200]['content']['application/json']['content'];
 
 /** Which unit a provider's withdraw amount is in: asset (Blend) or shares (DeFindex). */
 export type EarnWithdrawUnit = EarnPosition['withdrawUnit'];
 
-export type EarnBuildBody = NonNullable<pollarPaths['/earn/build']['post']['requestBody']>['content']['application/json'];
+export type EarnBuildBody = NonNullable<chettaPayPaths['/earn/build']['post']['requestBody']>['content']['application/json'];
 
-export type EarnBuildContent = pollarPaths['/earn/build']['post']['responses'][200]['content']['application/json']['content'];
+export type EarnBuildContent =
+  chettaPayPaths['/earn/build']['post']['responses'][200]['content']['application/json']['content'];
 
 /** The ready-to-sign payload a build returns. */
 export type EarnBuild = EarnBuildContent['build'];
@@ -1111,8 +1122,8 @@ export type EarnTxParams = {
 
 export type AdapterFn<TParams = unknown> = (params: TParams) => Promise<{ unsignedTransaction: string }>;
 
-export type PollarAdapter = Record<string, AdapterFn<any>>;
+export type ChettaPayAdapter = Record<string, AdapterFn<any>>;
 
-export interface PollarAdapters {
-  [key: string]: PollarAdapter;
+export interface ChettaPayAdapters {
+  [key: string]: ChettaPayAdapter;
 }

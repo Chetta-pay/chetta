@@ -1,0 +1,10 @@
+{
+  "title": "Guides",
+  "description": "Step-by-step guides for deferred flows, passkeys, payments UI, and going to mainnet.",
+  "pages": [
+    "deferred-flow-guide",
+    "passkeys-guide",
+    "payments-ui",
+    "mainnet-checklist"
+  ]
+}

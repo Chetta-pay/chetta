@@ -1,8 +1,8 @@
 'use client';
 
-import { EnabledAssetRecord, WalletChain } from '@pollar/core';
+import { EnabledAssetRecord, WalletChain } from '@chettapay/core';
 import { useCallback, useEffect, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import { useChains } from '../../useChains';
 import { addressForChain } from '../ChainSelect';
 import '../shared.css';
@@ -19,7 +19,7 @@ function assetKey(record: { code: string; issuer?: string }): string {
 }
 
 export function EnabledAssetsModal({ onClose }: EnabledAssetsModalProps) {
-  const { enabledAssets, refreshAssets, setTrustline, wallets, styles } = usePollar();
+  const { enabledAssets, refreshAssets, setTrustline, wallets, styles } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
 
   const { chains } = useChains();
@@ -89,7 +89,7 @@ export function EnabledAssetsModal({ onClose }: EnabledAssetsModalProps) {
   );
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       {view === 'list' ? (
         <EnabledAssetsModalTemplate
           theme={theme}

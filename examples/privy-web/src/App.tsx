@@ -1,9 +1,9 @@
-import { PollarProvider, usePollar, type PollarConfig } from '@pollar/react';
-import { createPrivyAdapter, PrivyAdapterProvider } from '@pollar/privy-adapter';
+import { ChettaPayProvider, useChettaPay, type ChettaPayConfig, CHETTA } from '@chettapay/react';
+import { createPrivyAdapter, PrivyAdapterProvider } from '@chettapay/privy-adapter';
 
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID as string | undefined;
-const POLLAR_API_KEY = import.meta.env.VITE_POLLAR_API_KEY as string | undefined;
-const POLLAR_BASE_URL = import.meta.env.VITE_POLLAR_BASE_URL as string | undefined;
+const CHETTAPAY_API_KEY = import.meta.env.VITE_CHETTAPAY_API_KEY as string | undefined;
+const CHETTAPAY_BASE_URL = import.meta.env.VITE_CHETTAPAY_BASE_URL as string | undefined;
 const STELLAR_NETWORK = (import.meta.env.VITE_STELLAR_NETWORK as 'testnet' | 'mainnet' | undefined) ?? 'testnet';
 
 // Build the adapter once at module scope (it is inert until PrivyAdapterProvider
@@ -14,94 +14,101 @@ const privy = PRIVY_APP_ID
 
 // Local config override so the Privy login button renders without a backend
 // `/applications/config` round-trip. `embeddedWallets: true` is what surfaces it.
-const appConfig: PollarConfig = {
-  application: { name: 'Privy Adapter Example' },
-  styles: { theme: 'light', accentColor: '#005DB4', embeddedWallets: true },
+// The accent is spelled out rather than left to default so this file also shows
+// where an integrator swaps in their own brand color.
+const appConfig: ChettaPayConfig = {
+  application: { name: 'Privy Adapter Example', network: STELLAR_NETWORK, chains: ['STELLAR'] },
+  styles: { theme: 'light', accentColor: CHETTA.amber, embeddedWallets: true },
 };
 
-const box: React.CSSProperties = {
-  fontFamily: 'system-ui, sans-serif',
-  maxWidth: 560,
-  margin: '4rem auto',
-  padding: '0 1rem',
-  lineHeight: 1.5,
-};
-const btn: React.CSSProperties = {
-  padding: '0.6rem 1.2rem',
-  fontSize: '1rem',
-  borderRadius: 8,
-  border: '1px solid #005DB4',
-  background: '#005DB4',
-  color: '#fff',
-  cursor: 'pointer',
-};
+function Brand() {
+  return (
+    <div className="brand">
+      <img className="brand-mark" src="/chetta-mark.svg" alt="" width={40} height={40} />
+      <div className="brand-name">
+        Chetta<span>Pay</span>
+      </div>
+    </div>
+  );
+}
 
 function Home() {
-  const { wallet, isAuthenticated, verified, openLoginModal, logout } = usePollar();
+  const { wallet, isAuthenticated, verified, openLoginModal, logout } = useChettaPay();
 
   return (
-    <main style={box}>
-      <h1>Pollar x Privy</h1>
-      <p>Click log in, choose Privy, and complete the email / Google / GitHub flow.</p>
-      {isAuthenticated && wallet ? (
-        <>
-          <p>
-            Connected wallet ({wallet.custody}
-            {verified ? ', verified' : ', optimistic'}):
-          </p>
-          <pre style={{ background: '#f4f4f5', padding: '0.75rem', borderRadius: 8, overflowX: 'auto' }}>{wallet.address}</pre>
-          <button style={btn} onClick={logout}>
-            Log out
-          </button>
-        </>
-      ) : (
-        <button style={btn} onClick={openLoginModal}>
-          Log in
-        </button>
-      )}
+    <main className="shell">
+      <Brand />
+      <div className="card">
+        <h1>Privy adapter</h1>
+        {isAuthenticated && wallet ? (
+          <>
+            <div className="chip">
+              {wallet.custody} &middot; {verified ? 'verified' : 'optimistic'}
+            </div>
+            <p>The session below is bound to a DPoP keypair this browser holds; the address is the Privy embedded wallet.</p>
+            <pre className="address mono">{wallet.address}</pre>
+            <button className="btn" onClick={logout}>
+              Log out
+            </button>
+          </>
+        ) : (
+          <>
+            <p>Log in, choose Privy, and complete the email, Google or GitHub flow to provision an embedded Stellar wallet.</p>
+            <button className="btn" onClick={openLoginModal}>
+              Log in
+            </button>
+          </>
+        )}
+      </div>
+      <p className="footnote">Signing on Stellar {STELLAR_NETWORK}.</p>
     </main>
   );
 }
 
 function Setup() {
   return (
-    <main style={box}>
-      <h1>Pollar x Privy — setup needed</h1>
-      <p>
-        Copy <code>.env.example</code> to <code>.env.local</code> and set:
-      </p>
-      <ul>
-        <li>
-          <code>VITE_PRIVY_APP_ID</code> {PRIVY_APP_ID ? '✓' : '— missing'}
-        </li>
-        <li>
-          <code>VITE_POLLAR_API_KEY</code> {POLLAR_API_KEY ? '✓' : '— missing'}
-        </li>
-      </ul>
-      <p>
-        Then restart <code>npm run dev</code>. See the README for the Privy dashboard prerequisites.
-      </p>
+    <main className="shell">
+      <Brand />
+      <div className="card">
+        <h1>Setup needed</h1>
+        <p>
+          Copy <code>.env.example</code> to <code>.env.local</code> and set both values:
+        </p>
+        <ul className="checklist">
+          <li>
+            <code>VITE_PRIVY_APP_ID</code>
+            {PRIVY_APP_ID ? <span className="ok">&#10003;</span> : <span className="missing">missing</span>}
+          </li>
+          <li>
+            <code>VITE_CHETTAPAY_API_KEY</code>
+            {CHETTAPAY_API_KEY ? <span className="ok">&#10003;</span> : <span className="missing">missing</span>}
+          </li>
+        </ul>
+        <p>
+          Then restart <code>npm run dev</code>. The README covers the Privy dashboard prerequisites.
+        </p>
+      </div>
     </main>
   );
 }
 
 export function App() {
-  if (!privy || !POLLAR_API_KEY) {
+  if (!privy || !CHETTAPAY_API_KEY) {
     return <Setup />;
   }
   return (
     <PrivyAdapterProvider adapter={privy}>
-      <PollarProvider
+      <ChettaPayProvider
         client={{
-          apiKey: POLLAR_API_KEY,
+          apiKey: CHETTAPAY_API_KEY,
           walletAdapters: [privy],
           stellarNetwork: STELLAR_NETWORK,
-          ...(POLLAR_BASE_URL ? { baseUrl: POLLAR_BASE_URL } : {}),
+          ...(CHETTAPAY_BASE_URL ? { baseUrl: CHETTAPAY_BASE_URL } : {}),
         }}
         appConfig={appConfig}
       >
         <Home />
-      </PollarProvider>
+      </ChettaPayProvider>
     </PrivyAdapterProvider>
   );
 }

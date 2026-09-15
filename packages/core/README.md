@@ -1,6 +1,6 @@
-# @pollar/core
+# @chettapay/core
 
-Core SDK for [Pollar](https://pollar.xyz) — authentication and transaction utilities for Stellar and Solana applications.
+Core SDK for [ChettaPay](https://chettapay.vercel.app) — authentication and transaction utilities for Stellar and Solana applications.
 
 > **0.11.3** is a patch, non-breaking, focused on session resilience. A session
 > **survives reloads when the DPoP keypair fails to persist**: the persisted session records
@@ -10,7 +10,7 @@ Core SDK for [Pollar](https://pollar.xyz) — authentication and transaction uti
 > it runs, rotates the keypair only when it still owns the teardown, and propagates to
 > sibling clients in the same document. Shared session-row writes are serialized and
 > ownership-gated, and the last server-issued `DPoP-Nonce` is persisted. New public API:
-> `setPasskeyDefaults()` on `PollarClient`, and `isPollarClient(value)`, a type guard that
+> `setPasskeyDefaults()` on `ChettaPayClient`, and `isChettaPayClient(value)`, a type guard that
 > recognizes a client even across duplicate copies of this package (`instanceof` cannot).
 >
 > Earlier: **0.11.2** added `client.stellar` — **SEP-53 message** and **SEP-10 challenge** ownership
@@ -36,11 +36,11 @@ Core SDK for [Pollar](https://pollar.xyz) — authentication and transaction uti
 ## Installation
 
 ```bash
-npm install @pollar/core
+npm install @chettapay/core
 # or
-pnpm add @pollar/core
+pnpm add @chettapay/core
 # or
-yarn add @pollar/core
+yarn add @chettapay/core
 ```
 
 For React Native / Expo, also install one of the storage adapter peer deps:
@@ -63,7 +63,7 @@ npm i react-native-keychain react-native-get-random-values react-native-polyfill
 
 > **React Native runtime requirements.** The SDK builds a DPoP proof (RFC 9449) for **every** authenticated request.
 > That path uses three standard Web primitives that React Native / Hermes does **not** all ship by default. Register
-> them at the very top of your entry file, **before** any `@pollar/core` import. If any is missing, DPoP proof
+> them at the very top of your entry file, **before** any `@chettapay/core` import. If any is missing, DPoP proof
 > construction fails and **no authenticated request works** — the SDK is not at fault, the runtime is.
 >
 > | Primitive                     | Used by                                                          | Polyfill                                                                                                                             |
@@ -80,7 +80,7 @@ npm i react-native-keychain react-native-get-random-values react-native-polyfill
 > streaming on React Native: it polls the non-streaming `/auth/session/status/{id}/poll` endpoint instead, so you do
 > **not** need a fetch-streaming polyfill for auth — but you still need TextEncoder + URL from that same package.
 
-Entry-file setup (e.g. `index.js`), **before importing `@pollar/core`**:
+Entry-file setup (e.g. `index.js`), **before importing `@chettapay/core`**:
 
 ```ts
 import 'react-native-get-random-values'; // crypto.getRandomValues
@@ -90,27 +90,27 @@ import 'react-native-polyfill-globals/auto'; // TextEncoder/TextDecoder + URL
 
 ## Overview
 
-`@pollar/core` provides the `PollarClient` class and utilities to:
+`@chettapay/core` provides the `ChettaPayClient` class and utilities to:
 
 - Authenticate users via **Google**, **GitHub**, **OIDC**, **Email (OTP)**, **passkey** (smart wallets), **Stellar
   wallets** (Freighter, Albedo) or **Solana wallets** (SIWS)
 - Sign every authenticated request with **DPoP** (RFC 9449), making stolen tokens useless to an attacker without the
   per-session keypair
 - Build and submit Stellar transactions
-- Fetch wallet balances via `PollarClient` (`refreshBalance()` / `getWalletBalance()`) - v2 balances are **multichain**,
+- Fetch wallet balances via `ChettaPayClient` (`refreshBalance()` / `getWalletBalance()`) - v2 balances are **multichain**,
   tagged by `chain`; every chain reports its native coin plus each token the app enabled. A balance is `null` when the
   chain could not be read, which must render as unavailable rather than as zero
 - **Solana**: log in with **Sign In With Solana (SIWS)** and sign Solana transactions for sponsored external transfers
-  (external-wallet connect via `@pollar/solana-wallet-standard-adapter`, preview)
+  (external-wallet connect via `@chettapay/solana-wallet-standard-adapter`, preview)
 - Swap assets across venues (SDEX / Soroswap / Aquarius) and run SEP-24 on/off-ramps
 - React to real-time authentication state changes
 
 ## Quick Start (web)
 
 ```ts
-import { PollarClient } from '@pollar/core';
+import { ChettaPayClient } from '@chettapay/core';
 
-const client = new PollarClient({ apiKey: 'your-api-key' });
+const client = new ChettaPayClient({ apiKey: 'your-api-key' });
 // Storage and KeyManager autodetect:
 //   storage  → localStorage with in-memory fallback
 //   keypair  → WebCrypto ECDSA P-256, non-extractable, persisted in IndexedDB
@@ -119,13 +119,13 @@ const client = new PollarClient({ apiKey: 'your-api-key' });
 ## React Native (Expo)
 
 ```ts
-// At your app entry, BEFORE importing @pollar/core — runtime polyfills (see table above):
+// At your app entry, BEFORE importing @chettapay/core — runtime polyfills (see table above):
 import 'react-native-get-random-values'; // crypto.getRandomValues
 import 'react-native-polyfill-globals/auto'; // TextEncoder/TextDecoder + URL
 // Optional: import 'react-native-quick-crypto' to upgrade to non-extractable WebCrypto keys (needs an Expo dev build).
 
-import { PollarClient } from '@pollar/core';
-import { createSecureStoreAdapter } from '@pollar/core/adapters/expo';
+import { ChettaPayClient } from '@chettapay/core';
+import { createSecureStoreAdapter } from '@chettapay/core/adapters/expo';
 
 // `await`: SecureStore is loaded via dynamic import.
 const storage = await createSecureStoreAdapter({
@@ -133,7 +133,7 @@ const storage = await createSecureStoreAdapter({
   // Prevents iCloud Keychain from carrying the key to another device.
 });
 
-const client = new PollarClient({ apiKey: 'your-api-key', storage });
+const client = new ChettaPayClient({ apiKey: 'your-api-key', storage });
 // KeyManager autodetects → NobleKeyManager (pure-JS @noble/curves p256).
 ```
 
@@ -143,16 +143,16 @@ const client = new PollarClient({ apiKey: 'your-api-key', storage });
 import 'react-native-get-random-values'; // crypto.getRandomValues
 import 'react-native-polyfill-globals/auto'; // TextEncoder/TextDecoder + URL
 // Optional: import 'react-native-quick-crypto' to upgrade to non-extractable WebCrypto keys (needs an Expo dev build).
-import { PollarClient } from '@pollar/core';
-import { createKeychainAdapter } from '@pollar/core/adapters/react-native-keychain';
+import { ChettaPayClient } from '@chettapay/core';
+import { createKeychainAdapter } from '@chettapay/core/adapters/react-native-keychain';
 
 const storage = await createKeychainAdapter();
-const client = new PollarClient({ apiKey: 'your-api-key', storage });
+const client = new ChettaPayClient({ apiKey: 'your-api-key', storage });
 ```
 
 ## Framework integration
 
-`@pollar/core` is framework-agnostic: `PollarClient` is a plain class and the `on*StateChange` methods are
+`@chettapay/core` is framework-agnostic: `ChettaPayClient` is a plain class and the `on*StateChange` methods are
 callback subscriptions. To render reactively, bridge those callbacks into your framework's state primitive. The
 client instance should be a singleton (module scope, context, or DI) — never recreate it on every render.
 
@@ -164,9 +164,9 @@ client instance should be a singleton (module scope, context, or DI) — never r
 ```tsx
 'use client';
 import { useSyncExternalStore } from 'react';
-import { PollarClient, type AuthState } from '@pollar/core';
+import { ChettaPayClient, type AuthState } from '@chettapay/core';
 
-const client = new PollarClient({ apiKey: 'pk_...' }); // module scope = one instance
+const client = new ChettaPayClient({ apiKey: 'pk_...' }); // module scope = one instance
 
 export function useAuthState(): AuthState {
   return useSyncExternalStore(
@@ -186,11 +186,11 @@ view won't update. Expose the client through a service.
 
 ```ts
 import { Injectable, NgZone, signal } from '@angular/core';
-import { PollarClient, type AuthState } from '@pollar/core';
+import { ChettaPayClient, type AuthState } from '@chettapay/core';
 
 @Injectable({ providedIn: 'root' })
-export class PollarService {
-  private client = new PollarClient({ apiKey: 'pk_...' });
+export class ChettaPayService {
+  private client = new ChettaPayClient({ apiKey: 'pk_...' });
   readonly authState = signal<AuthState>(this.client.getAuthState());
 
   constructor(private zone: NgZone) {
@@ -209,9 +209,9 @@ Assign the callback payload into a `ref` (or `shallowRef`) inside `onMounted`; u
 
 ```ts
 import { ref, shallowRef, onMounted, onUnmounted } from 'vue';
-import { PollarClient, type AuthState } from '@pollar/core';
+import { ChettaPayClient, type AuthState } from '@chettapay/core';
 
-const client = new PollarClient({ apiKey: 'pk_...' });
+const client = new ChettaPayClient({ apiKey: 'pk_...' });
 
 export function useAuth() {
   const authState = shallowRef<AuthState>(client.getAuthState());
@@ -232,10 +232,10 @@ React Native sections above. OAuth and external-wallet logins require `openAuthU
 
 ## Logging
 
-The SDK logs through a level-gated logger. Configure it on `PollarClient`:
+The SDK logs through a level-gated logger. Configure it on `ChettaPayClient`:
 
 ```ts
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: 'pk_...',
   logLevel: 'warn', // 'silent' | 'error' | 'warn' | 'info' | 'debug' (default 'info')
 });
@@ -250,20 +250,20 @@ Route logs to your own sink (pino, Sentry breadcrumbs, a test spy…) with `logg
 applies on top:
 
 ```ts
-import { PollarClient, type PollarLogger } from '@pollar/core';
+import { ChettaPayClient, type ChettaPayLogger } from '@chettapay/core';
 
-const sink: PollarLogger = {
+const sink: ChettaPayLogger = {
   error: (...a) => myLogger.error(...a),
   warn: (...a) => myLogger.warn(...a),
   info: (...a) => myLogger.info(...a),
   debug: (...a) => myLogger.debug(...a),
 };
 
-const client = new PollarClient({ apiKey: 'pk_...', logLevel: 'debug', logger: sink });
+const client = new ChettaPayClient({ apiKey: 'pk_...', logLevel: 'debug', logger: sink });
 ```
 
-`client.getLogger()` returns the configured logger (used internally by `@pollar/react` so its own logs honor the same
-level + sink). `@pollar/stellar-wallets-kit-adapter` accepts the same `logLevel` / `logger` on its options.
+`client.getLogger()` returns the configured logger (used internally by `@chettapay/react` so its own logs honor the same
+level + sink). `@chettapay/stellar-wallets-kit-adapter` accepts the same `logLevel` / `logger` on its options.
 
 ## Preserved-on-disk storage shape
 
@@ -273,11 +273,11 @@ The session persists exactly:
 clientSessionId, userId, status,
 token { accessToken, refreshToken, expiresAt },
 user { id?, ready },
-wallet   PollarPersistedWallet          // back-compat: always the Stellar one
-wallets? PollarPersistedWallet[]        // every wallet the user holds, one per chain
+wallet   ChettaPayPersistedWallet          // back-compat: always the Stellar one
+wallets? ChettaPayPersistedWallet[]        // every wallet the user holds, one per chain
 ```
 
-where `PollarPersistedWallet` is:
+where `ChettaPayPersistedWallet` is:
 
 ```
 { type, provider?, address, chain?, existsOnStellar?, fundingMode?,
@@ -293,7 +293,7 @@ where `PollarPersistedWallet` is:
 > is known", not as "the user has no wallets". Sessions written by older SDKs
 > are migrated transparently on read.
 
-PII (`mail`, `first_name`, `last_name`, `avatar`, `providers.*`) lives **in memory only** on the `PollarClient` instance
+PII (`mail`, `first_name`, `last_name`, `avatar`, `providers.*`) lives **in memory only** on the `ChettaPayClient` instance
 and is fetched after auth. Reach it via:
 
 ```ts
@@ -307,9 +307,9 @@ the same origin don't cross-contaminate.
 ## End-to-end example
 
 ```ts
-import { PollarClient } from '@pollar/core';
+import { ChettaPayClient } from '@chettapay/core';
 
-const client = new PollarClient({ apiKey: 'your-api-key' });
+const client = new ChettaPayClient({ apiKey: 'your-api-key' });
 
 // React to auth state
 const unsubscribe = client.onAuthStateChange((state) => {
@@ -332,25 +332,25 @@ const sessions = await client.listSessions();
 
 ## API Reference
 
-### `new PollarClient(config)`
+### `new ChettaPayClient(config)`
 
 | Option               | Type                     | Required | Description                                                                                                                                    |
 | -------------------- | ------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`             | `string`                 | Yes      | Your Pollar API key                                                                                                                            |
+| `apiKey`             | `string`                 | Yes      | Your ChettaPay API key                                                                                                                            |
 | `baseUrl`            | `string`                 | No       | Override the default API endpoint                                                                                                              |
 | `stellarNetwork`     | `'mainnet' \| 'testnet'` | No       | Target Stellar network (default: `testnet`)                                                                                                    |
 | `storage`            | `Storage`                | No       | Pluggable storage adapter. Web autodetects `localStorage` with in-memory fallback; RN must inject one                                          |
 | `keyManager`         | `KeyManager`             | No       | Pluggable DPoP key manager. Web picks `WebCryptoKeyManager`; otherwise `NobleKeyManager`                                                       |
 | `walletAdapters`     | `WalletAdapter[]`        | No       | Extra wallet adapter instances. Built-in `FreighterAdapter`/`AlbedoAdapter` auto-register; an entry overrides a built-in by reusing its `type` |
-| `requestTimeoutMs`   | `number`                 | No       | Max ms a single SDK HTTP attempt waits before aborting with `PollarNetworkError`. Default `10000`; `0` disables                                |
-| `retry`              | `PollarRetryConfig`      | No       | Retry-with-backoff for idempotent transport failures (refresh + GETs). Default `{ attempts: 2, baseDelayMs: 300 }`                             |
+| `requestTimeoutMs`   | `number`                 | No       | Max ms a single SDK HTTP attempt waits before aborting with `ChettaPayNetworkError`. Default `10000`; `0` disables                                |
+| `retry`              | `ChettaPayRetryConfig`      | No       | Retry-with-backoff for idempotent transport failures (refresh + GETs). Default `{ attempts: 2, baseDelayMs: 300 }`                             |
 | `deviceLabel`        | `string`                 | No       | UI-friendly device label sent at `/auth/login` time and shown in `listSessions()` rows                                                         |
 | `onStorageDegrade`   | `OnStorageDegrade`       | No       | Notified the first time `localStorage` falls back to in-memory mode (SSR, private browsing, quota, …)                                          |
 | `visibilityProvider` | `VisibilityProvider`     | No       | Foreground-detection signal for the silent-refresh scheduler. Web default; RN should inject an `AppState` provider                             |
 | `maxIdleMs`          | `number`                 | No       | Stop proactive refreshes after this many ms of no client HTTP activity. Default `undefined` (refresh while visible)                            |
 | `openAuthUrl`        | `AuthUrlOpener`          | No       | Strategy for opening the hosted OAuth URL. Web defaults to a popup; RN must provide one                                                        |
 | `oauthRedirectUri`   | `string`                 | No       | `redirect_uri` sent to the backend for hosted OAuth. Web defaults to `window.location.origin`; RN = deep link                                  |
-| `passkey`            | `PasskeyCeremony`        | No       | WebAuthn ceremony for Smart Wallet login (injected by `@pollar/react`). Required for `loginSmartWallet()`                                      |
+| `passkey`            | `PasskeyCeremony`        | No       | WebAuthn ceremony for Smart Wallet login (injected by `@chettapay/react`). Required for `loginSmartWallet()`                                      |
 | `passkeySign`        | `PasskeySigner`          | No       | Signs smart-account (C-address) transactions with the user's passkey. Required to send from a smart wallet                                     |
 
 ---
@@ -373,7 +373,7 @@ client.login({ provider: 'github' });
 client.login({ provider: 'email', email: 'user@example.com' });
 
 // Stellar wallet - the adapter's `type` is the provider
-import { WalletType } from '@pollar/core';
+import { WalletType } from '@chettapay/core';
 
 client.login({ provider: WalletType.FREIGHTER }); // WalletType.FREIGHTER === 'freighter-native'
 client.login({ provider: WalletType.ALBEDO }); // WalletType.ALBEDO === 'albedo-native'
@@ -418,7 +418,7 @@ Returns the authenticated user's wallet as a discriminated union over `custody` 
 each carrying `address` and a `provider`, or `null` when there is no wallet. To check whether a session exists, read
 `getAuthState()` (`step === 'authenticated'`) or `getWallet()` - there is no `isAuthenticated()` helper.
 
-#### `client.getUserProfile(): PollarUserProfile | null`
+#### `client.getUserProfile(): ChettaPayUserProfile | null`
 
 Returns the in-memory profile (`mail`, `first_name`, `last_name`, `avatar`, `providers`). `null` until `/auth/login`
 completes. **This is the only way to read PII** — PII is not persisted to storage.
@@ -431,7 +431,7 @@ server-side rendering.
 #### `client.destroy(): void`
 
 Detaches the cross-tab `storage` listener, aborts in-flight logins, and releases the keypair. Call this on unmount in
-environments that re-instantiate `PollarClient`.
+environments that re-instantiate `ChettaPayClient`.
 
 #### `client.refresh(): Promise<void>`
 
@@ -473,7 +473,7 @@ immediate teardown.
 
 #### `client.buildTx(operation, params, options?)`
 
-Builds a Stellar transaction via the Pollar API.
+Builds a Stellar transaction via the ChettaPay API.
 
 ```ts
 await client.buildTx('payment', {
@@ -617,7 +617,7 @@ client.swap(quote: SwapQuote, opts?: { autoTrustline?: boolean }): Promise<Submi
 ```
 
 The standalone `quoteSwap(api, body): Promise<SwapQuoteContent>` export is available for advanced callers that already
-hold a `PollarApiClient`.
+hold a `ChettaPayApiClient`.
 
 ---
 
@@ -651,7 +651,7 @@ client.pollRampTransaction(txId: string, opts?: { intervalMs?: number; timeoutMs
 ```
 
 Each also has a standalone `(api, ...)` export (`getRampsQuote`, `createOnRamp`, …) for callers holding a
-`PollarApiClient`.
+`ChettaPayApiClient`.
 
 ---
 
@@ -715,7 +715,7 @@ client.claimDistributionRule(body: DistributionClaimBody): Promise<DistributionC
 ### Smart Wallets (passkey)
 
 Log into (or create) a Soroban smart-account C-address backed by a device passkey. Requires the `passkey` ceremony
-(and `passkeySign` to send transactions) to be injected in the config - `@pollar/react` supplies these with
+(and `passkeySign` to send transactions) to be injected in the config - `@chettapay/react` supplies these with
 `@simplewebauthn/browser`. Both are fire-and-forget and drive `onAuthStateChange`.
 
 ```ts
@@ -750,7 +750,7 @@ identically by external wallets and the embedded signer — `scheme` is always `
 interchangeable for a verifier.
 
 For external wallets, SEP-53 needs an adapter that implements the optional `signStellarMessage` method: the built-in
-`FreighterAdapter` does (native v6 `signMessage`), and `@pollar/stellar-wallets-kit-adapter` does via
+`FreighterAdapter` does (native v6 `signMessage`), and `@chettapay/stellar-wallets-kit-adapter` does via
 `kit.signMessage`. Albedo does not support SEP-53 message signing and yields an error outcome — use a SEP-10 challenge
 instead. SEP-10 reuses the adapter's existing `signTransaction`, so every Stellar adapter supports it.
 
@@ -761,15 +761,15 @@ instead. SEP-10 reuses the adapter's existing `signTransaction`, so every Stella
 Every SDK HTTP attempt is bounded by `requestTimeoutMs` (default `10000`; `0` disables) so a stalled connection
 fails fast instead of hanging forever. Idempotent transport failures (token refresh + GETs) are retried per `retry`
 (default `{ attempts: 2, baseDelayMs: 300 }`); HTTP responses (including 4xx/5xx) are never retried. On timeout the
-call rejects with a `PollarNetworkError` (`code: 'SDK_NETWORK_TIMEOUT'`):
+call rejects with a `ChettaPayNetworkError` (`code: 'SDK_NETWORK_TIMEOUT'`):
 
 ```ts
-import { isPollarNetworkError } from '@pollar/core';
+import { isChettaPayNetworkError } from '@chettapay/core';
 
 try {
   await client.refresh();
 } catch (err) {
-  if (isPollarNetworkError(err)) {
+  if (isChettaPayNetworkError(err)) {
     // fall back to a cached token, show a retry, etc.
   }
 }
@@ -789,7 +789,7 @@ const unsubAuth = client.onAuthStateChange((state) => {
   //   'connecting_wallet' | 'signing_wallet_challenge' | 'wallet_not_installed' |
   //   'authenticating_wallet' | 'creating_passkey' | 'deploying_smart_account' |
   //   'authenticating' | 'authenticated' | 'error'
-  // state.session  — PollarPersistedSession (when step === 'authenticated')
+  // state.session  — ChettaPayPersistedSession (when step === 'authenticated')
   // state.verified — boolean            (when step === 'authenticated')
   // state.errorCode / .message / .previousStep   (when step === 'error')
 });
@@ -825,7 +825,7 @@ subscriber instead of returned).
 Error codes for the auth flow are surfaced via `AUTH_ERROR_CODES` / `AuthErrorCode`:
 
 ```ts
-import { AUTH_ERROR_CODES, type AuthErrorCode } from '@pollar/core';
+import { AUTH_ERROR_CODES, type AuthErrorCode } from '@chettapay/core';
 
 // AUTH_ERROR_CODES.EMAIL_CODE_INVALID
 // AUTH_ERROR_CODES.EMAIL_CODE_EXPIRED
@@ -838,11 +838,11 @@ import { AUTH_ERROR_CODES, type AuthErrorCode } from '@pollar/core';
 
 ### `StellarClient`
 
-Lightweight helper to submit a signed transaction straight to Horizon (bypassing the Pollar API). Balance fetching
-lives on `PollarClient` now (`refreshBalance()` / `getWalletBalance(publicKey, network?)`).
+Lightweight helper to submit a signed transaction straight to Horizon (bypassing the ChettaPay API). Balance fetching
+lives on `ChettaPayClient` now (`refreshBalance()` / `getWalletBalance(publicKey, network?)`).
 
 ```ts
-import { StellarClient } from '@pollar/core';
+import { StellarClient } from '@chettapay/core';
 
 const stellar = new StellarClient('testnet');
 // or: new StellarClient({ horizonUrl: 'https://horizon.stellar.org' })
@@ -863,7 +863,7 @@ if (result.success) {
 For direct wallet interaction outside the login flow:
 
 ```ts
-import { FreighterAdapter, AlbedoAdapter } from '@pollar/core';
+import { FreighterAdapter, AlbedoAdapter } from '@chettapay/core';
 
 const adapter = new FreighterAdapter();
 const available = await adapter.isAvailable();
@@ -872,17 +872,17 @@ if (available) {
 }
 ```
 
-To plug in external wallet stacks (e.g. Stellar Wallets Kit) without `@pollar/core` having to depend on them, pass an
+To plug in external wallet stacks (e.g. Stellar Wallets Kit) without `@chettapay/core` having to depend on them, pass an
 array of `WalletAdapter` instances via `walletAdapters`. The built-in `FreighterAdapter` / `AlbedoAdapter` are
 auto-registered; entries you pass are added on top and override a built-in by reusing its `type`. Each registered
 adapter becomes reachable through `login({ provider: adapter.type })`:
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: 'pk_...',
   // stellarWalletsKitAdapters() returns a WalletAdapter[] (one per module)
   walletAdapters: stellarWalletsKitAdapters({ network: Networks.PUBLIC }),
@@ -897,40 +897,40 @@ id (or `null`).
 
 ---
 
-### Custom adapters (`AdapterFn` / `PollarAdapter`)
+### Custom adapters (`AdapterFn` / `ChettaPayAdapter`)
 
 Generic adapter contract for wrapping external signing flows (e.g. Trustless Work SDK). Adapter functions receive
 params and return an unsigned XDR; the client handles signing and submission.
 
 ```ts
-import type { AdapterFn, PollarAdapter, PollarAdapters } from '@pollar/core';
+import type { AdapterFn, ChettaPayAdapter, ChettaPayAdapters } from '@chettapay/core';
 
-const trustlessWork: PollarAdapter = {
+const trustlessWork: ChettaPayAdapter = {
   initialize: (async (params) => ({ unsignedTransaction: '...' })) satisfies AdapterFn,
   release: (async (params) => ({ unsignedTransaction: '...' })) satisfies AdapterFn,
 };
 
-const adapters: PollarAdapters = { trustlessWork };
+const adapters: ChettaPayAdapters = { trustlessWork };
 ```
 
 ## TypeScript
 
-`@pollar/core` is written in TypeScript and ships full type declarations.
+`@chettapay/core` is written in TypeScript and ships full type declarations.
 
 Key exported types:
 
 ```ts
 import type {
   // Client
-  PollarClientConfig,
-  PollarLoginOptions,
-  PollarPersistedSession,
-  PollarUserProfile,
-  PollarRetryConfig,
+  ChettaPayClientConfig,
+  ChettaPayLoginOptions,
+  ChettaPayPersistedSession,
+  ChettaPayUserProfile,
+  ChettaPayRetryConfig,
   AuthState,
   AuthErrorCode,
   LogLevel,
-  PollarLogger,
+  ChettaPayLogger,
 
   // Storage / keys / DPoP
   Storage,
@@ -956,7 +956,7 @@ import type {
 
   // Multichain wallet state (v2)
   WalletChain,
-  PollarPersistedWallet,
+  ChettaPayPersistedWallet,
   WalletBalanceRecord,
   WalletBalanceContent,
   WalletBalanceState,
@@ -972,8 +972,8 @@ import type {
 
   // Adapters
   AdapterFn,
-  PollarAdapter,
-  PollarAdapters,
+  ChettaPayAdapter,
+  ChettaPayAdapters,
 
   // Swaps
   SwapQuoteParams,
@@ -1016,19 +1016,19 @@ import type {
   StellarNetwork,
   StellarClientConfig,
   StellarBalance,
-} from '@pollar/core';
+} from '@chettapay/core';
 
 // Runtime values (NOT type-only — `WalletType` is an enum, so it cannot be
 // imported with `import type` and then used as `WalletType.FREIGHTER`).
 import {
   WalletType,
-  POLLAR_CORE_VERSION,
+  CHETTAPAY_CORE_VERSION,
   AUTH_ERROR_CODES,
-  PollarNetworkError,
-  isPollarNetworkError,
+  ChettaPayNetworkError,
+  isChettaPayNetworkError,
   toBaseUnits,
   fromBaseUnits,
-} from '@pollar/core';
+} from '@chettapay/core';
 ```
 
 ## License

@@ -1,13 +1,13 @@
 {
-  "name": "@pollar/privy-adapter",
+  "name": "@chettapay/privy-adapter",
   "version": "0.11.2",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pollar-xyz/pollar.git",
+    "url": "git+https://github.com/Chetta-pay/chetta.git",
     "directory": "packages/privy-adapter"
   },
-  "description": "Privy client-side wallet adapter for @pollar/core - sign Stellar transactions with a user's Privy embedded Stellar wallet via raw-hash signing.",
+  "description": "Privy client-side wallet adapter for @chettapay/core - sign Stellar transactions with a user's Privy embedded Stellar wallet via raw-hash signing.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -50,7 +50,7 @@
     "node": ">=20"
   },
   "peerDependencies": {
-    "@pollar/core": "^0.11.2",
+    "@chettapay/core": "^0.11.2",
     "@privy-io/expo": ">=0.69 <1",
     "@privy-io/react-auth": "^3",
     "@stellar/stellar-sdk": "^15.1.0",
@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@pollar/core": "^0.11.2",
+    "@chettapay/core": "^0.11.2",
     "@privy-io/expo": "^0.69.4",
     "@privy-io/react-auth": "^3.32.2",
     "@stellar/stellar-sdk": "^15.1.0",

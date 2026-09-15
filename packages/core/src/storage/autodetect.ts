@@ -1,7 +1,7 @@
 import { createLocalStorageAdapter, createMemoryAdapter, type LocalStorageAdapterOptions } from './web';
 import type { Storage } from './types';
 
-const PROBE_KEY = '__pollar_storage_probe__';
+const PROBE_KEY = '__chettapay_storage_probe__';
 
 /**
  * Returns `localStorage`-backed storage when it works, otherwise an in-memory

@@ -1,8 +1,9 @@
-import { TransactionState, WalletType } from '@pollar/core';
+import { TransactionState, WalletType } from '@chettapay/core';
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Linking, Image } from 'react-native';
-import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_POLLAR } from '../../constants';
-import { ModalStatusBanner, PollarModalFooter, PollarOverlay } from '../commons';
+import { LOGO_ALBEDO, LOGO_FREIGHTER, LOGO_CHETTAPAY } from '../../constants';
+import { ModalStatusBanner, ChettaPayModalFooter, ChettaPayOverlay } from '../commons';
+import { CHETTA } from '../../theme';
 
 export interface TransactionModalTemplateProps {
     theme: string;
@@ -45,12 +46,12 @@ export function TransactionModalTemplate({
     const isDark = theme === 'dark';
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        inputBg: isDark ? '#374151' : '#f9fafb',
-        errorBg: isDark ? '#2a1515' : '#fef2f2',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        inputBg: isDark ? CHETTA.soot : CHETTA.sand,
+        errorBg: isDark ? '#2a1512' : '#fef2f2',
         errorText: isDark ? '#f87171' : '#dc2626',
     };
 
@@ -65,7 +66,7 @@ export function TransactionModalTemplate({
     const showDetails = buildData !== null && (isBuilt || isSigning || isSuccess);
 
     return (
-        <PollarOverlay onCancel={onClose}>
+        <ChettaPayOverlay onCancel={onClose}>
             <View style={[styles.card, { backgroundColor: colors.bg, borderColor: colors.border }]}>
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: colors.text }]}>Transaction</Text>
@@ -130,7 +131,7 @@ export function TransactionModalTemplate({
                                         ? LOGO_FREIGHTER
                                         : walletType === WalletType.ALBEDO
                                             ? LOGO_ALBEDO
-                                            : LOGO_POLLAR
+                                            : LOGO_CHETTAPAY
                                 }}
                                 style={styles.walletImage}
                             />
@@ -182,9 +183,9 @@ export function TransactionModalTemplate({
                     status={isError ? 'ERROR' : isSigning || transaction.step === 'building' ? 'LOADING' : isSuccess ? 'SUCCESS' : 'NONE'}
                 />
 
-                <PollarModalFooter />
+                <ChettaPayModalFooter />
             </View>
-        </PollarOverlay>
+        </ChettaPayOverlay>
     );
 }
 
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
         height: 64,
         borderRadius: 32,
         borderWidth: 2,
-        borderColor: '#005DB4',
+        borderColor: CHETTA.amber,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,

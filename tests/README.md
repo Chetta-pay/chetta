@@ -1,4 +1,4 @@
-# `@pollar` smoke tests
+# `@chettapay` smoke tests
 
 Quick, self-contained scripts that exercise the SDK against the **built** `dist/`.
 They are NOT a substitute for unit tests — they're regression guards for the
@@ -43,7 +43,7 @@ node tests/smoke-session-races.cjs
 
 ### `smoke-client.cjs`
 
-`PollarClient` request-path behavior:
+`ChettaPayClient` request-path behavior:
 
 - `client.ready()` resolves after the keypair is initialized and any persisted
   session restored
@@ -92,7 +92,7 @@ actually verifies the binding (nonce challenge + proof-JWK thumbprint vs the
 `cnf.jkt` computed from the login's `dpopJwk`) and an in-memory IndexedDB shim
 that survives across client instances:
 
-- A fresh `PollarClient` over the same Storage + IndexedDB resumes: the resume
+- A fresh `ChettaPayClient` over the same Storage + IndexedDB resumes: the resume
   proof's thumbprint equals the token's `cnf.jkt`, and concurrent resume
   triggers (visibility flaps) coalesce into a single request
 - A genuinely revoked session (403 on resume) still clears to `idle`
@@ -113,7 +113,7 @@ that survives across client instances:
 
 Cross-document and logout-race guards (added after a cross-review):
 
-- `logout()` is async and consumers do not await it (`@pollar/react` fires it
+- `logout()` is async and consumers do not await it (`@chettapay/react` fires it
   from the login modal and the wallet button). A login that completes inside that
   window must survive: the teardown is guarded on the session generation.
 - The DPoP keypair is shared per origin + API key, so `logout()` rotates it only
@@ -130,7 +130,7 @@ Cross-document and logout-race guards (added after a cross-review):
 
 ### `smoke-lifecycle.cjs`
 
-Teardown leaves nothing behind. `PollarClient` registers itself in a MODULE-level
+Teardown leaves nothing behind. `ChettaPayClient` registers itself in a MODULE-level
 registry so an in-document logout can reach sibling instances, and a module-level
 map holding client references leaks unless registration and deregistration agree
 exactly. Observed through behavior, never private state:
@@ -191,7 +191,7 @@ handler-filter and triple-race blocks fail.
 
 ### `smoke-react.cjs`
 
-`PollarProvider` client lifecycle, rendered through jsdom + `react-dom/client`.
+`ChettaPayProvider` client lifecycle, rendered through jsdom + `react-dom/client`.
 Deliberately NOT `react-test-renderer`: that renderer does not enable
 StrictMode's double-render, so the central assertion would pass without the
 scenario ever running. Block 0 is a positive control that proves the
@@ -205,12 +205,12 @@ double-invocation happens here.
 - unmount destroys a provider-built client, and leaves a consumer-passed one alive
 - five mount/unmount cycles leak no `storage` listeners
 
-The StrictMode block is what caught the orphan `PollarClient` this release fixes:
+The StrictMode block is what caught the orphan `ChettaPayClient` this release fixes:
 the provider built the client in a `useState` initializer, StrictMode
 double-invoked it, React kept one and the other was never destroyed - it outlived
 the provider's unmount holding a `storage` listener, a refresh loop and a
 registry entry. Two live clients on one API key share a session row and a DPoP
-keypair, which is the precondition every session-teardown bug in `@pollar/core`
+keypair, which is the precondition every session-teardown bug in `@chettapay/core`
 needed. Both assertions fail against the provider that predates the fix.
 
 ## What's not covered
@@ -219,7 +219,7 @@ needed. Both assertions fail against the provider that predates the fix.
 - Real WebCrypto in browsers (uses Node's WebCrypto via the `index.rn.js`
   entry for `NobleKeyManager` paths, since Node lacks `indexedDB`).
 - Full OAuth popup flow (Google / GitHub redirect).
-- React provider hooks (covered separately when we add `@pollar/react` tests).
+- React provider hooks (covered separately when we add `@chettapay/react` tests).
 
 ## Requirements
 

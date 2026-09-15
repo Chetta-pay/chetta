@@ -1,12 +1,12 @@
 import type { SwapConfigContent, SwapQuoteBody, SwapQuoteContent, SwapTokensContent } from '../../types';
-import type { PollarApiClient } from '../client';
+import type { ChettaPayApiClient } from '../client';
 
 /**
  * GET /swap/config
  * The venues this app exposes to end-users (operator's dashboard selection,
  * intersected with server capability). Empty `venues` = swap disabled.
  */
-export async function getSwapConfig(api: PollarApiClient): Promise<SwapConfigContent> {
+export async function getSwapConfig(api: ChettaPayApiClient): Promise<SwapConfigContent> {
   const { data, error } = await api.GET('/swap/config');
   if (!data?.content || error) {
     throw new Error(
@@ -23,7 +23,7 @@ export async function getSwapConfig(api: PollarApiClient): Promise<SwapConfigCon
  * The curated "buy" tokens the app opted into (admin catalog), for this API key's
  * network. The SDK merges these into the buy list.
  */
-export async function getSwapTokens(api: PollarApiClient): Promise<SwapTokensContent> {
+export async function getSwapTokens(api: ChettaPayApiClient): Promise<SwapTokensContent> {
   const { data, error } = await api.GET('/swap/tokens');
   if (!data?.content || error) {
     throw new Error(
@@ -42,7 +42,7 @@ export async function getSwapTokens(api: PollarApiClient): Promise<SwapTokensCon
  * the client runs through the tx pipeline. An empty `quotes` array means no route
  * exists for the pair on this network.
  */
-export async function quoteSwap(api: PollarApiClient, body: SwapQuoteBody): Promise<SwapQuoteContent> {
+export async function quoteSwap(api: ChettaPayApiClient, body: SwapQuoteBody): Promise<SwapQuoteContent> {
   const { data, error } = await api.POST('/swap/quote', { body });
   if (!data?.content || error) {
     throw new Error(

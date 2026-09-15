@@ -1,10 +1,10 @@
-// @pollar smoke test — client lifecycle: teardown leaves nothing behind.
+// @chettapay smoke test — client lifecycle: teardown leaves nothing behind.
 //
 // Run with `node tests/smoke-lifecycle.cjs` after `npm run build`. For the
 // reachability block, run it with `--expose-gc` (the npm script does); without
 // the flag that block is skipped, not failed.
 //
-// Why this file exists: `PollarClient` registers itself in a MODULE-level
+// Why this file exists: `ChettaPayClient` registers itself in a MODULE-level
 // registry (`liveClientsByApiKey`) so a logout can be announced to sibling
 // instances in the same document. A module-level map holding client references
 // is a leak waiting to happen - registration and deregistration have to agree
@@ -61,14 +61,14 @@ function makeLogger() {
       error: noop,
       warn: (msg) => {
         state.warnings.push(String(msg));
-        if (String(msg).includes('Another PollarClient is already active')) state.collisionWarnings++;
+        if (String(msg).includes('Another ChettaPayClient is already active')) state.collisionWarnings++;
       },
     },
   };
 }
 
 function newClient(apiKey, logger) {
-  return new sdk.PollarClient({ apiKey, storage: sdk.createMemoryAdapter(), baseUrl: 'https://x.test', logger });
+  return new sdk.ChettaPayClient({ apiKey, storage: sdk.createMemoryAdapter(), baseUrl: 'https://x.test', logger });
 }
 
 (async () => {
@@ -189,7 +189,7 @@ function newClient(apiKey, logger) {
         let ref;
         {
           // No window/localStorage here: this is the SSR path.
-          const c = new sdk.PollarClient({ apiKey: 'pk_ssr_leak', baseUrl: 'https://x.test',
+          const c = new sdk.ChettaPayClient({ apiKey: 'pk_ssr_leak', baseUrl: 'https://x.test',
             logger: { debug(){}, info(){}, warn(){}, error(){} } });
           ref = new WeakRef(c);
         }
@@ -229,9 +229,9 @@ function newClient(apiKey, logger) {
     const storage = sdk.createMemoryAdapter();
     const apiKey = 'pk_lifecycle_hostile_sibling';
 
-    const seed = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger: quiet });
+    const seed = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger: quiet });
     await seed.ready();
-    const sessionKey = `pollar:${seed.apiKeyHash}:session`;
+    const sessionKey = `chettapay:${seed.apiKeyHash}:session`;
     await storage.set(
       sessionKey,
       JSON.stringify({
@@ -245,8 +245,8 @@ function newClient(apiKey, logger) {
     );
     seed.destroy();
 
-    const origin = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger: quiet });
-    const sibling = new sdk.PollarClient({ apiKey, storage, baseUrl: 'https://x.test', logger: hostile });
+    const origin = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger: quiet });
+    const sibling = new sdk.ChettaPayClient({ apiKey, storage, baseUrl: 'https://x.test', logger: hostile });
     await Promise.all([origin.ready(), sibling.ready()]);
     await new Promise((r) => setTimeout(r, 40));
     check(

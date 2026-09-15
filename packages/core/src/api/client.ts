@@ -1,16 +1,16 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './schema';
-import type { PollarRetryConfig } from '../types';
-import { PollarNetworkError } from '../types';
+import type { ChettaPayRetryConfig } from '../types';
+import { ChettaPayNetworkError } from '../types';
 import { anySignal, timeoutController } from '../lib/abort';
 
-export type PollarApiClient = ReturnType<typeof createApiClient>;
+export type ChettaPayApiClient = ReturnType<typeof createApiClient>;
 
 export interface ApiClientOptions {
   /** Per-attempt timeout in ms. `0`/`undefined` disables the timeout. */
   timeoutMs?: number | undefined;
   /** Retry policy for transport-level failures. */
-  retry?: PollarRetryConfig | undefined;
+  retry?: ChettaPayRetryConfig | undefined;
   /**
    * Re-signs a request that is about to be RE-SENT by the transport retry below.
    *
@@ -38,7 +38,7 @@ const DEFAULT_BASE_DELAY_MS = 300;
 function isRetryableTransportError(err: unknown): boolean {
   // A timeout we raised, an AbortError from the timeout signal, or fetch's
   // generic network failure (a `TypeError` like "Network request failed").
-  if (err instanceof PollarNetworkError) return true;
+  if (err instanceof ChettaPayNetworkError) return true;
   if (err instanceof Error && err.name === 'AbortError') return true;
   if (err instanceof TypeError) return true;
   return false;
@@ -54,7 +54,7 @@ function backoffDelay(attempt: number, baseDelayMs: number): number {
 /**
  * Run a single fetch bounded by `timeoutMs`, combining the timeout with the
  * request's own abort signal (e.g. a caller's cancellation, or `destroy()`).
- * Rejects with {@link PollarNetworkError} when the timeout - not the caller -
+ * Rejects with {@link ChettaPayNetworkError} when the timeout - not the caller -
  * fired, so the reason is distinguishable downstream.
  *
  * Exported so the DPoP-nonce retry inside the client (which rebuilds the Request
@@ -81,7 +81,7 @@ export async function fetchWithTimeout(request: Request, timeoutMs: number): Pro
     // swallowed below since the race already settled.)
     return await new Promise<Response>((resolve, reject) => {
       fetchPromise.then(resolve, reject);
-      const onTimeout = () => reject(new PollarNetworkError(`Request timed out after ${timeoutMs}ms`));
+      const onTimeout = () => reject(new ChettaPayNetworkError(`Request timed out after ${timeoutMs}ms`));
       if (timeout.signal.aborted) onTimeout();
       else timeout.signal.addEventListener('abort', onTimeout);
     });
@@ -89,7 +89,9 @@ export async function fetchWithTimeout(request: Request, timeoutMs: number): Pro
     // The timeout fired (not the caller's own cancellation) - normalize the
     // failure to a typed, catchable error so callers can branch on the code.
     if (timeout.signal.aborted && !request.signal?.aborted) {
-      throw err instanceof PollarNetworkError ? err : new PollarNetworkError(`Request timed out after ${timeoutMs}ms`, err);
+      throw err instanceof ChettaPayNetworkError
+        ? err
+        : new ChettaPayNetworkError(`Request timed out after ${timeoutMs}ms`, err);
     }
     throw err;
   } finally {
@@ -123,7 +125,7 @@ export async function fetchWithTimeout(request: Request, timeoutMs: number): Pro
  */
 function makeRetryingFetch(
   timeoutMs: number,
-  retry: Required<PollarRetryConfig>,
+  retry: Required<ChettaPayRetryConfig>,
   resignRetry?: ApiClientOptions['resignRetry'],
 ) {
   const attempts = Math.max(1, retry.attempts);
@@ -137,13 +139,13 @@ function makeRetryingFetch(
     const canRetry = isIdempotent && (!carriesProof || resignRetry !== undefined);
     const maxAttempts = canRetry ? attempts : 1;
     // Per-request timeout override (set by slow submit-family calls via the
-    // `x-pollar-timeout-ms` header). Read it, then STRIP it so this internal
+    // `x-chettapay-timeout-ms` header). Read it, then STRIP it so this internal
     // control header never travels to the server. Fall back to the client
     // default when absent or malformed.
     let effectiveTimeoutMs = timeoutMs;
-    const timeoutOverride = request.headers.get('x-pollar-timeout-ms');
+    const timeoutOverride = request.headers.get('x-chettapay-timeout-ms');
     if (timeoutOverride !== null) {
-      request.headers.delete('x-pollar-timeout-ms');
+      request.headers.delete('x-chettapay-timeout-ms');
       const parsed = Number(timeoutOverride);
       if (Number.isFinite(parsed) && parsed > 0) effectiveTimeoutMs = parsed;
     }
@@ -179,7 +181,7 @@ function makeRetryingFetch(
 
 export function createApiClient(baseUrl: string, options: ApiClientOptions = {}) {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const retry: Required<PollarRetryConfig> = {
+  const retry: Required<ChettaPayRetryConfig> = {
     attempts: options.retry?.attempts ?? DEFAULT_ATTEMPTS,
     baseDelayMs: options.retry?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
   };

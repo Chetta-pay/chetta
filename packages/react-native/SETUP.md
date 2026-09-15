@@ -1,24 +1,24 @@
-# @pollar/react-native — Setup Guide
+# @chettapay/react-native — Setup Guide
 
 ## Prerequisites
 
 - Node.js >= 18
 - React Native >= 0.72 (or Expo SDK >= 49)
-- `@pollar/core` as a peer dependency
+- `@chettapay/core` as a peer dependency
 
 ---
 
 ## 1. Install dependencies
 
 ```bash
-npm install @pollar/react-native @pollar/core
+npm install @chettapay/react-native @chettapay/core
 ```
 
 ---
 
 ## 2. Get your API key
 
-1. Go to the [Pollar Dashboard](https://pollar.xyz)
+1. Go to the [ChettaPay Dashboard](https://chettapay.vercel.app)
 2. Create a new application (or select an existing one)
 3. Copy your **publishable API key** from the Settings page
 
@@ -33,21 +33,21 @@ npm install @pollar/react-native @pollar/core
 
 ## 3. Configure your app
 
-Wrap your root component with `PollarProvider` and pass your API key:
+Wrap your root component with `ChettaPayProvider` and pass your API key:
 
 ```tsx
-import { PollarProvider } from '@pollar/react-native';
+import { ChettaPayProvider } from '@chettapay/react-native';
 
 export default function App() {
   return (
-    <PollarProvider
+    <ChettaPayProvider
       config={{
         apiKey: 'pub_testnet_xxxxxxxxxxxxxxxxxxxx',  // ← Your key here
         stellarNetwork: 'testnet',
       }}
     >
       <MyApp />
-    </PollarProvider>
+    </ChettaPayProvider>
   );
 }
 ```
@@ -56,16 +56,16 @@ export default function App() {
 
 | Option           | Type     | Default                        | Description                     |
 |------------------|----------|--------------------------------|---------------------------------|
-| `apiKey`         | `string` | —                              | **Required.** Your Pollar key.  |
+| `apiKey`         | `string` | —                              | **Required.** Your ChettaPay key.  |
 | `stellarNetwork` | `string` | `'testnet'`                    | `'testnet'` or `'mainnet'`.     |
-| `baseUrl`        | `string` | `'https://sdk.api.pollar.xyz'` | Override the API base URL.      |
+| `baseUrl`        | `string` | `'https://chettapay-api.vercel.app'` | Override the API base URL.      |
 
 ### Style overrides (optional)
 
 You can override styles locally. These merge with the remote config from the Dashboard:
 
 ```tsx
-<PollarProvider
+<ChettaPayProvider
   config={{ apiKey: '...' }}
   styles={{
     theme: 'dark',                     // 'light' or 'dark'
@@ -90,7 +90,7 @@ You can override styles locally. These merge with the remote config from the Das
 The fastest way to get authentication working:
 
 ```tsx
-import { WalletButton } from '@pollar/react-native';
+import { WalletButton } from '@chettapay/react-native';
 
 function HomeScreen() {
   return <WalletButton />;
@@ -103,12 +103,12 @@ This renders a button that:
 
 ---
 
-## 5. Use the `usePollar()` hook
+## 5. Use the `useChettaPay()` hook
 
 Access all SDK features programmatically:
 
 ```tsx
-import { usePollar } from '@pollar/react-native';
+import { useChettaPay } from '@chettapay/react-native';
 
 function Dashboard() {
   const {
@@ -123,7 +123,7 @@ function Dashboard() {
     openRampWidget,
     network,
     setNetwork,
-  } = usePollar();
+  } = useChettaPay();
 
   return (
     <View>
@@ -145,11 +145,11 @@ function Dashboard() {
 
 When ready to deploy:
 
-1. Create a **mainnet** API key in the Pollar Dashboard
+1. Create a **mainnet** API key in the ChettaPay Dashboard
 2. Update your config:
 
 ```tsx
-<PollarProvider
+<ChettaPayProvider
   config={{
     apiKey: 'pub_mainnet_xxxxxxxxxxxxxxxxxxxx',
     stellarNetwork: 'mainnet',
@@ -165,7 +165,7 @@ If you are developing the SDK itself:
 
 ```bash
 # 1. Install all monorepo dependencies
-cd pollar/
+cd chettapay/
 npm install
 
 # 2. Build the core package first
@@ -183,7 +183,7 @@ npx yalc push
 Then in your consumer app:
 
 ```bash
-npx yalc add @pollar/core @pollar/react-native
+npx yalc add @chettapay/core @chettapay/react-native
 npm install
 ```
 

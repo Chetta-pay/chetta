@@ -1,25 +1,25 @@
-# @pollar/stellar-wallets-kit-adapter
+# @chettapay/stellar-wallets-kit-adapter
 
-Plug [Stellar Wallets Kit](https://stellarwalletskit.dev) into [`@pollar/core`](../core) as a set of wallet adapters, without `@pollar/core` having to depend on the kit. One install gives Pollar access to **every wallet module the kit supports** — Freighter, Albedo, xBull, Lobstr, Rabet, Hana, Bitget, OneKey, Klever, Fordefi, CactusLink, HotWallet, plus Ledger / Trezor / WalletConnect via opt-in.
+Plug [Stellar Wallets Kit](https://stellarwalletskit.dev) into [`@chettapay/core`](../core) as a set of wallet adapters, without `@chettapay/core` having to depend on the kit. One install gives ChettaPay access to **every wallet module the kit supports** — Freighter, Albedo, xBull, Lobstr, Rabet, Hana, Bitget, OneKey, Klever, Fordefi, CactusLink, HotWallet, plus Ledger / Trezor / WalletConnect via opt-in.
 
-The adapters are registered through the `walletAdapters` slot on `PollarClientConfig`. `stellarWalletsKitAdapters()` returns a `WalletAdapter[]` (one adapter per kit module) that you spread into that array alongside any other adapters you register.
+The adapters are registered through the `walletAdapters` slot on `ChettaPayClientConfig`. `stellarWalletsKitAdapters()` returns a `WalletAdapter[]` (one adapter per kit module) that you spread into that array alongside any other adapters you register.
 
 ## Installation
 
 ```bash
-npm install @pollar/stellar-wallets-kit-adapter @pollar/core @creit.tech/stellar-wallets-kit
+npm install @chettapay/stellar-wallets-kit-adapter @chettapay/core @creit.tech/stellar-wallets-kit
 ```
 
-`@pollar/core` and `@creit.tech/stellar-wallets-kit` are peer dependencies — install whichever versions match the rest of your app. Requires Node 20+ when running in toolchains.
+`@chettapay/core` and `@creit.tech/stellar-wallets-kit` are peer dependencies — install whichever versions match the rest of your app. Requires Node 20+ when running in toolchains.
 
 ## Quick start
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: 'your-api-key',
   walletAdapters: stellarWalletsKitAdapters({ network: Networks.PUBLIC }),
 });
@@ -31,21 +31,21 @@ client.login({ provider: 'xbull' });
 With React:
 
 ```tsx
-import { PollarProvider } from '@pollar/react';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayProvider } from '@chettapay/react';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-<PollarProvider
+<ChettaPayProvider
   client={{
     apiKey: 'your-api-key',
     walletAdapters: stellarWalletsKitAdapters({ network: Networks.TESTNET }),
   }}
 >
   {/* your app */}
-</PollarProvider>;
+</ChettaPayProvider>;
 ```
 
-Every wallet you register this way renders as its own button inside Pollar's
+Every wallet you register this way renders as its own button inside ChettaPay's
 `LoginModal` (collapsed behind a shared "Wallet" gateway) - see
 [Login UI](#login-ui) below.
 
@@ -55,7 +55,7 @@ time (via `ensureInit()`), building one `StellarWalletsKitAdapter` per module up
 front. It is not lazy - a later `login({ provider })` just routes to the
 matching adapter that was already built.
 
-> **0.11.2** requires `@pollar/core@^0.11.2` / `@pollar/react@^0.11.2`. The
+> **0.11.2** requires `@chettapay/core@^0.11.2` / `@chettapay/react@^0.11.2`. The
 > adapter now implements `signStellarMessage` (via `kit.signMessage`), so every
 > kit wallet that supports message signing can back a SEP-53 ownership proof
 > through `client.stellar.sep53`.
@@ -97,14 +97,14 @@ Calling `stellarWalletsKitAdapters({ network })` with no `modules` argument enab
 Pass your own `modules` list. Import from the kit's per-wallet subpaths so unused modules tree-shake out:
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks, WalletNetwork } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
 import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
 import { WalletConnectAllowedMethods, WalletConnectModule } from '@creit.tech/stellar-wallets-kit/modules/wallet-connect';
 
-const client = new PollarClient({
+const client = new ChettaPayClient({
   apiKey: 'your-api-key',
   walletAdapters: stellarWalletsKitAdapters({
     network: Networks.PUBLIC,
@@ -161,7 +161,7 @@ interface StellarWalletsKitAdapterOptions {
   logLevel?: LogLevel;
 
   /** Sink for logs. Defaults to the global `console`. */
-  logger?: PollarLogger;
+  logger?: ChettaPayLogger;
 }
 
 interface KitPickerOptions {
@@ -187,9 +187,9 @@ interface KitPickerOptions {
 }
 ```
 
-`stellarWalletsKitAdapters()` returns `WalletAdapter[]` from `@pollar/core` - one
+`stellarWalletsKitAdapters()` returns `WalletAdapter[]` from `@chettapay/core` - one
 adapter per included kit module - which you assign to
-`PollarClientConfig.walletAdapters`. Each adapter's `type` is the kit `WalletId`
+`ChettaPayClientConfig.walletAdapters`. Each adapter's `type` is the kit `WalletId`
 (`WalletType | (string & {})`, so `WalletType.FREIGHTER` keeps autocomplete while
 `'xbull'`, `'lobstr'`, ... are accepted as plain strings) and its `meta` carries
 the module's label/icon for the auto-rendered login button.
@@ -199,14 +199,14 @@ the module's label/icon for the auto-rendered login button.
 `stellarWalletsKitAdapters()` returns `[]` when `typeof window === 'undefined'`.
 The kit talks to browser wallet extensions and touches `window` both at
 `StellarWalletsKit.init()` and inside its module constructors, so there are no
-wallets to build server-side. Under Next.js/Remix, construct your `PollarClient`
+wallets to build server-side. Under Next.js/Remix, construct your `ChettaPayClient`
 and render the wallet UI on the client (e.g. behind a mounted flag or
 `dynamic(..., { ssr: false })`); the real adapters are built when the factory
 re-runs in the browser.
 
-## How it fits the Pollar wallet contract
+## How it fits the ChettaPay wallet contract
 
-The adapter implements `WalletAdapter` from `@pollar/core`:
+The adapter implements `WalletAdapter` from `@chettapay/core`:
 
 | `WalletAdapter` method       | Kit call                                                               |
 | ---------------------------- | ---------------------------------------------------------------------- |
@@ -226,17 +226,17 @@ module under the hood.
 ## Login UI
 
 The wallets you register via `stellarWalletsKitAdapters({ network })` render
-automatically inside Pollar's `LoginModal` — one button per wallet, collapsed
+automatically inside ChettaPay's `LoginModal` — one button per wallet, collapsed
 behind a single "Wallet" gateway button (their shared `meta.group`). Pass
 `picker.groupLabel` to give them a distinct gateway, or `picker.labels` to
 override individual button labels.
 
 ```tsx
-import { PollarProvider } from '@pollar/react';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayProvider } from '@chettapay/react';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 
-<PollarProvider
+<ChettaPayProvider
   client={{
     apiKey: 'your-api-key',
     walletAdapters: stellarWalletsKitAdapters({
@@ -246,17 +246,17 @@ import { Networks } from '@creit.tech/stellar-wallets-kit';
   }}
 >
   {/* your app */}
-</PollarProvider>;
+</ChettaPayProvider>;
 ```
 
 ## Direct adapter access
 
-If you need a `WalletAdapter` instance directly (custom flows outside `PollarClient`), instantiate it yourself once the kit is initialized:
+If you need a `WalletAdapter` instance directly (custom flows outside `ChettaPayClient`), instantiate it yourself once the kit is initialized:
 
 ```ts
 import { StellarWalletsKit, Networks } from '@creit.tech/stellar-wallets-kit';
 import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
-import { StellarWalletsKitAdapter } from '@pollar/stellar-wallets-kit-adapter';
+import { StellarWalletsKitAdapter } from '@chettapay/stellar-wallets-kit-adapter';
 
 StellarWalletsKit.init({ network: Networks.PUBLIC, modules: [new FreighterModule()] });
 
@@ -268,17 +268,17 @@ const { address } = await adapter.connect();
 ## Composing with other adapters
 
 `walletAdapters` is a plain `WalletAdapter[]`, so you can spread the kit adapters
-alongside adapters from other packages (`@pollar/privy-adapter`, ...) or your own.
+alongside adapters from other packages (`@chettapay/privy-adapter`, ...) or your own.
 Entries later in the array override an earlier one that reuses the same `type`, and
 each entry also overrides a built-in Freighter/Albedo with a matching `type`:
 
 ```ts
-import { PollarClient } from '@pollar/core';
-import { stellarWalletsKitAdapters } from '@pollar/stellar-wallets-kit-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { stellarWalletsKitAdapters } from '@chettapay/stellar-wallets-kit-adapter';
 import { Networks } from '@creit.tech/stellar-wallets-kit';
 import { MyCustomAdapter } from './my-custom-adapter';
 
-new PollarClient({
+new ChettaPayClient({
   apiKey: 'your-api-key',
   walletAdapters: [...stellarWalletsKitAdapters({ network: Networks.PUBLIC }), new MyCustomAdapter()],
 });
@@ -286,7 +286,7 @@ new PollarClient({
 
 ## Fallback behaviour
 
-If `walletAdapters` is omitted from `PollarClientConfig`, `@pollar/core` falls back to its built-in `FreighterAdapter` / `AlbedoAdapter`. Installing this package is opt-in - existing apps keep working without changes until they add adapters to the slot.
+If `walletAdapters` is omitted from `ChettaPayClientConfig`, `@chettapay/core` falls back to its built-in `FreighterAdapter` / `AlbedoAdapter`. Installing this package is opt-in - existing apps keep working without changes until they add adapters to the slot.
 
 ## License
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { StellarNetwork, WalletBalanceRecord, WalletBalanceState, WalletChain } from '@pollar/core';
+import { StellarNetwork, WalletBalanceRecord, WalletBalanceState, WalletChain } from '@chettapay/core';
 import { ChainSelect, resolveChain } from '../ChainSelect';
-import { BusyOverlay, CopyButton, cropAddress, PollarModalFooter, useStickyData } from '../commons';
+import { BusyOverlay, CopyButton, cropAddress, ChettaPayModalFooter, useStickyData } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
 // Stellar amounts are int64 scaled by 10^7, so 7 decimals is the ledger's exact
@@ -41,33 +41,33 @@ function faucetFor(record: WalletBalanceRecord): FaucetHint | null {
 function BalanceItem({ record, faucet }: { record: WalletBalanceRecord; faucet: FaucetHint | null }) {
   const balanceDiffers = record.balance !== record.available;
   return (
-    <div className="pollar-bal-item">
-      <div className="pollar-bal-asset-info">
-        <span className="pollar-bal-asset-code-row">
-          <span className="pollar-bal-asset">{record.code}</span>
+    <div className="chettapay-bal-item">
+      <div className="chettapay-bal-asset-info">
+        <span className="chettapay-bal-asset-code-row">
+          <span className="chettapay-bal-asset">{record.code}</span>
         </span>
         {record.issuer && (
-          <span className="pollar-issuer">
-            <span className="pollar-issuer-addr">{cropAddress(record.issuer)}</span>
-            <CopyButton value={record.issuer} label="Copy issuer address" className="pollar-copy-btn-sm" />
+          <span className="chettapay-issuer">
+            <span className="chettapay-issuer-addr">{cropAddress(record.issuer)}</span>
+            <CopyButton value={record.issuer} label="Copy issuer address" className="chettapay-copy-btn-sm" />
           </span>
         )}
         {faucet && (
-          <span className="pollar-bal-faucet-hint">
+          <span className="chettapay-bal-faucet-hint">
             Need more?{' '}
             <a href={faucet.url} target="_blank" rel="noopener noreferrer">
               {faucet.label}
             </a>
-            {/* Pollar's Solana testnet is the devnet cluster, and both faucets
+            {/* ChettaPay's Solana testnet is the devnet cluster, and both faucets
                 fund devnet - spell it out so nobody requests on the wrong one. */}
-            <span className="pollar-bal-faucet-net"> (devnet)</span>
+            <span className="chettapay-bal-faucet-net"> (devnet)</span>
           </span>
         )}
       </div>
-      <div className="pollar-bal-amounts">
-        <span className="pollar-bal-amount">{formatBalance(record.balance, record.decimals)}</span>
+      <div className="chettapay-bal-amounts">
+        <span className="chettapay-bal-amount">{formatBalance(record.balance, record.decimals)}</span>
         {balanceDiffers && (
-          <span className="pollar-bal-available">{formatBalance(record.available, record.decimals)} available</span>
+          <span className="chettapay-bal-available">{formatBalance(record.available, record.decimals)} available</span>
         )}
       </div>
     </div>
@@ -118,22 +118,27 @@ export function WalletBalanceModalTemplate({
   const showFaucets = selectedChain === 'SOLANA' && network === 'testnet';
 
   return (
-    <div className="pollar-modal-card pollar-bal-modal" data-theme={theme} style={cssVars} onClick={(e) => e.stopPropagation()}>
+    <div
+      className="chettapay-modal-card chettapay-bal-modal"
+      data-theme={theme}
+      style={cssVars}
+      onClick={(e) => e.stopPropagation()}
+    >
       {isLoading && data && <BusyOverlay label="Refreshing balances…" />}
 
-      <div className="pollar-modal-header">
-        <h2 className="pollar-modal-title">Wallet Balance</h2>
-        <div className="pollar-modal-header-actions">
+      <div className="chettapay-modal-header">
+        <h2 className="chettapay-modal-title">Wallet Balance</h2>
+        <div className="chettapay-modal-header-actions">
           <button
             type="button"
-            className="pollar-modal-close"
+            className="chettapay-modal-close"
             onClick={onRefresh}
             disabled={isLoading}
             aria-label="Refresh"
             title="Refresh"
           >
             <svg
-              className={isLoading ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+              className={isLoading ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'}
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -149,7 +154,7 @@ export function WalletBalanceModalTemplate({
               />
             </svg>
           </button>
-          <button className="pollar-modal-close" onClick={onClose} aria-label="Close">
+          <button className="chettapay-modal-close" onClick={onClose} aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -160,28 +165,28 @@ export function WalletBalanceModalTemplate({
       <ChainSelect value={selectedChain} options={chains} onChange={onSelectChain} disabled={isLoading} />
 
       {walletAddress && (
-        <div className="pollar-address-row">
-          <span className="pollar-address">{cropAddress(walletAddress)}</span>
+        <div className="chettapay-address-row">
+          <span className="chettapay-address">{cropAddress(walletAddress)}</span>
           <CopyButton value={walletAddress} label="Copy wallet address" />
         </div>
       )}
 
       {/* First load only - a refresh keeps the old list under the overlay. */}
       {isLoading && !data && (
-        <div className="pollar-loading-block">
-          <div className="pollar-spinner" />
+        <div className="chettapay-loading-block">
+          <div className="chettapay-spinner" />
           <span>Loading…</span>
         </div>
       )}
 
-      {walletBalance.step === 'error' && <div className="pollar-modal-error">{walletBalance.message}</div>}
+      {walletBalance.step === 'error' && <div className="chettapay-modal-error">{walletBalance.message}</div>}
 
-      {data && !data.exists && <div className="pollar-modal-empty">Account not found on {data.network}.</div>}
+      {data && !data.exists && <div className="chettapay-modal-empty">Account not found on {data.network}.</div>}
 
-      {data?.exists && balances.length === 0 && <div className="pollar-modal-empty">No balances found on this network.</div>}
+      {data?.exists && balances.length === 0 && <div className="chettapay-modal-empty">No balances found on this network.</div>}
 
       {data?.exists && balances.length > 0 && (
-        <div className="pollar-bal-list">
+        <div className="chettapay-bal-list">
           {balances.map((b) => (
             <BalanceItem
               key={(b.chain ?? '') + b.code + (b.issuer ?? '')}
@@ -192,7 +197,7 @@ export function WalletBalanceModalTemplate({
         </div>
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

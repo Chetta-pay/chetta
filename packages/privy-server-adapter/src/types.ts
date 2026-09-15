@@ -30,9 +30,9 @@ export enum ErrorCode {
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
 }
 
-export interface PollarPrivyAdapterConfig {
+export interface ChettaPayPrivyAdapterConfig {
   getCredentials: () => Promise<{ appId: string; appSecret: string }>;
-  pollarApiSecret: string;
+  chettaPayApiSecret: string;
   network: StellarNetwork;
   port?: number;
   cacheTtlMs?: number;
@@ -57,12 +57,12 @@ export interface PollarPrivyAdapterConfig {
   onError?: (error: Error, ctx: { endpoint: string; body: unknown }) => void;
 }
 
-export interface PollarPrivyAdapter {
+export interface ChettaPayPrivyAdapter {
   start(): Promise<void>;
   stop(): Promise<void>;
 }
 
-export type ResolvedAdapterConfig = PollarPrivyAdapterConfig & {
+export type ResolvedAdapterConfig = ChettaPayPrivyAdapterConfig & {
   port: number;
   cacheTtlMs: number;
   requestTimeoutMs: number;

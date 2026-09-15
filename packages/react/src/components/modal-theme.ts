@@ -1,13 +1,43 @@
 import type { CSSProperties } from 'react';
-import type { PollarStyles } from '../types';
+import type { ChettaPayStyles } from '../types';
+
+/** The Chetta palette. Named after the animal the mark is drawn from: the coat
+ *  golds carry the brand, and the neutral ramp is warmed to sit with them -
+ *  a cool gray next to amber reads as a mismatch rather than a neutral. */
+export const CHETTA = {
+  /** Coat gold, deepened until white type clears WCAG AA on it (5.2:1). The
+   *  default accent in light theme and the mark's own gradient end. */
+  amber: '#A2590D',
+  /** The lighter coat gold. Default accent in dark theme, where the amber is
+   *  too close to the sable ground to read (8.8:1 against it, versus 3.6:1). */
+  gold: '#E8A33D',
+  /** Spot black, the dark surface. */
+  sable: '#17120E',
+  /** Raised surface in dark theme (inputs, filled secondary buttons). */
+  soot: '#2A211A',
+  /** Underbelly cream, the light theme's raised surface. */
+  sand: '#FAF5EC',
+  /** Hairline on light. */
+  bone: '#E8DECD',
+  /** Hairline on dark. */
+  bark: '#3D3128',
+  /** Body text on light. */
+  ink: '#1B1409',
+  /** Body text on dark. */
+  cream: '#FBF7F1',
+  /** Secondary text on light. */
+  clay: '#7A6A55',
+  /** Secondary text on dark. */
+  dune: '#B0A08A',
+} as const;
 
 /** Per-app overrides for the modal chrome, configured in the dashboard's
  *  Branding screen. Every field is optional: absent means "use the value the
  *  theme derives", which is what every modal rendered before these existed. */
 export interface ModalStyleOverrides {
-  /** Card background. Overrides the theme's white / #1a1a1a. */
+  /** Card background. Overrides the theme's white / sable. */
   backgroundColor?: string | null | undefined;
-  /** Body text. Overrides the theme's #111827 / white. Secondary ("muted") text
+  /** Body text. Overrides the theme's ink / cream. Secondary ("muted") text
    *  keeps its theme color, so the two stay distinguishable. */
   textColor?: string | null | undefined;
   /** Fill of the SECONDARY buttons (the wallet / social / provider entries, the
@@ -57,9 +87,9 @@ export function readableTextOn(background: string): string {
   const rgb = parseHex(background);
   if (!rgb) return '#ffffff';
   // Relative luminance, sRGB coefficients (WCAG). The 0.6 cut lands white on
-  // Pollar blue (#005DB4) exactly as before, and dark on a pale fill.
+  // Chetta amber, and dark on a pale fill.
   const [r, g, b] = rgb;
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6 ? '#111827' : '#ffffff';
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6 ? CHETTA.ink : '#ffffff';
 }
 
 /** How much room a modal gives its header. 'hero' is the identity-forward set
@@ -68,7 +98,7 @@ export function readableTextOn(background: string): string {
  *  ...), which keeps the card's own 1.75rem padding. */
 export type ModalVariant = 'hero' | 'compact';
 
-/** Theme-derived CSS custom properties shared by every Pollar modal, plus the
+/** Theme-derived CSS custom properties shared by every ChettaPay modal, plus the
  *  per-app overrides on top. One definition so the whole modal family stays
  *  visually in lockstep - a var added here reaches all of them at once. */
 export function buildModalCssVars(
@@ -78,43 +108,43 @@ export function buildModalCssVars(
   variant: ModalVariant = 'compact',
 ): CSSProperties {
   const isDark = theme === 'dark';
-  const textColor = color(overrides.textColor, isDark ? '#ffffff' : '#111827');
+  const textColor = color(overrides.textColor, isDark ? CHETTA.cream : CHETTA.ink);
   // Only emitted when actually configured. Left out, the secondary buttons fall
   // back inside the CSS to whatever each already used - the theme surface for
   // the filled ones, `transparent` for the ghost one - so an unset field can't
   // flatten those two into the same look.
   const secondaryBg = color(overrides.buttonColor, '');
   return {
-    '--pollar-accent': accentColor,
-    '--pollar-bg': color(overrides.backgroundColor, isDark ? '#1a1a1a' : '#ffffff'),
-    '--pollar-border': isDark ? '#374151' : '#e5e7eb',
-    '--pollar-text': textColor,
-    '--pollar-muted': isDark ? '#9ca3af' : '#6b7280',
+    '--chettapay-accent': accentColor,
+    '--chettapay-bg': color(overrides.backgroundColor, isDark ? CHETTA.sable : '#ffffff'),
+    '--chettapay-border': isDark ? CHETTA.bark : CHETTA.bone,
+    '--chettapay-text': textColor,
+    '--chettapay-muted': isDark ? CHETTA.dune : CHETTA.clay,
     // The primary button is the accent's, straight up; its label follows the
     // accent's luminance so a pale accent doesn't render white-on-white.
-    '--pollar-btn-primary-fg': readableTextOn(accentColor),
+    '--chettapay-btn-primary-fg': readableTextOn(accentColor),
     ...(secondaryBg
       ? {
-          '--pollar-btn-secondary-bg': secondaryBg,
-          '--pollar-btn-secondary-fg': readableTextOn(secondaryBg),
+          '--chettapay-btn-secondary-bg': secondaryBg,
+          '--chettapay-btn-secondary-fg': readableTextOn(secondaryBg),
         }
       : {}),
-    '--pollar-input-bg': isDark ? '#374151' : '#f9fafb',
-    '--pollar-error-bg': isDark ? '#2a1515' : '#fef2f2',
-    '--pollar-error-border': isDark ? '#7f1d1d' : '#fecaca',
-    '--pollar-error-text': isDark ? '#f87171' : '#dc2626',
-    '--pollar-success-text': isDark ? '#4ade80' : '#16a34a',
-    '--pollar-modal-border-radius': px(overrides.modalBorderRadius, DEFAULT_MODAL_BORDER_RADIUS),
-    '--pollar-buttons-border-radius': px(overrides.buttonBorderRadius, DEFAULT_BUTTON_BORDER_RADIUS),
-    '--pollar-buttons-height': '44px',
-    '--pollar-input-height': '44px',
-    '--pollar-input-border-radius': '0.5rem',
-    '--pollar-card-border-radius': '10px',
+    '--chettapay-input-bg': isDark ? CHETTA.soot : CHETTA.sand,
+    '--chettapay-error-bg': isDark ? '#2a1512' : '#fef2f2',
+    '--chettapay-error-border': isDark ? '#7f1d1d' : '#fecaca',
+    '--chettapay-error-text': isDark ? '#f87171' : '#dc2626',
+    '--chettapay-success-text': isDark ? '#4ade80' : '#16a34a',
+    '--chettapay-modal-border-radius': px(overrides.modalBorderRadius, DEFAULT_MODAL_BORDER_RADIUS),
+    '--chettapay-buttons-border-radius': px(overrides.buttonBorderRadius, DEFAULT_BUTTON_BORDER_RADIUS),
+    '--chettapay-buttons-height': '44px',
+    '--chettapay-input-height': '44px',
+    '--chettapay-input-border-radius': '0.5rem',
+    '--chettapay-card-border-radius': '10px',
     ...(variant === 'hero'
       ? {
-          '--pollar-modal-padding': '2rem',
-          '--pollar-modal-heading-size': '1.375rem',
-          '--pollar-modal-subtitle-size': '0.9rem',
+          '--chettapay-modal-padding': '2rem',
+          '--chettapay-modal-heading-size': '1.375rem',
+          '--chettapay-modal-subtitle-size': '0.9rem',
         }
       : {}),
   } as CSSProperties;
@@ -131,13 +161,18 @@ export interface ModalChrome {
 }
 
 /** Resolve the branding config into the props/styles a modal wrapper applies.
- *  Called by every `.pollar-overlay` renderer so the z-index and the card
+ *  Called by every `.chettapay-overlay` renderer so the z-index and the card
  *  overrides can't drift apart between modals. */
-export function modalChrome(styles: PollarStyles): ModalChrome {
+export function modalChrome(styles: ChettaPayStyles): ModalChrome {
   const zIndex = styles.modalZIndex;
+  const theme = styles.theme ?? 'light';
   return {
-    theme: styles.theme ?? 'light',
-    accentColor: styles.accentColor ?? '#005DB4',
+    theme,
+    // Only the DEFAULT follows the theme. An app that configured an accent gets
+    // that accent in both themes - the brand's own color is not ours to swap.
+    // Unconfigured, the ramp picks the coat gold that actually reads on the
+    // card: amber on white, the lighter gold on sable.
+    accentColor: styles.accentColor ?? (theme === 'dark' ? CHETTA.gold : CHETTA.amber),
     styleOverrides: {
       backgroundColor: styles.backgroundColor,
       textColor: styles.textColor,
@@ -146,7 +181,7 @@ export function modalChrome(styles: PollarStyles): ModalChrome {
       buttonBorderRadius: styles.buttonBorderRadius,
     },
     overlayStyle: {
-      '--pollar-overlay-z-index': typeof zIndex === 'number' && Number.isFinite(zIndex) ? zIndex : DEFAULT_OVERLAY_Z_INDEX,
+      '--chettapay-overlay-z-index': typeof zIndex === 'number' && Number.isFinite(zIndex) ? zIndex : DEFAULT_OVERLAY_Z_INDEX,
     } as CSSProperties,
   };
 }

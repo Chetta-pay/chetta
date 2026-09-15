@@ -1,4 +1,4 @@
-import type { PollarApiClient } from '../client';
+import type { ChettaPayApiClient } from '../client';
 import type {
   RampRail,
   RampsCompleteResponse,
@@ -17,20 +17,20 @@ import type {
   RampsTransactionResponse,
   RampTxStatus,
 } from '../../types';
-import { PollarApiError } from '../../types';
+import { ChettaPayApiError } from '../../types';
 
 /**
- * Wrap an error body into a {@link PollarApiError}, keeping every field the API
+ * Wrap an error body into a {@link ChettaPayApiError}, keeping every field the API
  * sent. Ramp failures are the ones a UI most needs to explain - an amount below
  * the provider's minimum, a stale quote, pending KYC - and collapsing them to
  * the bare code left the caller with nothing to say beyond it.
  *
  * `message` stays the code, so anything rendering `err.message` is unaffected.
  */
-function rampApiError(error: unknown, fallback: string): PollarApiError {
+function rampApiError(error: unknown, fallback: string): ChettaPayApiError {
   const body = (typeof error === 'object' && error !== null ? error : {}) as Record<string, unknown>;
   const code = typeof body.code === 'string' ? body.code : typeof body.error === 'string' ? body.error : fallback;
-  return new PollarApiError(code, body);
+  return new ChettaPayApiError(code, body);
 }
 
 /**
@@ -38,7 +38,7 @@ function rampApiError(error: unknown, fallback: string): PollarApiError {
  * Returns the ISO country codes (+ primary fiat currency) the app's enabled
  * ramp anchors support on its network. Use it to populate a country selector.
  */
-export async function getRampCountries(api: PollarApiClient): Promise<RampsCountriesResponse> {
+export async function getRampCountries(api: ChettaPayApiClient): Promise<RampsCountriesResponse> {
   const { data, error } = await api.GET('/ramps/countries');
   if (!data?.content || error) throw rampApiError(error, 'Failed to get ramp countries');
   return data.content;
@@ -50,7 +50,7 @@ export async function getRampCountries(api: PollarApiClient): Promise<RampsCount
  * The backend ranks providers by country, amount, fee and availability.
  * The first quote in the array is the recommended one.
  */
-export async function getRampsQuote(api: PollarApiClient, query: RampsQuoteQuery): Promise<RampsQuoteResponse> {
+export async function getRampsQuote(api: ChettaPayApiClient, query: RampsQuoteQuery): Promise<RampsQuoteResponse> {
   const { data, error } = await api.GET('/ramps/quote', { params: { query } });
   if (!data?.content || error) throw rampApiError(error, 'Failed to get ramp quotes');
   return data.content;
@@ -62,7 +62,7 @@ export async function getRampsQuote(api: PollarApiClient, query: RampsQuoteQuery
  * For embedded users: backend orchestrates the full SEP-24 flow and returns payment instructions.
  * For external wallets: backend may return an unsigned XDR that the client must sign via a wallet adapter.
  */
-export async function createOnRamp(api: PollarApiClient, body: RampsOnrampBody): Promise<RampsOnrampResponse> {
+export async function createOnRamp(api: ChettaPayApiClient, body: RampsOnrampBody): Promise<RampsOnrampResponse> {
   const { data, error } = await api.POST('/ramps/onramp', { body });
   if (!data?.content || error) throw rampApiError(error, 'Failed to create onramp');
   return data.content;
@@ -73,7 +73,7 @@ export async function createOnRamp(api: PollarApiClient, body: RampsOnrampBody):
  * Creates an offramp transaction.
  * Backend initiates the bank transfer once the Stellar transaction is confirmed.
  */
-export async function createOffRamp(api: PollarApiClient, body: RampsOfframpBody): Promise<RampsOfframpResponse> {
+export async function createOffRamp(api: ChettaPayApiClient, body: RampsOfframpBody): Promise<RampsOfframpResponse> {
   const { data, error } = await api.POST('/ramps/offramp', { body });
   if (!data?.content || error) throw rampApiError(error, 'Failed to create offramp');
   return data.content;
@@ -86,7 +86,7 @@ export async function createOffRamp(api: PollarApiClient, body: RampsOfframpBody
  * `stellarTxHash`; EXTERNAL wallets get a `pendingSignature` to sign and then
  * resume via {@link submitRampSignature}.
  */
-export async function completeWithdraw(api: PollarApiClient, txId: string): Promise<RampsCompleteResponse> {
+export async function completeWithdraw(api: ChettaPayApiClient, txId: string): Promise<RampsCompleteResponse> {
   const { data, error } = await api.POST('/ramps/transaction/{txId}/complete', { params: { path: { txId } } });
   if (!data?.content || error) throw rampApiError(error, 'Failed to complete withdrawal');
   return data.content;
@@ -99,7 +99,7 @@ export async function completeWithdraw(api: PollarApiClient, txId: string): Prom
  * `action: 'withdraw_payment'` broadcasts the signed on-chain withdraw payment.
  */
 export async function submitRampSignature(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   txId: string,
   body: RampsSignatureBody,
 ): Promise<RampsSignatureResponse> {
@@ -112,7 +112,7 @@ export async function submitRampSignature(
  * GET /ramps/transaction/{txId}
  * Returns the current status of a ramp transaction.
  */
-export async function getRampTransaction(api: PollarApiClient, txId: string): Promise<RampsTransactionResponse> {
+export async function getRampTransaction(api: ChettaPayApiClient, txId: string): Promise<RampsTransactionResponse> {
   const { data, error } = await api.GET('/ramps/transaction/{txId}', { params: { path: { txId } } });
   if (!data?.content || error) throw rampApiError(error, 'Failed to get transaction');
   return data.content;
@@ -124,7 +124,7 @@ export async function getRampTransaction(api: PollarApiClient, txId: string): Pr
  * served right now - quoting it succeeds and then fails downstream, so check
  * before offering the corridor.
  */
-export async function getRampLiquidity(api: PollarApiClient, rail: RampRail): Promise<RampsLiquidityResponse> {
+export async function getRampLiquidity(api: ChettaPayApiClient, rail: RampRail): Promise<RampsLiquidityResponse> {
   const { data, error } = await api.GET('/ramps/liquidity', { params: { query: { rail } } });
   if (!data?.content || error) throw rampApiError(error, 'Failed to get ramp liquidity');
   return data.content;
@@ -136,7 +136,7 @@ export async function getRampLiquidity(api: PollarApiClient, rail: RampRail): Pr
  * Poll after an off-ramp answered `kycRequired: true`: nothing was signed and no
  * funds moved, so wait for `hasApproved` and then request a fresh quote.
  */
-export async function getRampKycStatus(api: PollarApiClient): Promise<RampsKycStatusResponse> {
+export async function getRampKycStatus(api: ChettaPayApiClient): Promise<RampsKycStatusResponse> {
   const { data, error } = await api.GET('/ramps/kyc-status');
   if (!data?.content || error) throw rampApiError(error, 'Failed to get ramp KYC status');
   return data.content;
@@ -150,7 +150,7 @@ export async function getRampKycStatus(api: PollarApiClient): Promise<RampsKycSt
  * amount it returns, and send the ORIGINAL payload as `qrCode` on the off-ramp -
  * paying the bare key it decodes to gets rejected by the payee's bank.
  */
-export async function decodePixQr(api: PollarApiClient, qrCode: string): Promise<RampsPixDecodeResponse> {
+export async function decodePixQr(api: ChettaPayApiClient, qrCode: string): Promise<RampsPixDecodeResponse> {
   const { data, error } = await api.GET('/ramps/pix/decode', { params: { query: { qrCode } } });
   if (!data?.content || error) throw rampApiError(error, 'Failed to decode Pix QR');
   return data.content;
@@ -161,7 +161,7 @@ export async function decodePixQr(api: PollarApiClient, qrCode: string): Promise
  * Throws if timeoutMs is exceeded.
  */
 export async function pollRampTransaction(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   txId: string,
   { intervalMs = 5000, timeoutMs = 600_000 }: { intervalMs?: number; timeoutMs?: number } = {},
 ): Promise<RampTxStatus> {

@@ -1,0 +1,7 @@
+{
+  "title": "Danger Zone",
+  "description": "Owner-only destructive actions: archive (and unarchive) the app.",
+  "pages": [
+    "archive-app"
+  ]
+}

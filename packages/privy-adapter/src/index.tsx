@@ -8,14 +8,14 @@ import {
   usePrivy,
 } from '@privy-io/react-auth';
 import { useCreateWallet, useSignRawHash } from '@privy-io/react-auth/extended-chains';
-import type { InteractiveAuthAdapter } from '@pollar/core';
-import type { PollarPrivyConfig } from './config';
+import type { InteractiveAuthAdapter } from '@chettapay/core';
+import type { ChettaPayPrivyConfig } from './config';
 import type { PrivyRuntime } from './runtime';
 import { getPrivyHandle } from './factory';
 import { log } from './log';
 
 export { createPrivyAdapter } from './factory';
-export type { PollarPrivyConfig, PollarPrivyAppearance, PrivyLoginMethod } from './config';
+export type { ChettaPayPrivyConfig, ChettaPayPrivyAppearance, PrivyLoginMethod } from './config';
 export type { AuthOption, InteractiveAuthAdapter, PrivyRuntime } from './runtime';
 export { PrivyAdapterUnsupportedError } from './environment';
 
@@ -39,8 +39,8 @@ function findStellarAddress(user: User | null): string | null {
   return null;
 }
 
-/** Map the slim Pollar config onto Privy's `PrivyClientConfig`. */
-function toPrivyClientConfig(config: PollarPrivyConfig): PrivyClientConfig {
+/** Map the slim ChettaPay config onto Privy's `PrivyClientConfig`. */
+function toPrivyClientConfig(config: ChettaPayPrivyConfig): PrivyClientConfig {
   const cfg: PrivyClientConfig = {
     loginMethods: config.loginMethods as NonNullable<PrivyClientConfig['loginMethods']>,
     // We create the Stellar wallet explicitly via `useCreateWallet`, so disable
@@ -96,7 +96,7 @@ function PrivyRuntimeBridge({ adapter }: BridgeProps) {
   const api = useRef({ privy, sendCode, loginWithCode, initOAuth, createWallet, signRawHash });
   api.current = { privy, sendCode, loginWithCode, initOAuth, createWallet, signRawHash };
 
-  // Trace Privy's auth state. If this logs `authenticated: true` but Pollar still
+  // Trace Privy's auth state. If this logs `authenticated: true` but ChettaPay still
   // shows logged-out, the handoff (login({ provider:'privy' })) never ran - e.g.
   // an OAuth redirect that lost the in-page promise.
   useEffect(() => {
@@ -142,7 +142,7 @@ function PrivyRuntimeBridge({ adapter }: BridgeProps) {
           oauthPending.current = { resolve, reject };
           // On web, `initOAuth` redirects (or opens a popup); completion arrives
           // via the onComplete callback above - after the redirect round-trip,
-          // which the Pollar sub-modal resumes once Privy reports authenticated.
+          // which the ChettaPay sub-modal resumes once Privy reports authenticated.
           log('web: initOAuth invoked (web uses a redirect/popup)', { provider });
           api.current.initOAuth({ provider }).catch((error) => {
             log('web: initOAuth threw', error);
@@ -182,10 +182,10 @@ function PrivyRuntimeBridge({ adapter }: BridgeProps) {
 interface PrivyAdapterProviderProps {
   /** The adapter returned by {@link createPrivyAdapter}. */
   adapter: InteractiveAuthAdapter;
-  config?: PollarPrivyConfig;
+  config?: ChettaPayPrivyConfig;
   /**
    * Optional. In the classic "wrapper" usage you place this above
-   * `<PollarProvider>` and pass your app as children, so they sit inside
+   * `<ChettaPayProvider>` and pass your app as children, so they sit inside
    * `<PrivyProvider>`'s context. In the "sibling" usage you only need Privy +
    * the runtime bridge mounted (the bridge wires the runtime onto the shared
    * adapter by reference), so children can be omitted entirely.
@@ -195,7 +195,7 @@ interface PrivyAdapterProviderProps {
 
 /**
  * Mounts `@privy-io/react-auth`'s `PrivyProvider` and the runtime bridge around
- * your app. Place it above `<PollarProvider>`. The `config` defaults to the one
+ * your app. Place it above `<ChettaPayProvider>`. The `config` defaults to the one
  * passed to {@link createPrivyAdapter}; pass it again only to override.
  */
 export function PrivyAdapterProvider({ adapter, config, children }: PrivyAdapterProviderProps) {

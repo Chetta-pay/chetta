@@ -1,4 +1,4 @@
-// @pollar smoke test — KeyManager primitives + base64url + thumbprint.
+// @chettapay smoke test — KeyManager primitives + base64url + thumbprint.
 //
 // Run with `node tests/smoke-keys.cjs` after `pnpm build`. Imports the built
 // dist/ output so it tests the published artifact (catches build-system

@@ -1,15 +1,15 @@
-// @pollar smoke test — `PollarProvider` client lifecycle.
+// @chettapay smoke test — `ChettaPayProvider` client lifecycle.
 //
 // Run with `node tests/smoke-react.cjs` after `npm run build`.
 //
-// `@pollar/react` is where the double-instance hazard originates. The provider
+// `@chettapay/react` is where the double-instance hazard originates. The provider
 // builds the client in a `useState` initializer, and React StrictMode
 // double-invokes that initializer in development: the extra client's
 // constructor has already run - registering itself, attaching a cross-tab
 // `storage` listener, starting a refresh loop - while React keeps only one, and
 // the provider's cleanup only ever sees the one it kept. Two live clients on
 // one API key share a session row and a DPoP keypair, which is the exact
-// configuration every session-teardown bug in `@pollar/core` needed to bite.
+// configuration every session-teardown bug in `@chettapay/core` needed to bite.
 //
 // Rendered through jsdom + `react-dom/client`, NOT `react-test-renderer`: the
 // test renderer does not enable StrictMode's double-render, so the block below
@@ -50,7 +50,7 @@ const React = require('react');
 const { act } = React;
 const { createRoot } = require('react-dom/client');
 const sdk = require(path.resolve(__dirname, '../packages/core/dist/index.js'));
-const { PollarProvider } = require(path.resolve(__dirname, '../packages/react/dist/index.js'));
+const { ChettaPayProvider } = require(path.resolve(__dirname, '../packages/react/dist/index.js'));
 
 let pass = 0;
 let fail = 0;
@@ -77,7 +77,7 @@ function makeLogger() {
       info: noop,
       error: noop,
       warn: (msg) => {
-        if (String(msg).includes('Another PollarClient is already active')) state.collisions++;
+        if (String(msg).includes('Another ChettaPayClient is already active')) state.collisions++;
       },
     },
   };
@@ -136,7 +136,7 @@ async function unmount(handle) {
     function App() {
       appRenders++;
       return h(
-        PollarProvider,
+        ChettaPayProvider,
         { client: { apiKey: 'pk_react_strict', baseUrl: 'https://x.test', logger }, appConfig: APP_CONFIG },
         null,
       );
@@ -152,7 +152,7 @@ async function unmount(handle) {
     state.collisions = 0;
     const after = mount(
       h(
-        PollarProvider,
+        ChettaPayProvider,
         { client: { apiKey: 'pk_react_strict', baseUrl: 'https://x.test', logger }, appConfig: APP_CONFIG },
         null,
       ),
@@ -166,11 +166,11 @@ async function unmount(handle) {
   {
     const { state, logger } = makeLogger();
     const cfg = { apiKey: 'pk_react_owned', baseUrl: 'https://x.test', logger };
-    const first = mount(h(PollarProvider, { client: cfg, appConfig: APP_CONFIG }, null));
+    const first = mount(h(ChettaPayProvider, { client: cfg, appConfig: APP_CONFIG }, null));
     await render(first);
     await unmount(first);
     // A client that outlived its provider would collide with the next mount.
-    const second = mount(h(PollarProvider, { client: cfg, appConfig: APP_CONFIG }, null));
+    const second = mount(h(ChettaPayProvider, { client: cfg, appConfig: APP_CONFIG }, null));
     await render(second);
     check('unmount destroys the provider-built client', state.collisions === 0, `collisions=${state.collisions}`);
     await unmount(second);
@@ -182,9 +182,9 @@ async function unmount(handle) {
     // singleton reused across route changes is the documented pattern, and
     // destroying it would silently stop its refresh loop.
     const { logger } = makeLogger();
-    const client = new sdk.PollarClient({ apiKey: 'pk_react_passed', baseUrl: 'https://x.test', logger });
+    const client = new sdk.ChettaPayClient({ apiKey: 'pk_react_passed', baseUrl: 'https://x.test', logger });
     await client.ready();
-    const handle = mount(h(PollarProvider, { client, appConfig: APP_CONFIG }, null));
+    const handle = mount(h(ChettaPayProvider, { client, appConfig: APP_CONFIG }, null));
     await render(handle);
     await unmount(handle);
     let alive = false;
@@ -205,7 +205,7 @@ async function unmount(handle) {
     for (let i = 0; i < 5; i++) {
       const handle = mount(
         h(
-          PollarProvider,
+          ChettaPayProvider,
           { client: { apiKey: 'pk_react_cycles', baseUrl: 'https://x.test', logger }, appConfig: APP_CONFIG },
           null,
         ),
@@ -222,12 +222,12 @@ async function unmount(handle) {
 
   console.log('\n── 5. A client from a SECOND copy of core is recognised ──────');
   {
-    // The failure this guards: a package that pulls its own @pollar/core (a
+    // The failure this guards: a package that pulls its own @chettapay/core (a
     // `dependencies` entry instead of a peer, an exact pin that disagrees, a
     // bundler that does not dedupe) hands the provider an instance built by a
     // DIFFERENT class object. `instanceof` answers false, the provider decides
     // it was given a config, and spreads a live client into
-    // `new PollarClient({...})`. Loading the bundle a second time from a copied
+    // `new ChettaPayClient({...})`. Loading the bundle a second time from a copied
     // path is exactly that situation - Node caches by resolved path, so this is
     // a genuinely separate module instance, not the same one twice.
     const fs = require('node:fs');
@@ -245,26 +245,26 @@ async function unmount(handle) {
       fs.rmSync(copied, { force: true });
     }
 
-    check('the second copy really is a separate module', otherCore.PollarClient !== sdk.PollarClient);
+    check('the second copy really is a separate module', otherCore.ChettaPayClient !== sdk.ChettaPayClient);
 
     const { logger } = makeLogger();
-    const foreign = new otherCore.PollarClient({ apiKey: 'pk_react_foreign', baseUrl: 'https://x.test', logger });
+    const foreign = new otherCore.ChettaPayClient({ apiKey: 'pk_react_foreign', baseUrl: 'https://x.test', logger });
     await foreign.ready();
-    check('  instanceof across copies is false (the trap)', !(foreign instanceof sdk.PollarClient));
-    check('  isPollarClient sees through it', sdk.isPollarClient(foreign) === true);
-    check('  and a plain config is still not a client', sdk.isPollarClient({ apiKey: 'x' }) === false);
+    check('  instanceof across copies is false (the trap)', !(foreign instanceof sdk.ChettaPayClient));
+    check('  isChettaPayClient sees through it', sdk.isChettaPayClient(foreign) === true);
+    check('  and a plain config is still not a client', sdk.isChettaPayClient({ apiKey: 'x' }) === false);
 
     // The provider must treat it as a ready client: adopt it, and leave it
     // alive on unmount because it is not the provider's to destroy.
     // Measure by `storage` listeners, not by liveness or by log lines. When the
     // provider mistakes a client for a config it spreads it into
-    // `new PollarClient({...})`; the spread carries `apiKey` so the original
+    // `new ChettaPayClient({...})`; the spread carries `apiKey` so the original
     // stays alive (liveness passes either way), and it does NOT carry `logger`
     // so the new client logs to the console instead of our spy (a log counter
     // passes either way too). A new client always attaches its own cross-tab
     // listener to the one shared jsdom window, whichever copy of core built it.
     const listenersBefore = storageListeners;
-    const handle = mount(h(PollarProvider, { client: foreign, appConfig: APP_CONFIG }, null));
+    const handle = mount(h(ChettaPayProvider, { client: foreign, appConfig: APP_CONFIG }, null));
     await render(handle);
     check(
       '  the provider adopts it, building nothing',

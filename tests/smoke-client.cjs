@@ -1,7 +1,7 @@
-// @pollar smoke test — PollarClient request path + refresh singleton.
+// @chettapay smoke test — ChettaPayClient request path + refresh singleton.
 //
 // Run with `node tests/smoke-client.cjs` after `pnpm build`. Mocks `fetch` so
-// no real network is required; mocks `localStorage` + `window` so PollarClient
+// no real network is required; mocks `localStorage` + `window` so ChettaPayClient
 // thinks it runs in a browser.
 
 const path = require('node:path');
@@ -25,7 +25,7 @@ try {
   // Fallback resolution paths inside the monorepo
   const candidates = [
     path.resolve(__dirname, '../node_modules/jose'),
-    path.resolve(__dirname, '../../pollar-platform/node_modules/.pnpm/jose@5.10.0/node_modules/jose'),
+    path.resolve(__dirname, '../../chettapay-platform/node_modules/.pnpm/jose@5.10.0/node_modules/jose'),
   ];
   for (const c of candidates) {
     try {
@@ -34,7 +34,7 @@ try {
     } catch {}
   }
   if (!decodeJwt) {
-    console.error('FATAL: cannot resolve `jose`. Install in this workspace or in pollar-platform.');
+    console.error('FATAL: cannot resolve `jose`. Install in this workspace or in chettapay-platform.');
     process.exit(1);
   }
 }
@@ -70,9 +70,9 @@ async function waitFor(cond, timeoutMs = 1000) {
   const apiKeyHash = Array.from(new Uint8Array(digest).slice(0, 16))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-  const sessionKey = `pollar:${apiKeyHash}:session`;
+  const sessionKey = `chettapay:${apiKeyHash}:session`;
 
-  // Pre-seed a valid session so PollarClient enters the authenticated state.
+  // Pre-seed a valid session so ChettaPayClient enters the authenticated state.
   await storage.set(
     sessionKey,
     JSON.stringify({
@@ -125,7 +125,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   };
 
   console.log('── 1. Construction + ready() ─────────────────────────────────');
-  const client = new sdk.PollarClient({
+  const client = new sdk.ChettaPayClient({
     apiKey,
     storage,
     baseUrl: 'https://x.test',
@@ -145,7 +145,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   const first = calls[0];
   check('Authorization: DPoP <AT>', first?.headers.authorization === 'DPoP AT');
   check('  DPoP header is JWS (3 dots)', first?.headers.dpop?.split('.').length === 3);
-  check('  x-pollar-api-key set', first?.headers['x-pollar-api-key'] === apiKey);
+  check('  x-chettapay-api-key set', first?.headers['x-chettapay-api-key'] === apiKey);
   const proof = decodeJwt(first.headers.dpop);
   check('  proof.htm = GET', proof.htm === 'GET');
   check('  proof.htu = full URL no query', proof.htu === 'https://x.test/v2/tx/history');
@@ -191,7 +191,7 @@ async function waitFor(cond, timeoutMs = 1000) {
   check('session removed from storage', (await storage.get(sessionKey)) === null);
 
   console.log('\n── 9. apiKeyHash getter throws before ready() ────────────────');
-  const client2 = new sdk.PollarClient({
+  const client2 = new sdk.ChettaPayClient({
     apiKey: 'other',
     storage: sdk.createMemoryAdapter(),
     baseUrl: 'https://x.test',

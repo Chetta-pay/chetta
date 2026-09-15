@@ -1,7 +1,7 @@
-# @pollar/accesly-adapter
+# @chettapay/accesly-adapter
 
 [Accesly](https://github.com/Accesly/SDKAccesly) Smart Account adapter for
-[`@pollar/core`](../core). Lets a user sign Stellar transactions with their
+[`@chettapay/core`](../core). Lets a user sign Stellar transactions with their
 **Accesly Smart Account** (a C-address Soroban contract secured by passkey +
 Shamir-MPC), client-side.
 
@@ -10,17 +10,17 @@ Shamir-MPC), client-side.
 Accesly is a self-custodial **smart wallet**: Accesly deploys and manages the
 C-address contract, and the user signs via Accesly's SDK (passkey unlock →
 Shamir-reconstructed ed25519 seed). So the adapter reports `custody: 'smart'`, but
-signing/submitting happens **client-side + RPC** — Pollar never holds the key and
+signing/submitting happens **client-side + RPC** — ChettaPay never holds the key and
 does **not** deploy/sponsor/submit through wallet-service (that path is only for
-Pollar's _own_ smart wallets).
+ChettaPay's _own_ smart wallets).
 
 ## Install
 
 ```bash
-npm i @pollar/accesly-adapter @pollar/core
+npm i @chettapay/accesly-adapter @chettapay/core
 ```
 
-`@pollar/core` is this adapter's only peer dependency. The Accesly SDK reaches it
+`@chettapay/core` is this adapter's only peer dependency. The Accesly SDK reaches it
 purely through the `signXdr` callback you inject, so nothing from `@accesly/*` is
 imported here - install `@accesly/react` / `@accesly/core` because **your own**
 code calls `useAccesly()`, not because the adapter needs them.
@@ -33,9 +33,9 @@ and hand the adapter a bound `signXdr`:
 ```tsx
 import { useState } from 'react';
 import { useAccesly } from '@accesly/react';
-import { createAcceslyAdapter } from '@pollar/accesly-adapter';
-import { PollarClient } from '@pollar/core';
-import { PollarProvider } from '@pollar/react';
+import { createAcceslyAdapter } from '@chettapay/accesly-adapter';
+import { ChettaPayClient } from '@chettapay/core';
+import { ChettaPayProvider } from '@chettapay/react';
 
 // A hook: `useAccesly()` makes this a hook, so it must be called from a
 // component or another hook — never at module scope.
@@ -54,16 +54,16 @@ function useAcceslyAdapter(acceslyAddress: string, username: string) {
 
 function App() {
   const accesly = useAcceslyAdapter('C…', 'alice');
-  // Build the client once — `<PollarProvider>` locks it at first render.
+  // Build the client once — `<ChettaPayProvider>` locks it at first render.
   const [client] = useState(
     () =>
-      new PollarClient({
+      new ChettaPayClient({
         apiKey: '…',
         walletAdapters: [accesly], // shows an "Accesly" button; login({ provider: 'accesly' })
       }),
   );
 
-  return <PollarProvider client={client}>{/* … */}</PollarProvider>;
+  return <ChettaPayProvider client={client}>{/* … */}</ChettaPayProvider>;
 }
 ```
 
@@ -79,8 +79,8 @@ function App() {
 
 ## ⚠️ Pending confirmation
 
-This adapter assumes Accesly's `signRawXdr` signs an **arbitrary** Pollar-built
+This adapter assumes Accesly's `signRawXdr` signs an **arbitrary** ChettaPay-built
 XDR for the account. If Accesly only signs txs built by its own SDK (`send`,
-`swap`), Pollar's generic `buildTx` flow won't apply and Accesly would need to
-own the transaction flow instead. End-to-end **login** also requires Pollar's
+`swap`), ChettaPay's generic `buildTx` flow won't apply and Accesly would need to
+own the transaction flow instead. End-to-end **login** also requires ChettaPay's
 SEP-10 backend to accept contract-account (C-address) authentication.

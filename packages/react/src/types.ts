@@ -1,9 +1,9 @@
-import { pollarPaths } from '@pollar/core';
+import { chettaPayPaths } from '@chettapay/core';
 
-type ConfigResponse = pollarPaths['/applications/config']['get']['responses'][200]['content']['application/json'];
-export type PollarConfig = ConfigResponse['content'];
+type ConfigResponse = chettaPayPaths['/applications/config']['get']['responses'][200]['content']['application/json'];
+export type ChettaPayConfig = ConfigResponse['content'];
 
-export type PollarStyles = PollarConfig['styles'];
+export type ChettaPayStyles = ChettaPayConfig['styles'];
 
 export interface LoginButtonProps {
   onSuccess?: () => void;

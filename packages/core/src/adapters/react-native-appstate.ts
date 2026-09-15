@@ -13,9 +13,9 @@ import type { VisibilityProvider } from '../visibility/types';
  * keeps web/Node bundles from ever resolving it. Because loading is async, the
  * factory is async too - mirror the `createSecureStoreAdapter` usage:
  *
- *   import { createAppStateVisibilityProvider } from '@pollar/core/adapters/react-native-appstate';
+ *   import { createAppStateVisibilityProvider } from '@chettapay/core/adapters/react-native-appstate';
  *   const visibilityProvider = await createAppStateVisibilityProvider();
- *   new PollarClient({ apiKey, storage, visibilityProvider });
+ *   new ChettaPayClient({ apiKey, storage, visibilityProvider });
  */
 
 /**
@@ -41,7 +41,7 @@ async function loadAppState(): Promise<AppStateApi> {
     return AppState;
   } catch (error) {
     const message =
-      `[PollarClient:visibility] Failed to load 'react-native' AppState. ` +
+      `[ChettaPayClient:visibility] Failed to load 'react-native' AppState. ` +
       `This adapter only runs inside a React Native app. ` +
       `Original error: ${error instanceof Error ? error.message : String(error)}`;
     throw new Error(message, { cause: error });

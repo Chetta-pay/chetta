@@ -1,8 +1,9 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
-import { LOGO_POLLAR } from '../constants';
+import { LOGO_CHETTAPAY } from '../constants';
+import { CHETTA } from '../theme';
 
-declare const __POLLAR_VERSION__: string;
+declare const __CHETTAPAY_VERSION__: string;
 
 type StateStatus = 'NONE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
@@ -18,7 +19,7 @@ export class ModalErrorBoundary extends Component<{ children: ReactNode; onClose
     }
 
     componentDidCatch(error: unknown) {
-        console.error('[Pollar] Modal crashed:', error);
+        console.error('[ChettaPay] Modal crashed:', error);
     }
 
     render() {
@@ -30,20 +31,20 @@ export class ModalErrorBoundary extends Component<{ children: ReactNode; onClose
     }
 }
 
-export const PollarModalFooter = () => {
+export const ChettaPayModalFooter = () => {
     return (
         <View style={styles.footerContainer}>
             <Text style={styles.protectedText}>Protected by</Text>
             <View style={styles.brandRow}>
-                <Image style={styles.footerLogo} source={{ uri: LOGO_POLLAR }} />
-                <Text style={styles.brandName}>Pollar</Text>
-                <Text style={styles.versionText}>v{typeof __POLLAR_VERSION__ !== 'undefined' ? __POLLAR_VERSION__ : '0.0.0'}</Text>
+                <Image style={styles.footerLogo} source={{ uri: LOGO_CHETTAPAY }} />
+                <Text style={styles.brandName}>ChettaPay</Text>
+                <Text style={styles.versionText}>v{typeof __CHETTAPAY_VERSION__ !== 'undefined' ? __CHETTAPAY_VERSION__ : '0.0.0'}</Text>
             </View>
         </View>
     );
 };
 
-export function PollarOverlay({ children, onCancel }: { children: ReactNode; onCancel: () => void }) {
+export function ChettaPayOverlay({ children, onCancel }: { children: ReactNode; onCancel: () => void }) {
     return (
         <Modal visible transparent animationType="slide" onRequestClose={onCancel}>
             <View style={StyleSheet.absoluteFillObject}>
@@ -76,10 +77,10 @@ export function ModalStatusBanner({ message, status, onCancel, onRetry }: ModalS
     return (
         <View style={[styles.statusContainer, status === 'ERROR' && styles.statusError, status === 'SUCCESS' && styles.statusSuccess]}>
             <View style={styles.statusMessageRow}>
-                {isLoading && <ActivityIndicator size="small" color="#005DB4" style={{ marginRight: 8 }} />}
+                {isLoading && <ActivityIndicator size="small" color={CHETTA.amber} style={{ marginRight: 8 }} />}
                 {status === 'ERROR' && <Text style={{ color: '#ef4444', marginRight: 8 }}>⚠️</Text>}
                 {status === 'SUCCESS' && <Text style={{ color: '#10b981', marginRight: 8 }}>✅</Text>}
-                <Text style={[styles.statusText, status === 'ERROR' && { color: '#ef4444' }, status === 'SUCCESS' && { color: '#10b981' }, status === 'LOADING' && { color: '#005DB4' }]}>
+                <Text style={[styles.statusText, status === 'ERROR' && { color: '#ef4444' }, status === 'SUCCESS' && { color: '#10b981' }, status === 'LOADING' && { color: CHETTA.amber }]}>
                     {message}
                 </Text>
             </View>
@@ -106,12 +107,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingTop: 24,
         borderTopWidth: 1,
-        borderTopColor: '#e5e7eb',
+        borderTopColor: CHETTA.bone,
         marginTop: 16,
     },
     protectedText: {
         fontSize: 14,
-        color: '#6b7280',
+        color: CHETTA.clay,
         marginRight: 8,
     },
     brandRow: {
@@ -126,12 +127,12 @@ const styles = StyleSheet.create({
     brandName: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#111827',
+        color: CHETTA.ink,
         marginRight: 6,
     },
     versionText: {
         fontSize: 11,
-        color: '#9ca3af',
+        color: CHETTA.dune,
     },
     statusEmptyContainer: {
         minHeight: 40,
@@ -170,12 +171,12 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
         paddingHorizontal: 8,
         borderWidth: 1,
-        borderColor: '#d1d5db',
+        borderColor: CHETTA.bone,
         borderRadius: 4,
     },
     statusButtonText: {
         fontSize: 11,
         fontWeight: '600',
-        color: '#4b5563',
+        color: CHETTA.clay,
     },
 });

@@ -1,20 +1,20 @@
 ---
-name: pollar-wallet-auth
-description: Add embedded Stellar wallets and local fiat on/off-ramps to a web or React Native app with @pollar/core and @pollar/react. Users sign in with email, social, or a passkey and get a funded account with no seed phrase; the same client quotes and runs fiat deposits and withdrawals, payments, sponsored (gasless) activation and trustlines, multi-venue swaps, and SEP-53 / SEP-10 ownership proofs. Use when an app needs Stellar wallets for people who do not have one, or needs to move money between fiat and Stellar.
+name: chettapay-wallet-auth
+description: Add embedded Stellar wallets and local fiat on/off-ramps to a web or React Native app with @chettapay/core and @chettapay/react. Users sign in with email, social, or a passkey and get a funded account with no seed phrase; the same client quotes and runs fiat deposits and withdrawals, payments, sponsored (gasless) activation and trustlines, multi-venue swaps, and SEP-53 / SEP-10 ownership proofs. Use when an app needs Stellar wallets for people who do not have one, or needs to move money between fiat and Stellar.
 user-invocable: true
-argument-hint: '[pollar task]'
+argument-hint: '[chettapay task]'
 ---
 
-# Pollar: embedded Stellar wallets and login
+# ChettaPay: embedded Stellar wallets and login
 
-Pollar is wallet-as-a-service for Stellar and Solana. A user signs in with Google, GitHub, email OTP, or a device
+ChettaPay is wallet-as-a-service for Stellar and Solana. A user signs in with Google, GitHub, email OTP, or a device
 passkey and comes out the other side holding a Stellar account, funded and with trustlines already set,
 without ever seeing a secret key. The same client also connects external wallets (Freighter, Albedo,
 xBull) so both kinds of user go through one code path.
 
-The SDK is `@pollar/core` (framework agnostic) plus `@pollar/react` (provider, hooks, and prebuilt
-modals). Server-side signing, sponsorship, and key management live behind the Pollar API, configured from
-[dashboard.pollar.xyz](https://dashboard.pollar.xyz).
+The SDK is `@chettapay/core` (framework agnostic) plus `@chettapay/react` (provider, hooks, and prebuilt
+modals). Server-side signing, sponsorship, and key management live behind the ChettaPay API, configured from
+[chettapay-dashboard.vercel.app](https://chettapay-dashboard.vercel.app).
 
 ## When to use this skill
 
@@ -41,7 +41,7 @@ modals). Server-side signing, sponsorship, and key management live behind the Po
 | Keys, dashboard config, funding modes, origin allowlist          | [Setup](#setup) (below)                               |
 | Login flows, auth state machine, sessions, logout                | [Authentication](#authentication) (below)             |
 | Which wallet a user got, addresses, balances                     | [Wallets and balances](#wallets-and-balances) (below) |
-| React and Next.js wiring, `usePollar`, prebuilt modals, branding | [react.md](react.md)                                  |
+| React and Next.js wiring, `useChettaPay`, prebuilt modals, branding | [react.md](react.md)                                  |
 | React Native and Expo, polyfills, secure storage, deep links     | [react-native.md](react-native.md)                    |
 | Fiat on/off-ramps: quotes, deposit instructions, KYC, payouts    | [ramps.md](ramps.md)                                  |
 | Payments, sponsorship, trustlines, swaps, earn, proofs           | [transactions.md](transactions.md)                    |
@@ -50,11 +50,11 @@ modals). Server-side signing, sponsorship, and key management live behind the Po
 ## Install
 
 ```bash
-npm install @pollar/react @pollar/core   # React and React Native
-npm install @pollar/core                 # anything else (Vue, Angular, Svelte, plain TS, Node)
+npm install @chettapay/react @chettapay/core   # React and React Native
+npm install @chettapay/core                 # anything else (Vue, Angular, Svelte, plain TS, Node)
 ```
 
-Requires Node 20+ in the toolchain and React 18+ for `@pollar/react`.
+Requires Node 20+ in the toolchain and React 18+ for `@chettapay/react`.
 
 ---
 
@@ -65,7 +65,7 @@ integration comes down to which one the user has, so read it once and keep it:
 
 | `custody`  | What it is                                                                                                   | Address | Signing                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------ | ------- | ----------------------------------------- |
-| `internal` | Embedded wallet Pollar provisions at login, keys managed server-side. The default for social and email users | `G...`  | Server-side, sponsored per the app config |
+| `internal` | Embedded wallet ChettaPay provisions at login, keys managed server-side. The default for social and email users | `G...`  | Server-side, sponsored per the app config |
 | `smart`    | Soroban smart account deployed for a device passkey                                                          | `C...`  | WebAuthn ceremony on the device           |
 | `external` | A wallet the user already had, connected through an adapter                                                  | `G...`  | The user's own extension or signer        |
 
@@ -77,7 +77,7 @@ if (wallet?.custody === 'internal') {
 ```
 
 There is no `isAuthenticated()` on the core client. A session exists when `getAuthState().step` is
-`'authenticated'`, or equivalently when `getWallet()` is non-null. `@pollar/react` exposes the boolean
+`'authenticated'`, or equivalently when `getWallet()` is non-null. `@chettapay/react` exposes the boolean
 as `isAuthenticated`.
 
 ---
@@ -86,7 +86,7 @@ as `isAuthenticated`.
 
 ### 1. Create the app and take the keys
 
-Sign in at [dashboard.pollar.xyz](https://dashboard.pollar.xyz), create an application, then
+Sign in at [chettapay-dashboard.vercel.app](https://chettapay-dashboard.vercel.app), create an application, then
 **Build > API Keys > Generate**. Keys are per network and come in two flavours:
 
 | Prefix                          | Where it belongs                     |
@@ -99,8 +99,8 @@ the client config in sync with the key prefix rather than treating it as an inde
 
 ```bash
 # .env.local (Next.js)
-NEXT_PUBLIC_POLLAR_PUBLISHABLE_KEY=pub_testnet_xxxxxxxxxxxxxxxxxxxx
-POLLAR_SECRET_KEY=sec_testnet_xxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_CHETTAPAY_PUBLISHABLE_KEY=pub_testnet_xxxxxxxxxxxxxxxxxxxx
+CHETTAPAY_SECRET_KEY=sec_testnet_xxxxxxxxxxxxxxxxxxxx
 ```
 
 Testnet keys are capped at 1,000 requests per day, which is enough for development.
@@ -117,11 +117,11 @@ on the key itself, otherwise every request from the app fails the origin check. 
 ### 3. Instantiate the client once
 
 ```ts
-import { PollarClient } from '@pollar/core';
+import { ChettaPayClient } from '@chettapay/core';
 
 // Module scope, a DI container, or React context. Never inside a render function.
-export const client = new PollarClient({
-  apiKey: process.env.NEXT_PUBLIC_POLLAR_PUBLISHABLE_KEY!,
+export const client = new ChettaPayClient({
+  apiKey: process.env.NEXT_PUBLIC_CHETTAPAY_PUBLISHABLE_KEY!,
   stellarNetwork: 'testnet', // default: 'testnet'
   logLevel: 'warn', // 'silent' | 'error' | 'warn' | 'info' | 'debug'
 });
@@ -155,7 +155,7 @@ any operation that needs a live account.
 subscription, so never `await` it and never derive UI state from its return value.
 
 ```ts
-import { PollarClient, WalletType } from '@pollar/core';
+import { ChettaPayClient, WalletType } from '@chettapay/core';
 
 client.login({ provider: 'google' });
 client.login({ provider: 'github' });
@@ -170,7 +170,7 @@ client.cancelLogin(); // abort whatever is in flight, back to `idle`
 There is no `'wallet'` provider. External wallets are selected by the adapter id.
 
 Passkey smart accounts are their own pair of calls, and both need the `passkey` ceremony injected in
-the config (`@pollar/react` supplies it with `@simplewebauthn/browser`):
+the config (`@chettapay/react` supplies it with `@simplewebauthn/browser`):
 
 ```ts
 client.loginSmartWallet(); // returning user, WebAuthn get
@@ -187,7 +187,7 @@ const unsubscribe = client.onAuthStateChange((state) => {
 ```
 
 In React use `useSyncExternalStore` over `onAuthStateChange` plus `getAuthState`, or just use
-`usePollar()` from `@pollar/react`. See [react.md](react.md).
+`useChettaPay()` from `@chettapay/react`. See [react.md](react.md).
 
 ### PII is memory only
 
@@ -241,8 +241,8 @@ For anything that moves value (payments, trustlines, swaps, ramps, earn, ownersh
 
 These are the failures that look like SDK bugs and are not:
 
-1. **Recreating the client on every render.** `PollarClient` owns the keypair, storage listeners, and
-   the refresh scheduler. Instantiate it once. In `@pollar/react` the `client` prop is locked at first
+1. **Recreating the client on every render.** `ChettaPayClient` owns the keypair, storage listeners, and
+   the refresh scheduler. Instantiate it once. In `@chettapay/react` the `client` prop is locked at first
    render and swapping it later is ignored.
 2. **Awaiting `login()`.** It returns `void`. Subscribe to the auth state instead.
 3. **Origin not allowlisted.** The first symptom is a rejected request before any login UI appears. Add
@@ -263,16 +263,16 @@ These are the failures that look like SDK bugs and are not:
 
 ## Version note
 
-This skill tracks `@pollar/core` and `@pollar/react` `0.11.x`, which moved every request to the `/v2`
+This skill tracks `@chettapay/core` and `@chettapay/react` `0.11.x`, which moved every request to the `/v2`
 API and added Solana alongside Stellar. Two earlier breaks matter if an existing integration is being
 upgraded: `0.11.1` made balances nullable, and `0.10.0` replaced the singular `walletAdapter` resolver
 and `loginWallet(id)` with a `walletAdapters: WalletAdapter[]` array. Check
-[UPGRADE.md](https://github.com/pollar-xyz/pollar/blob/main/UPGRADE.md) before bumping versions.
+[UPGRADE.md](https://github.com/chettapay/chettapay/blob/main/UPGRADE.md) before bumping versions.
 
 ## Sources
 
 Verify anything version-sensitive against the upstream docs rather than assuming this file is current:
 
-- [docs.pollar.xyz](https://docs.pollar.xyz) - guides, core concepts, and SDK reference
-- [github.com/pollar-xyz/pollar](https://github.com/pollar-xyz/pollar) - the SDK monorepo, CHANGELOG, and UPGRADE guide
-- [dashboard.pollar.xyz](https://dashboard.pollar.xyz) - app config, API keys, treasury, and domains
+- [chettapay-docs.vercel.app](https://chettapay-docs.vercel.app) - guides, core concepts, and SDK reference
+- [github.com/chettapay/chettapay](https://github.com/chettapay/chettapay) - the SDK monorepo, CHANGELOG, and UPGRADE guide
+- [chettapay-dashboard.vercel.app](https://chettapay-dashboard.vercel.app) - app config, API keys, treasury, and domains

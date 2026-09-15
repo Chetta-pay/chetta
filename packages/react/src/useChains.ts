@@ -18,10 +18,10 @@
 //     old array, and re-deriving here repairs it without forcing a re-login.
 // -----------------------------------------------------------------------------
 
-import type { WalletChain } from '@pollar/core';
+import type { WalletChain } from '@chettapay/core';
 import { useMemo } from 'react';
 import { addressForChain, chainsOf } from './components/ChainSelect';
-import { usePollar } from './context';
+import { useChettaPay } from './context';
 
 export interface UseChainsResult {
   /**
@@ -44,7 +44,7 @@ export interface UseChainsResult {
 }
 
 export function useChains(): UseChainsResult {
-  const { wallets, appConfig, configStatus } = usePollar();
+  const { wallets, appConfig, configStatus } = useChettaPay();
   const configured = appConfig?.application?.chains as WalletChain[] | undefined;
   const ready = configStatus === 'ready';
 

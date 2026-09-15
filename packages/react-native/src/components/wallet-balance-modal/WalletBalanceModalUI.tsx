@@ -1,7 +1,8 @@
-import { WalletBalanceState } from '@pollar/core';
+import { WalletBalanceState } from '@chettapay/core';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
-import { ModalStatusBanner, PollarModalFooter, PollarOverlay } from '../commons';
+import { ModalStatusBanner, ChettaPayModalFooter, ChettaPayOverlay } from '../commons';
+import { CHETTA } from '../../theme';
 
 export interface WalletBalanceModalTemplateProps {
     theme: string;
@@ -30,11 +31,11 @@ export function WalletBalanceModalTemplate({
     const isDark = theme === 'dark';
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        itemBg: isDark ? '#262626' : '#f9fafb',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        itemBg: isDark ? CHETTA.soot : CHETTA.sand,
     };
 
     const isError = walletBalance.step === 'error';
@@ -44,7 +45,7 @@ export function WalletBalanceModalTemplate({
     const balances = walletBalance.step === 'loaded' ? walletBalance.data.balances : [];
 
     return (
-        <PollarOverlay onCancel={onClose}>
+        <ChettaPayOverlay onCancel={onClose}>
             <View style={[styles.card, { backgroundColor: colors.bg, borderColor: colors.border }]}>
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: colors.text }]}>Wallet Balance</Text>
@@ -92,9 +93,9 @@ export function WalletBalanceModalTemplate({
                     onRetry={isError ? onRefresh : undefined}
                 />
 
-                <PollarModalFooter />
+                <ChettaPayModalFooter />
             </View>
-        </PollarOverlay>
+        </ChettaPayOverlay>
     );
 }
 

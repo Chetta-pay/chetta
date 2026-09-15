@@ -10,11 +10,11 @@ import type {
   WalletAdapter,
   WalletAdapterMeta,
   WalletId,
-} from '@pollar/core';
+} from '@chettapay/core';
 import { getInitNetwork, getKitLogger } from './factory';
 
 /**
- * Wraps Stellar Wallets Kit so it satisfies the `@pollar/core` `WalletAdapter`
+ * Wraps Stellar Wallets Kit so it satisfies the `@chettapay/core` `WalletAdapter`
  * contract. The kit is a global singleton - `setWallet` is called before every
  * operation so the correct module handles the request, which lets a single
  * `StellarWalletsKit.init(...)` cover many wallet modules.

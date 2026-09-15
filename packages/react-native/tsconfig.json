@@ -8,7 +8,7 @@
         "allowSyntheticDefaultImports": true,
         "baseUrl": ".",
         "paths": {
-            "@pollar/core": [
+            "@chettapay/core": [
                 "../core/src/index"
             ]
         }

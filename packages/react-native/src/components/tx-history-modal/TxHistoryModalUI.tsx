@@ -1,7 +1,8 @@
-import { TxHistoryState } from '@pollar/core';
+import { TxHistoryState } from '@chettapay/core';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, Linking } from 'react-native';
-import { ModalStatusBanner, PollarModalFooter, PollarOverlay } from '../commons';
+import { ModalStatusBanner, ChettaPayModalFooter, ChettaPayOverlay } from '../commons';
+import { CHETTA } from '../../theme';
 
 export interface TxHistoryModalTemplateProps {
     theme: string;
@@ -28,11 +29,11 @@ export function TxHistoryModalTemplate({
     const isDark = theme === 'dark';
 
     const colors = {
-        bg: isDark ? '#1a1a1a' : '#ffffff',
-        border: isDark ? '#374151' : '#e5e7eb',
-        text: isDark ? '#ffffff' : '#111827',
-        muted: isDark ? '#9ca3af' : '#6b7280',
-        itemBg: isDark ? '#262626' : '#f9fafb',
+        bg: isDark ? CHETTA.sable : '#ffffff',
+        border: isDark ? CHETTA.bark : CHETTA.bone,
+        text: isDark ? CHETTA.cream : CHETTA.ink,
+        muted: isDark ? CHETTA.dune : CHETTA.clay,
+        itemBg: isDark ? CHETTA.soot : CHETTA.sand,
         successText: isDark ? '#4ade80' : '#16a34a',
     };
 
@@ -43,7 +44,7 @@ export function TxHistoryModalTemplate({
     const transactions = txHistory.step === 'loaded' ? txHistory.data.records : [];
 
     return (
-        <PollarOverlay onCancel={onClose}>
+        <ChettaPayOverlay onCancel={onClose}>
             <View style={[styles.card, { backgroundColor: colors.bg, borderColor: colors.border }]}>
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: colors.text }]}>Transaction History</Text>
@@ -98,9 +99,9 @@ export function TxHistoryModalTemplate({
                     onRetry={isError ? onRefresh : undefined}
                 />
 
-                <PollarModalFooter />
+                <ChettaPayModalFooter />
             </View>
-        </PollarOverlay>
+        </ChettaPayOverlay>
     );
 }
 

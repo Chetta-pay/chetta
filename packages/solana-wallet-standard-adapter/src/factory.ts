@@ -1,4 +1,4 @@
-import type { WalletAdapterMeta, WalletId } from '@pollar/core';
+import type { WalletAdapterMeta, WalletId } from '@chettapay/core';
 import { getWallets } from '@wallet-standard/app';
 import type { Wallet } from '@wallet-standard/base';
 import { StandardConnect } from '@wallet-standard/features';
@@ -26,14 +26,14 @@ function isSolanaWallet(w: Wallet): boolean {
 /**
  * Build one {@link SolanaWalletStandardAdapter} per installed Solana wallet discovered
  * through the Wallet Standard registry, to pass to
- * `PollarClientConfig.walletAdapters` (once `@pollar/core` is chain-aware - see the
+ * `ChettaPayClientConfig.walletAdapters` (once `@chettapay/core` is chain-aware - see the
  * design doc).
  *
  * @example
  * ```ts
- * import { solanaWalletStandardAdapters } from '@pollar/solana-wallet-standard-adapter';
+ * import { solanaWalletStandardAdapters } from '@chettapay/solana-wallet-standard-adapter';
  *
- * const client = new PollarClient({
+ * const client = new ChettaPayClient({
  *   apiKey: '...',
  *   walletAdapters: [...stellarWalletsKitAdapters({ network }), ...solanaWalletStandardAdapters()],
  * });
@@ -42,7 +42,7 @@ function isSolanaWallet(w: Wallet): boolean {
 export function solanaWalletStandardAdapters(options: SolanaWalletStandardAdapterOptions = {}): SolanaWalletStandardAdapter[] {
   // SSR guard: wallet extensions register into a browser-global registry, so
   // there is nothing to find server-side. Return [] and let this re-run on the
-  // client (build the PollarClient client-side, e.g. behind a mounted flag or
+  // client (build the ChettaPayClient client-side, e.g. behind a mounted flag or
   // `dynamic(..., { ssr: false })`). Mirrors the Stellar adapter factory.
   if (typeof window === 'undefined') return [];
 

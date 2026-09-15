@@ -36,7 +36,7 @@ export interface SignTransactionOptions {
 export interface SignAuthEntryOptions {
   /** Stellar network the entry is signed against. Mirrors
    *  {@link SignTransactionOptions} so an adapter (e.g. Albedo) signs on the
-   *  network currently configured on `PollarClient`, not a stale one captured at
+   *  network currently configured on `ChettaPayClient`, not a stale one captured at
    *  construction. Adapters that read the network from their own extension (e.g.
    *  Freighter) ignore these. */
   network?: string;
@@ -68,8 +68,8 @@ export interface SignMessageResponse {
 
 // --- Solana (SIWS) ------------------------------------------------------------
 // Structural mirror of the Wallet Standard's `solana:signIn` IO, kept here so
-// `@pollar/core` types the Solana adapter contract WITHOUT depending on
-// `@solana/wallet-standard-features`. `@pollar/solana-wallet-standard-adapter`
+// `@chettapay/core` types the Solana adapter contract WITHOUT depending on
+// `@solana/wallet-standard-features`. `@chettapay/solana-wallet-standard-adapter`
 // passes the real types, which are structurally assignable to these.
 
 /** Server-issued Sign In With Solana input. All fields optional per the SIWS spec. */
@@ -122,9 +122,9 @@ export interface WalletAdapterMeta {
 
 /**
  * A client-side wallet integration: it does its own auth/connect (Freighter
- * approve, Privy modal, SWK picker...) and signs. `@pollar/core` treats it as a
+ * approve, Privy modal, SWK picker...) and signs. `@chettapay/core` treats it as a
  * black box - it wraps the generic SEP-10 login + tx signing around `connect()`
- * and `signTransaction()`. Register instances via `PollarClientConfig.walletAdapters`.
+ * and `signTransaction()`. Register instances via `ChettaPayClientConfig.walletAdapters`.
  */
 export interface WalletAdapter {
   /** Stable id - matches `login({ provider: id })` and the server-side wallet provider. */
@@ -175,7 +175,7 @@ export type AuthOption = 'email' | 'google' | 'github';
  * The UI calls these methods to run the provider login; once they resolve, it
  * triggers the normal `login({ provider })` so `connect()` runs and core does the
  * SEP-10 flow against the now-authenticated wallet. An adapter that implements
- * this (e.g. `@pollar/privy-adapter`) is detected via {@link isInteractiveAuthAdapter}.
+ * this (e.g. `@chettapay/privy-adapter`) is detected via {@link isInteractiveAuthAdapter}.
  */
 export interface InteractiveAuthAdapter extends WalletAdapter {
   /** Login options to render, in order. */

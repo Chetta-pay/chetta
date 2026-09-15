@@ -1,9 +1,9 @@
 'use client';
 
-import { TransactionState, WalletBalanceRecord, WalletChain, WalletId } from '@pollar/core';
+import { TransactionState, WalletBalanceRecord, WalletChain, WalletId } from '@chettapay/core';
 import { AssetSelect } from '../AssetSelect';
 import { ChainSelect } from '../ChainSelect';
-import { CopyButton, cropAddress, PollarModalFooter } from '../commons';
+import { CopyButton, cropAddress, ChettaPayModalFooter } from '../commons';
 import { TxStatusView } from '../transaction-modal/TxStatusView';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 
@@ -107,36 +107,38 @@ export function SendModalTemplate({
 
   return (
     <div
-      className="pollar-modal-card pollar-send-modal"
+      className="chettapay-modal-card chettapay-send-modal"
       data-theme={theme}
       style={cssVars}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="pollar-modal-header">
-        <div className="pollar-send-header-left">
+      <div className="chettapay-modal-header">
+        <div className="chettapay-send-header-left">
           {showBack && (
-            <button type="button" className="pollar-modal-close" onClick={onBack} aria-label="Back">
+            <button type="button" className="chettapay-modal-close" onClick={onBack} aria-label="Back">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )}
-          <h2 className="pollar-modal-title">{title}</h2>
+          <h2 className="chettapay-modal-title">{title}</h2>
         </div>
         {!isInProgress && (
-          <div className="pollar-modal-header-actions">
+          <div className="chettapay-modal-header-actions">
             {step === 'form' && (
               <button
                 type="button"
-                className="pollar-modal-close"
+                className="chettapay-modal-close"
                 onClick={onRefresh}
                 disabled={isLoadingBalance}
                 aria-label="Refresh"
                 title="Refresh balances"
               >
                 <svg
-                  className={isLoadingBalance ? 'pollar-modal-refresh-icon pollar-spinning' : 'pollar-modal-refresh-icon'}
+                  className={
+                    isLoadingBalance ? 'chettapay-modal-refresh-icon chettapay-spinning' : 'chettapay-modal-refresh-icon'
+                  }
                   width="16"
                   height="16"
                   viewBox="0 0 16 16"
@@ -153,7 +155,7 @@ export function SendModalTemplate({
                 </svg>
               </button>
             )}
-            <button type="button" className="pollar-modal-close" onClick={onClose} aria-label="Close">
+            <button type="button" className="chettapay-modal-close" onClick={onClose} aria-label="Close">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                 <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -169,13 +171,13 @@ export function SendModalTemplate({
           <ChainSelect value={selectedChain} options={chains} onChange={onSelectChain} disabled={isLoadingBalance} />
 
           {walletAddress && (
-            <div className="pollar-address-row">
-              <span className="pollar-address">{cropAddress(walletAddress)}</span>
+            <div className="chettapay-address-row">
+              <span className="chettapay-address">{cropAddress(walletAddress)}</span>
               <CopyButton value={walletAddress} label="Copy wallet address" />
             </div>
           )}
 
-          {!canSendOnChain && <div className="pollar-modal-empty">Sending is not available on this network yet.</div>}
+          {!canSendOnChain && <div className="chettapay-modal-empty">Sending is not available on this network yet.</div>}
 
           {/* Asset selector */}
           <AssetSelect
@@ -198,17 +200,17 @@ export function SendModalTemplate({
           />
 
           {/* Amount */}
-          <div className="pollar-send-field">
-            <div className="pollar-send-label-row">
-              <label className="pollar-send-label">Amount</label>
+          <div className="chettapay-send-field">
+            <div className="chettapay-send-label-row">
+              <label className="chettapay-send-label">Amount</label>
               {selectedAsset && (
-                <span className="pollar-send-hint">
+                <span className="chettapay-send-hint">
                   Available: {formatBalance(selectedAsset.available)} {selectedAsset.code}
                 </span>
               )}
             </div>
             <input
-              className="pollar-input"
+              className="chettapay-input"
               type="text"
               inputMode="decimal"
               placeholder="0.00"
@@ -218,10 +220,10 @@ export function SendModalTemplate({
           </div>
 
           {/* Destination */}
-          <div className="pollar-send-field">
-            <label className="pollar-send-label">Destination wallet</label>
+          <div className="chettapay-send-field">
+            <label className="chettapay-send-label">Destination wallet</label>
             <input
-              className="pollar-input"
+              className="chettapay-input"
               type="text"
               placeholder="G…"
               value={destination}
@@ -229,10 +231,10 @@ export function SendModalTemplate({
             />
           </div>
 
-          {formError && <div className="pollar-modal-error">{formError}</div>}
+          {formError && <div className="chettapay-modal-error">{formError}</div>}
 
-          <div className="pollar-modal-actions">
-            <button className="pollar-btn-primary" onClick={onSubmit} disabled={!canSubmit}>
+          <div className="chettapay-modal-actions">
+            <button className="chettapay-btn-primary" onClick={onSubmit} disabled={!canSubmit}>
               Continue
             </button>
           </div>
@@ -255,7 +257,7 @@ export function SendModalTemplate({
         />
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

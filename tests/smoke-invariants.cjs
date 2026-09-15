@@ -1,4 +1,4 @@
-// @pollar smoke test — session/DPoP invariants under randomized operation order.
+// @chettapay smoke test — session/DPoP invariants under randomized operation order.
 //
 // Run with `node tests/smoke-invariants.cjs` after `npm run build`.
 // `node tests/smoke-invariants.cjs <seed>` replays one seed.
@@ -225,7 +225,7 @@ function report(seed, step, label, detail) {
  * shared storage adapter and the API key. Returns a failure string or null.
  */
 async function checkInvariants(world, clients) {
-  const raw = await world.storage.get(`pollar:${world.apiKeyHash}:session`);
+  const raw = await world.storage.get(`chettapay:${world.apiKeyHash}:session`);
   const row = raw ? JSON.parse(raw) : null;
 
   // I1 — a persisted session's recorded key binding must be the one the server
@@ -302,7 +302,7 @@ async function runSeed(seed, steps) {
   const clients = [];
   const spawn = async (id) => {
     const vis = makeVisibility();
-    const client = new sdk.PollarClient({
+    const client = new sdk.ChettaPayClient({
       apiKey,
       storage,
       baseUrl: 'https://x.test',
@@ -379,7 +379,7 @@ async function runSeed(seed, steps) {
         case 'cross-tab-clear': {
           // Another document removed the row; deliver the event to everyone
           // except the writer, like a browser does.
-          const key = `pollar:${world.apiKeyHash}:session`;
+          const key = `chettapay:${world.apiKeyHash}:session`;
           await storage.remove(key);
           for (const fn of storageHandlers.keys()) fn({ key, newValue: null, storageArea: globalThis.localStorage });
           break;

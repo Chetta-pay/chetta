@@ -6,8 +6,8 @@ quotes. Which anchor serves a corridor, and whether it speaks SEP-24 or REST, is
 quote you were handed, not a decision your code makes. Write against the fields the API returns and
 the integration survives every provider change.
 
-Everything here needs an authenticated session. If the app uses `@pollar/react`, `openRampModal()`
-from `usePollar()` runs this entire flow with a prebuilt UI; the rest of this file is for driving it
+Everything here needs an authenticated session. If the app uses `@chettapay/react`, `openRampModal()`
+from `useChettaPay()` runs this entire flow with a prebuilt UI; the rest of this file is for driving it
 yourself.
 
 ## The shape of a run
@@ -211,11 +211,11 @@ Ramp errors keep every field the API sent, not just the code, because these are 
 explain: an amount below the minimum, a stale quote, a pending identity check.
 
 ```ts
-import { PollarApiError } from '@pollar/core';
+import { ChettaPayApiError } from '@chettapay/core';
 try {
   await client.createOnRamp(body);
 } catch (e) {
-  if (e instanceof PollarApiError) {
+  if (e instanceof ChettaPayApiError) {
     e.code; // e.g. 'RAMPS_AMOUNT_OUT_OF_RANGE'
     e.body; // the full response, with whatever the provider added
   }

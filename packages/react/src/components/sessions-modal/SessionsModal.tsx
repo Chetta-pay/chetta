@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePollar } from '../../context';
+import { useChettaPay } from '../../context';
 import '../shared.css';
 import './SessionsModal.css';
 import { SessionsModalTemplate } from './SessionsModalTemplate';
@@ -12,7 +12,7 @@ interface SessionsModalProps {
 }
 
 export function SessionsModal({ onClose }: SessionsModalProps) {
-  const { getClient, styles, sessions } = usePollar();
+  const { getClient, styles, sessions } = useChettaPay();
   const { theme, accentColor, styleOverrides, overlayStyle } = modalChrome(styles);
 
   // Only the per-action button spinners are local UI state. The list itself
@@ -74,7 +74,7 @@ export function SessionsModal({ onClose }: SessionsModalProps) {
   }, [getClient, onClose]);
 
   return (
-    <div className="pollar-overlay" style={overlayStyle} onClick={onClose}>
+    <div className="chettapay-overlay" style={overlayStyle} onClick={onClose}>
       <SessionsModalTemplate
         theme={theme}
         accentColor={accentColor}

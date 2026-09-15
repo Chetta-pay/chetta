@@ -1,6 +1,6 @@
 'use client';
 
-import type { RampQuote } from '@pollar/core';
+import type { RampQuote } from '@chettapay/core';
 
 interface RouteDisplayProps {
   quote: RampQuote;
@@ -28,7 +28,7 @@ export function RouteDisplay({ quote, busy = false, disabled = false, onSelect }
   };
   return (
     <div
-      className="pollar-ramp-route-card"
+      className="chettapay-ramp-route-card"
       data-recommended={quote.recommended}
       data-busy={busy || undefined}
       data-disabled={disabled || undefined}
@@ -39,19 +39,19 @@ export function RouteDisplay({ quote, busy = false, disabled = false, onSelect }
       onClick={select}
       onKeyDown={(e) => e.key === 'Enter' && select()}
     >
-      <div className="pollar-ramp-route-left">
-        <span className="pollar-ramp-route-provider">{quote.provider}</span>
-        <span className="pollar-ramp-route-meta">
+      <div className="chettapay-ramp-route-left">
+        <span className="chettapay-ramp-route-provider">{quote.provider}</span>
+        <span className="chettapay-ramp-route-meta">
           {busy ? 'Starting…' : `${RAIL_LABELS[quote.rail] ?? quote.rail} · ${quote.protocol} · ${quote.estimatedTime}`}
         </span>
       </div>
-      <div className="pollar-ramp-route-right">
+      <div className="chettapay-ramp-route-right">
         {busy ? (
-          <span className="pollar-spinner pollar-spinner-sm" />
+          <span className="chettapay-spinner chettapay-spinner-sm" />
         ) : (
           <>
-            <span className="pollar-ramp-route-fee">{quote.fee}% fee</span>
-            {quote.recommended && <span className="pollar-ramp-route-badge">Best rate</span>}
+            <span className="chettapay-ramp-route-fee">{quote.fee}% fee</span>
+            {quote.recommended && <span className="chettapay-ramp-route-badge">Best rate</span>}
           </>
         )}
       </div>

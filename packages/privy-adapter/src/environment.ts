@@ -28,7 +28,7 @@ export const UNSUPPORTED_MESSAGE =
   'Expo / React Native (via @privy-io/expo). Privy has no Angular or Vue SDK, so ' +
   'Privy login is not available there yet. On web/RN, make sure you mount ' +
   '<PrivyAdapterProvider> (web) or the Expo provider around your app. For non-React ' +
-  'frameworks, use server-side signing via @pollar/privy-server-adapter instead.';
+  'frameworks, use server-side signing via @chettapay/privy-server-adapter instead.';
 
 /** How long a method waits for a platform bridge to attach before giving up. */
 export const RUNTIME_ATTACH_TIMEOUT_MS = 5_000;

@@ -1,19 +1,19 @@
 'use client';
 
-import type { PollarAdapter, SubmitOutcome } from '@pollar/core';
-import { usePollar } from './context';
+import type { ChettaPayAdapter, SubmitOutcome } from '@chettapay/core';
+import { useChettaPay } from './context';
 
-type WrappedAdapter<T extends PollarAdapter> = {
+type WrappedAdapter<T extends ChettaPayAdapter> = {
   [K in keyof T]: (params: Parameters<T[K]>[0]) => Promise<SubmitOutcome>;
 };
 
-export function createPollarAdapterHook<T extends PollarAdapter>(key: string) {
-  return function usePollarAdapter(): WrappedAdapter<T> {
-    const { adapters, signAndSubmitTx } = usePollar();
+export function createChettaPayAdapterHook<T extends ChettaPayAdapter>(key: string) {
+  return function useChettaPayAdapter(): WrappedAdapter<T> {
+    const { adapters, signAndSubmitTx } = useChettaPay();
     const adapter = adapters?.[key] as T | undefined;
 
     if (!adapter) {
-      throw new Error(`No adapter "${key}" provided to PollarProvider`);
+      throw new Error(`No adapter "${key}" provided to ChettaPayProvider`);
     }
 
     return Object.fromEntries(

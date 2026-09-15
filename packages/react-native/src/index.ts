@@ -1,14 +1,17 @@
-export { PollarProvider, usePollar } from './context';
-export { createPollarAdapterHook } from './adapterHooks';
+export { ChettaPayProvider, useChettaPay } from './context';
+export { createChettaPayAdapterHook } from './adapterHooks';
 export type {
     AuthProviderProps,
     AuthContextValue,
     LoginButtonProps,
     AuthModalProps,
-    PollarStyles,
-    PollarConfig,
+    ChettaPayStyles,
+    ChettaPayConfig,
 } from './types';
 export { WalletButton } from './components/wallet-button/WalletButton';
+
+// The Chetta palette, so an app can match its own chrome to the modals'.
+export { CHETTA, defaultAccent } from './theme';
 
 // ─── Modals ───────────────────────────────────────────────────────────────────
 export { KycModal } from './components/kyc-modal/KycModal';

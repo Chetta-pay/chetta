@@ -6,7 +6,7 @@ import type {
   EarnProviderId,
   EarnProvidersContent,
 } from '../../types';
-import type { PollarApiClient } from '../client';
+import type { ChettaPayApiClient } from '../client';
 
 function errMessage(error: unknown, fallback: string): string {
   const e = error as { code?: string; error?: string } | undefined;
@@ -18,7 +18,7 @@ function errMessage(error: unknown, fallback: string): string {
  * The yield providers this app exposes to end-users (enabled + server-capable).
  * Empty `providers` = Earn disabled; the SDK renders no Earn UI.
  */
-export async function getEarnProviders(api: PollarApiClient): Promise<EarnProvidersContent> {
+export async function getEarnProviders(api: ChettaPayApiClient): Promise<EarnProvidersContent> {
   const { data, error } = await api.GET('/earn/providers');
   if (!data?.content || error) throw new Error(errMessage(error, 'Failed to load earn providers'));
   return data.content;
@@ -29,7 +29,10 @@ export async function getEarnProviders(api: PollarApiClient): Promise<EarnProvid
  * The vaults (DeFindex) or pools (Blend) the provider exposes on this key's
  * network, each with its live APY. Read-only.
  */
-export async function getEarnOpportunities(api: PollarApiClient, provider: EarnProviderId): Promise<EarnOpportunitiesContent> {
+export async function getEarnOpportunities(
+  api: ChettaPayApiClient,
+  provider: EarnProviderId,
+): Promise<EarnOpportunitiesContent> {
   const { data, error } = await api.GET('/earn/opportunities', { params: { query: { provider } } });
   if (!data?.content || error) throw new Error(errMessage(error, 'Failed to load earn opportunities'));
   return data.content;
@@ -41,7 +44,7 @@ export async function getEarnOpportunities(api: PollarApiClient, provider: EarnP
  * withdrawable, and the live APY in a vault/pool.
  */
 export async function getEarnPosition(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   query: { provider: EarnProviderId; opportunity: string; address: string },
 ): Promise<EarnPosition> {
   const { data, error } = await api.GET('/earn/position', { params: { query } });
@@ -54,7 +57,7 @@ export async function getEarnPosition(
  * Builds the unsigned deposit/withdraw XDR server-side. The SDK then signs and
  * submits it with `signAndSubmitTx`.
  */
-export async function buildEarnTx(api: PollarApiClient, body: EarnBuildBody): Promise<EarnBuildContent> {
+export async function buildEarnTx(api: ChettaPayApiClient, body: EarnBuildBody): Promise<EarnBuildContent> {
   const { data, error } = await api.POST('/earn/build', { body });
   if (!data?.content || error) throw new Error(errMessage(error, 'Failed to build earn transaction'));
   return data.content;

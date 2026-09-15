@@ -1,5 +1,5 @@
 import type { DistributionClaimBody, DistributionClaimContent, DistributionRule } from '../../types';
-import type { PollarApiClient } from '../client';
+import type { ChettaPayApiClient } from '../client';
 
 /**
  * GET /distribution/rules
@@ -7,7 +7,7 @@ import type { PollarApiClient } from '../client';
  * decorated with `claimable` and (when not claimable) a `reason` ErrorCode
  * the UI maps to a friendly message.
  */
-export async function listDistributionRules(api: PollarApiClient): Promise<DistributionRule[]> {
+export async function listDistributionRules(api: ChettaPayApiClient): Promise<DistributionRule[]> {
   const { data, error } = await api.GET('/distribution/rules');
   if (!data?.content || error) {
     throw new Error(
@@ -25,7 +25,7 @@ export async function listDistributionRules(api: PollarApiClient): Promise<Distr
  * once the payment is submitted to Stellar.
  */
 export async function claimDistributionRule(
-  api: PollarApiClient,
+  api: ChettaPayApiClient,
   body: DistributionClaimBody,
 ): Promise<DistributionClaimContent> {
   const { data, error } = await api.POST('/distribution/claim', { body });

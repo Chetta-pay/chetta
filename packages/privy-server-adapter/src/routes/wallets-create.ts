@@ -48,7 +48,7 @@ export const createWalletsCreateRoute = (deps: AdapterDeps) => {
             const privy = await deps.getPrivy();
 
             // Privy's API requires owner.user_id to be a did:privy: identifier, not
-            // Pollar's SDK user CUID. We resolve (or create) the Privy user via
+            // ChettaPay's SDK user CUID. We resolve (or create) the Privy user via
             // custom_auth linked_accounts; users.create returns the wallet inline.
             const { user, created } = await getOrCreatePrivyUser(privy, userId, {
               ensureStellarWallet: true,

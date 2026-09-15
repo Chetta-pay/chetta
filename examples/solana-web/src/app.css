@@ -1,0 +1,248 @@
+/* ChettaPay example shell.
+ *
+ * The palette mirrors `CHETTA` in @chettapay/react so the page chrome and the
+ * SDK's modals read as one surface instead of two. Both themes are defined up
+ * front and only the role tokens are reassigned in dark, so no color has its
+ * single definition inside the media query. */
+:root {
+  color-scheme: light dark;
+
+  --chetta-amber: #a2590d;
+  --chetta-gold: #e8a33d;
+  --chetta-sable: #17120e;
+  --chetta-soot: #2a211a;
+  --chetta-sand: #faf5ec;
+  --chetta-tint: #fdf6ea;
+  --chetta-bone: #e8decd;
+  --chetta-bark: #3d3128;
+  --chetta-ink: #1b1409;
+  --chetta-cream: #fbf7f1;
+  --chetta-clay: #7a6a55;
+  --chetta-dune: #b0a08a;
+
+  --bg: var(--chetta-sand);
+  --card: #ffffff;
+  --text: var(--chetta-ink);
+  --muted: var(--chetta-clay);
+  --border: var(--chetta-bone);
+  --accent: var(--chetta-amber);
+  --code-bg: var(--chetta-tint);
+  --shadow: 0 1px 2px rgba(27, 20, 9, 0.05), 0 12px 32px -12px rgba(27, 20, 9, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--chetta-sable);
+    --card: #1f1813;
+    --text: var(--chetta-cream);
+    --muted: var(--chetta-dune);
+    --border: var(--chetta-bark);
+    /* The amber is too close to the sable ground to read here; the lighter
+     * coat gold clears AA against it. */
+    --accent: var(--chetta-gold);
+    --code-bg: var(--chetta-soot);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  /* A faint wash of coat gold, so the page is not a flat field. */
+  background-image: radial-gradient(60rem 30rem at 82% -10%, rgba(232, 163, 61, 0.16), transparent 62%);
+  color: var(--text);
+  font-family:
+    Inter,
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding-block: clamp(3rem, 9vh, 6rem);
+  padding-inline: 20px;
+}
+
+/* --- Brand lockup --------------------------------------------------------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2.25rem;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 10px;
+}
+
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brand-name span {
+  color: var(--accent);
+}
+
+/* --- Card ----------------------------------------------------------------- */
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: var(--shadow);
+}
+
+.card h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.card p {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.card p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Address / code ------------------------------------------------------- */
+.mono {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+}
+
+.address {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.875rem;
+  margin: 0 0 1.25rem;
+  overflow-x: auto;
+  color: var(--text);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.8125em;
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+}
+
+/* --- Status chip ---------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  margin-bottom: 1rem;
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* --- Button --------------------------------------------------------------- */
+.btn {
+  appearance: none;
+  font: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding-inline: 1.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background-color: var(--accent);
+  /* The dark theme's accent is a pale gold; white type on it fails, so the
+   * label follows the fill rather than being hardcoded. */
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn {
+    color: var(--chetta-sable);
+  }
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Setup checklist ------------------------------------------------------ */
+.checklist {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.checklist li:last-child {
+  border-bottom: 0;
+}
+
+.checklist .ok {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.checklist .missing {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.footnote {
+  margin-top: 1.75rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-align: center;
+}

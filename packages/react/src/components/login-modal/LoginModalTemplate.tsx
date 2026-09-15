@@ -1,11 +1,11 @@
 'use client';
 
-import { AUTH_ERROR_CODES, AuthState, WalletId } from '@pollar/core';
+import { AUTH_ERROR_CODES, AuthState, WalletId } from '@chettapay/core';
 
 type StateStatus = 'NONE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 import { useState } from 'react';
-import { LOGO_POLLAR } from '../../constants';
-import { ModalStatusBanner, PollarModalFooter } from '../commons';
+import { LOGO_CHETTAPAY } from '../../constants';
+import { ModalStatusBanner, ChettaPayModalFooter } from '../commons';
 import { buildModalCssVars, type ModalStyleOverrides } from '../modal-theme';
 import { EmailCodeInput } from './EmailCodeInput';
 import { GithubButton } from './GithubButton';
@@ -40,10 +40,10 @@ function WalletAdapterButtons({
             key={a.id}
             type="button"
             disabled={isLoading}
-            className="pollar-wallet-entry-btn"
+            className="chettapay-wallet-entry-btn"
             onClick={() => onConnect(a.id)}
           >
-            {a.meta.iconUrl && <img src={a.meta.iconUrl} alt={a.meta.label} className="pollar-wallet-icon" />}
+            {a.meta.iconUrl && <img src={a.meta.iconUrl} alt={a.meta.label} className="chettapay-wallet-icon" />}
             {a.meta.label}
           </button>
         ))}
@@ -51,17 +51,17 @@ function WalletAdapterButtons({
     );
   }
   return (
-    <div className="pollar-wallet-list">
+    <div className="chettapay-wallet-list">
       {walletAdapters.map((a) => (
         <button
           key={a.id}
           type="button"
           disabled={isLoading}
-          className="pollar-wallet-list-btn"
+          className="chettapay-wallet-list-btn"
           onClick={() => onConnect(a.id)}
         >
-          {a.meta.iconUrl && <img src={a.meta.iconUrl} alt={a.meta.label} className="pollar-wallet-list-icon" />}
-          <span className="pollar-wallet-list-name">{a.meta.label}</span>
+          {a.meta.iconUrl && <img src={a.meta.iconUrl} alt={a.meta.label} className="chettapay-wallet-list-icon" />}
+          <span className="chettapay-wallet-list-name">{a.meta.label}</span>
         </button>
       ))}
     </div>
@@ -205,7 +205,7 @@ export function LoginModalTemplate({
   const statusMessage = authState.step === 'error' ? authState.message : AUTH_STATE_MESSAGES[authState.step];
 
   const BackButton = ({ onClick }: { onClick: () => void }) => (
-    <button type="button" className="pollar-back-btn" onClick={onClick} aria-label="Back">
+    <button type="button" className="chettapay-back-btn" onClick={onClick} aria-label="Back">
       <svg
         width="20"
         height="20"
@@ -222,8 +222,8 @@ export function LoginModalTemplate({
   );
 
   return (
-    <div className="pollar-modal-card pollar-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className="pollar-close-btn" onClick={onCancel} aria-label="Close">
+    <div className="chettapay-modal-card chettapay-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="chettapay-close-btn" onClick={onCancel} aria-label="Close">
         <svg
           width="18"
           height="18"
@@ -237,12 +237,12 @@ export function LoginModalTemplate({
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
-      <div className="pollar-header">
-        <div className="pollar-logo-wrap">
-          <img src={logoUrl ?? LOGO_POLLAR} alt="Logo" className="pollar-logo" />
+      <div className="chettapay-header">
+        <div className="chettapay-logo-wrap">
+          <img src={logoUrl ?? LOGO_CHETTAPAY} alt="Logo" className="chettapay-logo" />
         </div>
-        <h2 className="pollar-title">{appName}</h2>
-        <p className="pollar-subtitle">Log in or sign up</p>
+        <h2 className="chettapay-title">{appName}</h2>
+        <p className="chettapay-subtitle">Log in or sign up</p>
       </div>
 
       {awaitingEmailCode ? (
@@ -262,11 +262,11 @@ export function LoginModalTemplate({
       ) : showPasskeyChooser ? (
         <>
           <BackButton onClick={() => setShowPasskeyChooser(false)} />
-          <div className="pollar-wallet-section">
-            <button type="button" disabled={isLoading} className="pollar-btn-primary" onClick={onCreateSmartWallet}>
+          <div className="chettapay-wallet-section">
+            <button type="button" disabled={isLoading} className="chettapay-btn-primary" onClick={onCreateSmartWallet}>
               Create a new wallet
             </button>
-            <button type="button" disabled={isLoading} className="pollar-wallet-entry-btn" onClick={onLoginSmartWallet}>
+            <button type="button" disabled={isLoading} className="chettapay-wallet-entry-btn" onClick={onLoginSmartWallet}>
               Log in with an existing wallet
             </button>
           </div>
@@ -274,20 +274,20 @@ export function LoginModalTemplate({
       ) : (
         <>
           {emailEnabled && (
-            <div className="pollar-email-section">
+            <div className="chettapay-email-section">
               <input
                 type="email"
                 placeholder="you@email.com"
                 value={email}
                 disabled={isLoading}
-                className="pollar-input"
+                className="chettapay-input"
                 onChange={(e) => onEmailChange?.(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onEmailSubmit?.()}
               />
               <button
                 type="button"
                 disabled={isLoading || !email}
-                className="pollar-btn-primary"
+                className="chettapay-btn-primary"
                 style={{ marginTop: '0.75rem' }}
                 onClick={onEmailSubmit}
               >
@@ -297,16 +297,16 @@ export function LoginModalTemplate({
           )}
 
           {emailEnabled && enabledSocial.length > 0 && (
-            <div className="pollar-divider">
-              <div className="pollar-divider-line" />
-              <div className="pollar-divider-label">
-                <span className="pollar-divider-text">or continue with</span>
+            <div className="chettapay-divider">
+              <div className="chettapay-divider-line" />
+              <div className="chettapay-divider-label">
+                <span className="chettapay-divider-text">or continue with</span>
               </div>
             </div>
           )}
 
           {enabledSocial.length > 0 && (
-            <div className="pollar-social-list">
+            <div className="chettapay-social-list">
               {enabledSocial.some(([key]) => key === 'google') && (
                 <GoogleButton disabled={isLoading} onClick={() => onSocialLogin?.('google')} />
               )}
@@ -317,7 +317,7 @@ export function LoginModalTemplate({
           )}
 
           {(embeddedWallets || smartWallet) && (
-            <div className="pollar-wallet-section">
+            <div className="chettapay-wallet-section">
               {embeddedWallets && (
                 <>
                   {walletGroups.map((g) => (
@@ -325,7 +325,7 @@ export function LoginModalTemplate({
                       key={g.label}
                       type="button"
                       disabled={isLoading}
-                      className="pollar-wallet-entry-btn"
+                      className="chettapay-wallet-entry-btn"
                       onClick={() => setActiveGroup(g.label)}
                     >
                       <svg
@@ -358,7 +358,7 @@ export function LoginModalTemplate({
                 <button
                   type="button"
                   disabled={isLoading}
-                  className="pollar-wallet-entry-btn"
+                  className="chettapay-wallet-entry-btn"
                   onClick={() => setShowPasskeyChooser(true)}
                 >
                   <svg
@@ -388,7 +388,7 @@ export function LoginModalTemplate({
         onRetry={isEmailCodeError ? undefined : onRetry}
       />
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }
@@ -418,8 +418,8 @@ export function LoginModalStatus({
 }) {
   const cssVars = buildModalCssVars(theme, accentColor, styleOverrides, 'hero');
   return (
-    <div className="pollar-modal-card pollar-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className="pollar-close-btn" onClick={onCancel} aria-label="Close">
+    <div className="chettapay-modal-card chettapay-modal" style={cssVars} onClick={(e) => e.stopPropagation()}>
+      <button type="button" className="chettapay-close-btn" onClick={onCancel} aria-label="Close">
         <svg
           width="18"
           height="18"
@@ -433,29 +433,29 @@ export function LoginModalStatus({
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
-      <div className="pollar-header">
-        <div className="pollar-logo-wrap">
-          <img src={logoUrl ?? LOGO_POLLAR} alt="Logo" className="pollar-logo" />
+      <div className="chettapay-header">
+        <div className="chettapay-logo-wrap">
+          <img src={logoUrl ?? LOGO_CHETTAPAY} alt="Logo" className="chettapay-logo" />
         </div>
-        <h2 className="pollar-title">{appName}</h2>
-        <p className="pollar-subtitle">Log in or sign up</p>
+        <h2 className="chettapay-title">{appName}</h2>
+        <p className="chettapay-subtitle">Log in or sign up</p>
       </div>
 
       {status === 'loading' ? (
-        <div className="pollar-loading-block">
-          <div className="pollar-spinner" />
+        <div className="chettapay-loading-block">
+          <div className="chettapay-spinner" />
           <span>Loading...</span>
         </div>
       ) : (
-        <div className="pollar-wallet-section">
-          <p className="pollar-modal-error">Could not load sign-in options. Check your connection and try again.</p>
-          <button type="button" className="pollar-btn-primary" onClick={onRetry}>
+        <div className="chettapay-wallet-section">
+          <p className="chettapay-modal-error">Could not load sign-in options. Check your connection and try again.</p>
+          <button type="button" className="chettapay-btn-primary" onClick={onRetry}>
             Try again
           </button>
         </div>
       )}
 
-      <PollarModalFooter />
+      <ChettaPayModalFooter />
     </div>
   );
 }

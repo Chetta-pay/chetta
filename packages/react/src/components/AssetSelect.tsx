@@ -65,20 +65,20 @@ export function AssetSelect({
   const otherAssets = options.filter((o) => !o.enabledInApp);
 
   return (
-    <div className="pollar-send-field">
-      <label className="pollar-send-label">{label}</label>
+    <div className="chettapay-send-field">
+      <label className="chettapay-send-label">{label}</label>
       {loading ? (
         loadingLabel ? (
-          <div className="pollar-input pollar-select-loading">
-            <span className="pollar-spinner pollar-spinner-sm" />
+          <div className="chettapay-input chettapay-select-loading">
+            <span className="chettapay-spinner chettapay-spinner-sm" />
             <span>{loadingLabel}</span>
           </div>
         ) : (
-          <div className="pollar-send-skeleton" />
+          <div className="chettapay-send-skeleton" />
         )
       ) : (
         <select
-          className="pollar-input pollar-send-select"
+          className="chettapay-input chettapay-send-select"
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
