@@ -75,12 +75,12 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@pollar/core": "^0.11.2",
-    "@privy-io/expo": "^0.69.4",
+    "@privy-io/expo": "^0.76.5",
     "@privy-io/react-auth": "^3.32.2",
     "@stellar/stellar-sdk": "^15.1.0",
-    "eslint": "^10.5.0",
-    "tsup": "^8.5.1",
-    "typescript": "^6.0.3",
+    "eslint": "^10.13.0",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.61.0"
   }
 }
